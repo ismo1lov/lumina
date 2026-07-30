@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, useSearch, useNavigate } from "@tanstack/react-router";
+import { useMemo, useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { categoryImages, formatUZS, products, type Category } from "@/data/products";
 import { ProductCard } from "@/components/site/ProductCard";
@@ -7,6 +7,9 @@ import { Reveal } from "@/components/site/Reveal";
 import { Stars } from "@/components/site/Stars";
 
 export const Route = createFileRoute("/catalog")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    category: search.category as string | undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Shop All Furniture — Lumina Home Catalog" },
@@ -31,7 +34,11 @@ const allMaterials = ["Walnut", "Oak", "Velvet", "Leather"];
 type Sort = "newest" | "price-asc" | "popularity";
 
 function Catalog() {
-  const [cats, setCats] = useState<string[]>([]);
+  const { category } = useSearch({ from: "/catalog" });
+  const navigate = useNavigate();
+  const [cats, setCats] = useState<string[]>(() =>
+    category ? [category] : []
+  );
   const [mats, setMats] = useState<string[]>([]);
   const [maxPrice, setMaxPrice] = useState(20000000);
   const [inStock, setInStock] = useState(false);
@@ -39,8 +46,22 @@ function Catalog() {
   const [sort, setSort] = useState<Sort>("popularity");
   const [quickView, setQuickView] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (category && !cats.includes(category)) {
+      setCats([category]);
+    }
+  }, [category]);
+
   const toggle = (list: string[], set: (v: string[]) => void, value: string) =>
     set(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
+
+  const toggleCat = (value: string) => {
+    const next = cats.includes(value)
+      ? cats.filter((v) => v !== value)
+      : [...cats, value];
+    setCats(next);
+    navigate({ to: "/catalog", search: { category: next.length ? next[0] : undefined }, replace: true });
+  };
 
   const filtered = useMemo(() => {
     const out = products.filter((p) => {
@@ -79,7 +100,7 @@ function Catalog() {
                 key={c}
                 label={c}
                 checked={cats.includes(c)}
-                onChange={() => toggle(cats, setCats, c)}
+                onChange={() => toggleCat(c)}
               />
             ))}
           </Filter>

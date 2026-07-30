@@ -161,6 +161,7 @@ function Home() {
             <Reveal key={cat} delay={i * 0.08}>
               <Link
                 to="/catalog"
+                search={{ category: cat }}
                 className="group block overflow-hidden bg-cream"
                 aria-label={`Shop ${cat}`}
               >
