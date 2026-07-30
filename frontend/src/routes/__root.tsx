@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useLocation,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -12,6 +13,7 @@ import Lenis from "lenis";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { CartProvider } from "@/lib/cart";
 import { WishlistProvider } from "@/lib/wishlist";
 import { Navbar } from "@/components/site/Navbar";
@@ -124,6 +126,48 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+const authPaths = ["/login", "/register", "/auth/login", "/auth/register"];
+
+function AuthGuard({ children }: { children: ReactNode }) {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (loading) return;
+    if (user && authPaths.includes(location.pathname)) {
+      router.navigate({ to: "/", replace: true });
+    } else if (!user && !authPaths.includes(location.pathname)) {
+      router.navigate({ to: "/login", replace: true });
+    }
+  }, [user, loading, location.pathname]);
+
+  if (loading) return null;
+  if (user && authPaths.includes(location.pathname)) return null;
+  if (!user && !authPaths.includes(location.pathname)) return null;
+
+  return <>{children}</>;
+}
+
+function LayoutSwitch({ children }: { children: ReactNode }) {
+  const location = useLocation();
+  const isAuthPage = authPaths.includes(location.pathname);
+
+  if (isAuthPage) {
+    return <>{children}</>;
+  }
+
+  return (
+    <>
+      <Navbar />
+      <main className="min-h-screen">{children}</main>
+      <Footer />
+      <CartDrawer />
+      <WishlistDrawer />
+    </>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
@@ -149,18 +193,17 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <AuthProvider>
       <CartProvider>
         <WishlistProvider>
-          <Navbar />
-          <main className="min-h-screen">
-            {/* Required: nested routes render here. Removing <Outlet /> breaks child routes. */}
-            <Outlet />
-          </main>
-          <Footer />
-          <CartDrawer />
-          <WishlistDrawer />
+          <AuthGuard>
+            <LayoutSwitch>
+              <Outlet />
+            </LayoutSwitch>
+          </AuthGuard>
         </WishlistProvider>
       </CartProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

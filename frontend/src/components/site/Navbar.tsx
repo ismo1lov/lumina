@@ -1,8 +1,9 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Heart, Menu, Search, ShoppingBag, User, X } from "lucide-react";
+import { Heart, LogOut, Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { products } from "@/data/products";
+import { useAuth } from "@/lib/auth-context";
 import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
 
@@ -17,6 +18,7 @@ const links = [
 export function Navbar() {
   const { count, setOpen } = useCart();
   const { count: wishCount, setOpen: setWishOpen } = useWishlist();
+  const { user, logout } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [search, setSearch] = useState(false);
   const [query, setQuery] = useState("");
@@ -52,9 +54,9 @@ export function Navbar() {
                 key={l.to}
                 to={l.to}
                 activeOptions={{ exact: l.to === "/" }}
-                activeProps={{ className: "text-foreground" }}
+                activeProps={{ className: "text-foreground font-semibold border-b border-foreground" }}
                 inactiveProps={{ className: "text-muted-foreground" }}
-                className="text-[11px] uppercase tracking-[0.2em] transition-colors hover:text-foreground link-underline"
+                className="text-[11px] uppercase tracking-[0.2em] transition-colors hover:text-foreground pb-0.5"
               >
                 {l.label}
               </Link>
@@ -73,9 +75,15 @@ export function Navbar() {
                 </span>
               )}
             </button>
-            <button type="button" aria-label="Account" className="hidden cursor-pointer sm:block">
-              <User size={17} />
-            </button>
+            {user ? (
+              <Link to="/profile" aria-label="Profile" className="hidden cursor-pointer sm:block">
+                <User size={17} />
+              </Link>
+            ) : (
+              <Link to="/login" aria-label="Sign in" className="hidden cursor-pointer sm:block">
+                <User size={17} />
+              </Link>
+            )}
             <button
               type="button"
               aria-label="Open cart"
@@ -125,6 +133,38 @@ export function Navbar() {
                   {l.label}
                 </Link>
               ))}
+              <div className="mt-4 border-t pt-6">
+                {user ? (
+                  <>
+                    <Link to="/profile" onClick={() => setMenu(false)} className="block font-display text-xl">
+                      Profile
+                    </Link>
+                    <button
+                      onClick={() => { logout(); navigate({ to: "/login" }); setMenu(false); }}
+                      className="mt-4 flex items-center gap-3 font-display text-xl text-muted-foreground"
+                    >
+                      <LogOut size={18} /> Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/login"
+                      onClick={() => setMenu(false)}
+                      className="block font-display text-xl"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      to="/register"
+                      onClick={() => setMenu(false)}
+                      className="mt-4 block font-display text-xl"
+                    >
+                      Create Account
+                    </Link>
+                  </>
+                )}
+              </div>
             </nav>
           </motion.div>
         )}

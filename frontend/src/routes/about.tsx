@@ -127,15 +127,27 @@ function About() {
           </Reveal>
         </div>
 
-        <div className="mt-16 flex snap-x snap-mandatory gap-6 overflow-x-auto px-6 pb-8 lg:px-12">
-          {milestones.map((m, i) => (
-            <Reveal key={m.year} delay={i * 0.06} className="relative flex-shrink-0 snap-start">
-              <div className="flex h-[420px] w-[340px] flex-col justify-end overflow-hidden rounded-xl bg-[#2A2A2A] p-8 text-white lg:w-[400px]">
-                <p className="font-display text-7xl italic opacity-20">{m.year}</p>
-                <p className="relative mt-4 text-lg leading-relaxed">{m.text}</p>
-              </div>
-            </Reveal>
-          ))}
+        <div className="relative mt-16">
+          {/* Horizontal line */}
+          <div className="absolute left-6 right-6 top-[18px] h-px bg-black/10 lg:left-12 lg:right-12" />
+          <div className="flex justify-center gap-0 overflow-x-auto px-6 pb-8 lg:px-12">
+            {milestones.map((m, i) => (
+              <Reveal key={m.year} delay={i * 0.06} className="flex-shrink-0 snap-start">
+                <div className="flex w-[260px] flex-col pt-10 lg:w-[300px]">
+                  <div className="relative flex items-start gap-5">
+                    <div className="relative flex flex-col items-center">
+                      <div className="z-10 h-9 w-9 rounded-full border-2 border-black bg-white" />
+                      {i < milestones.length - 1 && <div className="absolute top-9 h-full w-px bg-black/10" />}
+                    </div>
+                    <div className="flex-1 pt-1">
+                      <p className="font-display text-2xl italic">{m.year}</p>
+                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{m.text}</p>
+                    </div>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </section>
 
