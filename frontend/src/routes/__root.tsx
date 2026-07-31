@@ -132,17 +132,20 @@ function AuthGuard({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
   const location = useLocation();
   const router = useRouter();
+  const isAdminPath = location.pathname.startsWith("/admin");
 
   useEffect(() => {
     if (loading) return;
+    if (isAdminPath) return;
     if (user && authPaths.includes(location.pathname)) {
       router.navigate({ to: "/", replace: true });
     } else if (!user && !authPaths.includes(location.pathname)) {
       router.navigate({ to: "/login", replace: true });
     }
-  }, [user, loading, location.pathname]);
+  }, [user, loading, location.pathname, isAdminPath]);
 
   if (loading) return null;
+  if (isAdminPath) return <>{children}</>;
   if (user && authPaths.includes(location.pathname)) return null;
   if (!user && !authPaths.includes(location.pathname)) return null;
 
@@ -152,8 +155,9 @@ function AuthGuard({ children }: { children: ReactNode }) {
 function LayoutSwitch({ children }: { children: ReactNode }) {
   const location = useLocation();
   const isAuthPage = authPaths.includes(location.pathname);
+  const isAdminPage = location.pathname.startsWith("/admin");
 
-  if (isAuthPage) {
+  if (isAuthPage || isAdminPage) {
     return <>{children}</>;
   }
 

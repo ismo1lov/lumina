@@ -1,8 +1,9 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Heart, LogOut, Menu, Search, ShoppingBag, User, X } from "lucide-react";
+import { Bell, Heart, LogOut, Menu, Search, ShoppingBag, Trash2, User, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { products } from "@/data/products";
+import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
@@ -23,6 +24,14 @@ export function Navbar() {
   const [search, setSearch] = useState(false);
   const [query, setQuery] = useState("");
   const [menu, setMenu] = useState(false);
+  const [notifs, setNotifs] = useState<{
+    id: string;
+    title: string;
+    body: string;
+    isRead: boolean;
+    createdAt: string;
+  }[]>([]);
+  const [notifOpen, setNotifOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,6 +40,36 @@ export function Navbar() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    const load = () =>
+      api
+        .get<{ id: string; title: string; body: string; isRead: boolean; createdAt: string }[]>("/notifications")
+        .then(setNotifs)
+        .catch(() => {});
+    load();
+    const id = setInterval(load, 30000);
+    return () => clearInterval(id);
+  }, [user]);
+
+  const unread = notifs.filter((n) => !n.isRead).length;
+
+  const toggleNotifs = () => {
+    const next = !notifOpen;
+    setNotifOpen(next);
+    if (next && unread > 0) {
+      setNotifs((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      notifs
+        .filter((n) => !n.isRead)
+        .forEach((n) => api.patch(`/notifications/${n.id}/read`, { isRead: true }).catch(() => {}));
+    }
+  };
+
+  const deleteNotif = (id: string) => {
+    setNotifs((prev) => prev.filter((n) => n.id !== id));
+    api.delete(`/notifications/${id}`).catch(() => {});
+  };
 
   const results = query
     ? products.filter((p) => p.name.toLowerCase().includes(query.toLowerCase())).slice(0, 5)
@@ -75,14 +114,67 @@ export function Navbar() {
                 </span>
               )}
             </button>
-            {user ? (
-              <Link to="/profile" aria-label="Profile" className="hidden cursor-pointer sm:block">
-                <User size={17} />
-              </Link>
-            ) : (
-              <Link to="/login" aria-label="Sign in" className="hidden cursor-pointer sm:block">
-                <User size={17} />
-              </Link>
+            {user && (
+              <div className="relative hidden sm:block">
+                <button
+                  type="button"
+                  aria-label="Notifications"
+                  className="relative cursor-pointer"
+                  onClick={toggleNotifs}
+                >
+                  <Bell size={17} />
+                  {unread > 0 && (
+                    <span className="absolute -right-2 -top-2 grid size-4 place-items-center rounded-full bg-accent text-[9px] text-accent-foreground">
+                      {unread}
+                    </span>
+                  )}
+                </button>
+                <AnimatePresence>
+                  {notifOpen && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setNotifOpen(false)} />
+                      <motion.div
+                        initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                        transition={{ duration: 0.18, ease: "easeOut" }}
+                        className="absolute right-0 top-9 z-50 w-[340px] overflow-hidden border bg-background shadow-2xl"
+                      >
+                        <div className="border-b px-5 py-3.5">
+                          <p className="font-display text-sm">Notifications</p>
+                        </div>
+                        <div className="max-h-[320px] overflow-y-auto">
+                          {notifs.length === 0 ? (
+                            <p className="px-5 py-10 text-center text-xs text-muted-foreground">
+                              No notifications yet
+                            </p>
+                          ) : (
+                            notifs.map((n) => (
+                              <div key={n.id} className="group border-b px-5 py-3.5 last:border-0">
+                                <div className="flex items-start justify-between gap-3">
+                                  <p className="text-xs font-semibold">{n.title}</p>
+                                  <button
+                                    type="button"
+                                    aria-label="Delete notification"
+                                    onClick={() => deleteNotif(n.id)}
+                                    className="cursor-pointer text-muted-foreground/40 opacity-60 transition-colors hover:text-red-500 sm:opacity-0 sm:group-hover:opacity-100"
+                                  >
+                                    <Trash2 size={12} />
+                                  </button>
+                                </div>
+                                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{n.body}</p>
+                                <p className="mt-1.5 text-[10px] text-muted-foreground/60">
+                                  {new Date(n.createdAt).toLocaleString()}
+                                </p>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
+              </div>
             )}
             <button
               type="button"
@@ -97,6 +189,16 @@ export function Navbar() {
                 </span>
               )}
             </button>
+            <span className="hidden h-5 w-px bg-border sm:block" aria-hidden />
+            {user ? (
+              <Link to="/dashboard" aria-label="My Account" className="hidden cursor-pointer sm:block">
+                <User size={17} />
+              </Link>
+            ) : (
+              <Link to="/login" aria-label="Sign in" className="hidden cursor-pointer sm:block">
+                <User size={17} />
+              </Link>
+            )}
             <button
               type="button"
               aria-label="Open menu"
@@ -136,8 +238,8 @@ export function Navbar() {
               <div className="mt-4 border-t pt-6">
                 {user ? (
                   <>
-                    <Link to="/profile" onClick={() => setMenu(false)} className="block font-display text-xl">
-                      Profile
+                    <Link to="/dashboard" onClick={() => setMenu(false)} className="block font-display text-xl">
+                      My Account
                     </Link>
                     <button
                       onClick={() => { logout(); navigate({ to: "/login" }); setMenu(false); }}

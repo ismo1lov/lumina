@@ -197,7 +197,7 @@ function Catalog() {
               <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
                 {quick.description}
               </p>
-              <p className="mt-6 font-display text-2xl">{formatUZS(quick.price)}</p>
+              <p className="mt-6 font-semibold tabular-nums text-2xl">{formatUZS(quick.price)}</p>
               <a
                 href={`/product/${quick.id}`}
                 className="mt-auto bg-primary py-3.5 text-center text-[11px] uppercase tracking-[0.22em] text-primary-foreground"

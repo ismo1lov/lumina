@@ -1,4 +1,5 @@
 const API = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+export const API_BASE = API.replace(/\/api\/?$/, "");
 
 function getToken(): string | null {
   return localStorage.getItem("lumina-token");
@@ -31,5 +32,6 @@ export const api = {
   get: <T>(path: string) => request<T>("GET", path),
   post: <T>(path: string, body?: unknown) => request<T>("POST", path, body),
   put: <T>(path: string, body?: unknown) => request<T>("PUT", path, body),
+  patch: <T>(path: string, body?: unknown) => request<T>("PATCH", path, body),
   delete: <T>(path: string) => request<T>("DELETE", path),
 };

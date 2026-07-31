@@ -2,14 +2,34 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
-import { LogOut, Package, MapPin, ShoppingBag } from "lucide-react";
+import { Bell, LogOut, MapPin, Package, Settings, ShoppingBag, Trash2, XCircle } from "lucide-react";
+
+interface OrderItem {
+  id: string;
+  name: string;
+  finish: string;
+  color: string;
+  assembly: boolean;
+  unitPrice: number;
+  qty: number;
+  image: string | null;
+}
 
 interface Order {
   id: string;
   status: string;
   total: number;
-  created_at: string;
+  createdAt: string;
+  items: OrderItem[];
 }
+
+const statusColors: Record<string, string> = {
+  pending: "bg-amber-50 text-amber-700",
+  confirmed: "bg-sky-50 text-sky-700",
+  shipped: "bg-violet-50 text-violet-700",
+  delivered: "bg-emerald-50 text-emerald-700",
+  cancelled: "bg-red-50 text-red-600",
+};
 
 interface Address {
   id: string;
@@ -23,12 +43,20 @@ interface Address {
   isDefault: boolean;
 }
 
+interface Notification {
+  id: string;
+  title: string;
+  body: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
 export const Route = createFileRoute("/dashboard")({
   component: DashboardPage,
 });
 
 function DashboardPage() {
-  const { user, logout } = useAuth();
+  const { user, logout, token, setAuth } = useAuth();
   const router = useRouter();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
@@ -36,6 +64,7 @@ function DashboardPage() {
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [addresses, setAddresses] = useState<Address[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [tab, setTab] = useState("orders");
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -49,6 +78,12 @@ function DashboardPage() {
     lng: 69.2401,
     isDefault: false,
   });
+  const [name, setName] = useState("");
+  const [nameSaving, setNameSaving] = useState(false);
+  const [nameMsg, setNameMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [pwForm, setPwForm] = useState({ currentPassword: "", newPassword: "" });
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwMsg, setPwMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const showForm = addresses.length === 0 || editingId !== null;
 
@@ -56,6 +91,8 @@ function DashboardPage() {
     if (!user) return;
     api.get<Order[]>("/orders").then(setOrders).catch(() => {});
     api.get<Address[]>("/addresses").then(setAddresses).catch(() => {});
+    api.get<Notification[]>("/notifications").then(setNotifications).catch(() => {});
+    setName(user.name);
   }, [user]);
 
   useEffect(() => {
@@ -152,6 +189,55 @@ function DashboardPage() {
     setAddresses((prev) => prev.filter((a) => a.id !== id));
   };
 
+  const cancelOrder = async (id: string) => {
+    if (!confirm("Are you sure you want to cancel this order?")) return;
+    try {
+      await api.patch(`/orders/${id}/cancel`);
+      setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status: "cancelled" } : o)));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to cancel order");
+    }
+  };
+
+  const saveName = async () => {
+    setNameSaving(true);
+    setNameMsg(null);
+    try {
+      const res = await api.patch<{ user: { id: string; name: string; email: string; username: string; role: string; avatar: string } }>("/auth/me", { name });
+      setAuth(res.user as never, token!);
+      setNameMsg({ ok: true, text: "Name updated" });
+    } catch (err) {
+      setNameMsg({ ok: false, text: err instanceof Error ? err.message : "Failed to update name" });
+    } finally {
+      setNameSaving(false);
+    }
+  };
+
+  const savePassword = async () => {
+    setPwSaving(true);
+    setPwMsg(null);
+    try {
+      await api.patch("/auth/password", pwForm);
+      setPwForm({ currentPassword: "", newPassword: "" });
+      setPwMsg({ ok: true, text: "Password updated" });
+    } catch (err) {
+      setPwMsg({ ok: false, text: err instanceof Error ? err.message : "Failed to update password" });
+    } finally {
+      setPwSaving(false);
+    }
+  };
+
+  const markRead = (n: Notification) => {
+    if (n.isRead) return;
+    setNotifications((prev) => prev.map((x) => (x.id === n.id ? { ...x, isRead: true } : x)));
+    api.patch(`/notifications/${n.id}/read`, { isRead: true }).catch(() => {});
+  };
+
+  const deleteNotification = async (id: string) => {
+    setNotifications((prev) => prev.filter((x) => x.id !== id));
+    api.delete(`/notifications/${id}`).catch(() => {});
+  };
+
   if (!user) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center px-4">
@@ -173,6 +259,8 @@ function DashboardPage() {
   const tabs = [
     { id: "orders", label: "My Orders", icon: Package },
     { id: "addresses", label: "Addresses", icon: MapPin },
+    { id: "messages", label: "Messages", icon: Bell },
+    { id: "profile", label: "Profile", icon: Settings },
   ];
 
   return (
@@ -205,7 +293,7 @@ function DashboardPage() {
       </div>
 
       {tab === "orders" && (
-        <div>
+        <div className="space-y-4">
           {orders.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <ShoppingBag size={40} className="mx-auto mb-4 opacity-30" />
@@ -213,20 +301,58 @@ function DashboardPage() {
               <Link to="/catalog" className="mt-3 inline-block text-sm underline underline-offset-4">Start shopping</Link>
             </div>
           ) : (
-            <div className="space-y-3">
-              {orders.map((o) => (
-                <div key={o.id} className="border p-4 flex justify-between items-center">
+            orders.map((o) => (
+              <div key={o.id} className="border p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b pb-3">
                   <div>
-                    <p className="text-xs text-muted-foreground">#{o.id.slice(0, 8)}</p>
-                    <p className="font-display text-sm mt-1 capitalize">{o.status}</p>
+                    <p className="text-xs text-muted-foreground">Order #{o.id.slice(0, 8)}</p>
+                    <p className="text-xs text-muted-foreground">{new Date(o.createdAt).toLocaleDateString()}</p>
                   </div>
-                  <div className="text-right">
-                    <p className="font-display">{new Intl.NumberFormat("en-US").format(o.total)} UZS</p>
-                    <p className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleDateString()}</p>
-                  </div>
+                  <span className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-wider ${statusColors[o.status] ?? "bg-cream text-muted-foreground"}`}>
+                    {o.status}
+                  </span>
                 </div>
-              ))}
-            </div>
+
+                <div className="divide-y">
+                  {o.items.map((it) => (
+                    <div key={it.id} className="flex items-center gap-4 py-3">
+                      <img
+                        src={it.image || "/placeholder.svg"}
+                        alt={it.name}
+                        loading="lazy"
+                        width={64}
+                        height={64}
+                        className="size-16 bg-background object-cover"
+                      />
+                      <div className="flex-1 text-sm">
+                        <p className="font-display">{it.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          ×{it.qty}
+                          {it.finish ? ` · ${it.finish}` : ""}
+                          {it.assembly ? " · assembly" : ""}
+                        </p>
+                        <p className="mt-0.5 text-sm">{new Intl.NumberFormat("en-US").format(it.unitPrice * it.qty)} UZS</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-center justify-between gap-3 border-t pt-3">
+                  <p className="text-sm">
+                    Paid: <span className="font-semibold tabular-nums">{new Intl.NumberFormat("en-US").format(o.total)} UZS</span>
+                  </p>
+                  {["pending", "confirmed"].includes(o.status) && (
+                    <button
+                      onClick={() => cancelOrder(o.id)}
+                      className="flex cursor-pointer items-center gap-1.5 border border-red-200 px-3 py-1.5 text-[11px] uppercase tracking-wider text-red-500 transition-colors hover:bg-red-50"
+                    >
+                      <XCircle size={13} />
+                      Cancel order
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))
           )}
         </div>
       )}
@@ -320,6 +446,112 @@ function DashboardPage() {
               </button>
             )}
           </div>
+        </div>
+      )}
+      {tab === "profile" && (
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+          <div className="border p-6">
+            <h2 className="font-display text-base mb-5">Profile</h2>
+            <div>
+              <label className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">Full name</label>
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="mt-1 w-full border border-input bg-transparent px-3 py-2 text-sm outline-none"
+              />
+            </div>
+            <div className="mt-4">
+              <label className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">Email</label>
+              <input
+                value={user.email}
+                readOnly
+                className="mt-1 w-full cursor-not-allowed border border-input bg-cream/50 px-3 py-2 text-sm text-muted-foreground outline-none"
+              />
+            </div>
+            {nameMsg && (
+              <p className={`mt-3 text-xs ${nameMsg.ok ? "text-emerald-600" : "text-red-500"}`}>{nameMsg.text}</p>
+            )}
+            <button
+              onClick={saveName}
+              disabled={nameSaving || name.trim().length < 2}
+              className="mt-5 w-full bg-primary py-2.5 text-[11px] uppercase tracking-[0.2em] text-primary-foreground disabled:opacity-50"
+            >
+              {nameSaving ? "Saving..." : "Save Name"}
+            </button>
+          </div>
+
+          <div className="border p-6">
+            <h2 className="font-display text-base mb-5">Change password</h2>
+            <div>
+              <label className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">Current password</label>
+              <input
+                type="password"
+                value={pwForm.currentPassword}
+                onChange={(e) => setPwForm({ ...pwForm, currentPassword: e.target.value })}
+                autoComplete="new-password"
+                className="mt-1 w-full border border-input bg-transparent px-3 py-2 text-sm outline-none"
+              />
+            </div>
+            <div className="mt-4">
+              <label className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">New password</label>
+              <input
+                type="password"
+                value={pwForm.newPassword}
+                onChange={(e) => setPwForm({ ...pwForm, newPassword: e.target.value })}
+                autoComplete="new-password"
+                className="mt-1 w-full border border-input bg-transparent px-3 py-2 text-sm outline-none"
+              />
+            </div>
+            {pwMsg && (
+              <p className={`mt-3 text-xs ${pwMsg.ok ? "text-emerald-600" : "text-red-500"}`}>{pwMsg.text}</p>
+            )}
+            <button
+              onClick={savePassword}
+              disabled={pwSaving || !pwForm.currentPassword || pwForm.newPassword.length < 6}
+              className="mt-5 w-full bg-primary py-2.5 text-[11px] uppercase tracking-[0.2em] text-primary-foreground disabled:opacity-50"
+            >
+              {pwSaving ? "Updating..." : "Update Password"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {tab === "messages" && (
+        <div className="space-y-3">
+          {notifications.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <Bell size={40} className="mx-auto mb-4 opacity-30" />
+              <p>No notifications yet</p>
+              <p className="mt-1 text-xs">Replies from Lumina will appear here</p>
+            </div>
+          ) : (
+            notifications.map((n) => (
+              <div
+                key={n.id}
+                className={`group border p-5 text-left transition-colors ${n.isRead ? "border-border bg-transparent" : "border-accent/40 bg-accent/5"}`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <p className="font-display text-sm">{n.title}</p>
+                    {!n.isRead && <span className="size-2 shrink-0 rounded-full bg-accent" />}
+                  </div>
+                  <button
+                    onClick={() => deleteNotification(n.id)}
+                    aria-label="Delete notification"
+                    className="cursor-pointer text-muted-foreground/50 opacity-60 transition-all hover:text-red-500 sm:opacity-0 sm:group-hover:opacity-100"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+                <button onClick={() => markRead(n)} className="mt-1.5 block w-full cursor-pointer text-left">
+                  <p className="text-sm leading-relaxed text-muted-foreground">{n.body}</p>
+                </button>
+                <p className="mt-2 text-[11px] text-muted-foreground/70">
+                  {new Date(n.createdAt).toLocaleString()}
+                </p>
+              </div>
+            ))
+          )}
         </div>
       )}
     </div>

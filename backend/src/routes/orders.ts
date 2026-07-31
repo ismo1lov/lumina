@@ -1,74 +1,85 @@
 import { Router } from "express";
 import { z } from "zod";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, inArray } from "drizzle-orm";
 import { getDb } from "../db/index.js";
-import { orders, orderItems, cartItems, products } from "../db/schema.js";
+import { orders, orderItems, products } from "../db/schema.js";
 import { authMiddleware } from "../middleware/auth.js";
 
 const router = Router();
 router.use(authMiddleware);
 
+const DELIVERY_FEES: Record<string, number> = { standard: 0, express: 250000 };
+
 router.post("/", async (req, res) => {
   try {
-    const { shippingAddress } = z
+    const { shippingAddress, payment, delivery, items } = z
       .object({
         shippingAddress: z.object({
-          name: z.string(),
-          phone: z.string(),
-          address: z.string(),
-          city: z.string(),
-          zip: z.string().optional(),
+          name: z.string().min(1),
+          phone: z.string().min(1),
+          address: z.string().min(1),
+          city: z.string().min(1),
+          lat: z.string().optional(),
+          lng: z.string().optional(),
         }),
+        payment: z.string().min(1),
+        delivery: z.string().min(1),
+        items: z
+          .array(
+            z.object({
+              productId: z.string(),
+              finish: z.string(),
+              color: z.string(),
+              assembly: z.boolean(),
+              qty: z.number().int().min(1),
+            }),
+          )
+          .min(1),
       })
       .parse(req.body);
 
     const db = await getDb();
-    const cart = await db
-      .select({
-        id: cartItems.id,
-        productId: cartItems.productId,
-        finish: cartItems.finish,
-        color: cartItems.color,
-        assembly: cartItems.assembly,
-        qty: cartItems.qty,
-        name: products.name,
-        price: products.price,
-      })
-      .from(cartItems)
-      .leftJoin(products, eq(cartItems.productId, products.id))
-      .where(eq(cartItems.userId, req.userId!));
+    const productIds = [...new Set(items.map((i) => i.productId))];
+    const productRows = await db
+      .select({ id: products.id, name: products.name, price: products.price })
+      .from(products)
+      .where(inArray(products.id, productIds));
+    const byId = new Map(productRows.map((p) => [p.id, p]));
 
-    if (cart.length === 0) {
-      res.status(400).json({ error: "Cart is empty" });
+    const rows = items.map((i) => ({ ...i, product: byId.get(i.productId) }));
+    if (rows.some((r) => !r.product)) {
+      res.status(400).json({ error: "Invalid product in order" });
       return;
     }
 
-    const subtotal = cart.reduce((sum, item) => sum + item.qty * (item.price ?? 0), 0);
+    const subtotal = rows.reduce((sum, r) => sum + r.qty * (r.product!.price ?? 0), 0);
+    const fee = DELIVERY_FEES[delivery] ?? 0;
     const orderId = crypto.randomUUID();
 
     await db.insert(orders).values({
       id: orderId,
       userId: req.userId!,
       subtotal,
-      total: subtotal,
+      total: subtotal + fee,
       shippingAddress,
+      payment,
+      delivery,
     });
 
-    for (const item of cart) {
+    for (const r of rows) {
       await db.insert(orderItems).values({
         id: crypto.randomUUID(),
         orderId,
-        productId: item.productId,
-        name: item.name ?? "",
-        finish: item.finish,
-        color: item.color,
-        assembly: item.assembly,
-        unitPrice: item.price ?? 0,
-        qty: item.qty,
+        productId: r.productId,
+        name: r.product!.name,
+        finish: r.finish,
+        color: r.color,
+        assembly: r.assembly,
+        unitPrice: r.product!.price,
+        qty: r.qty,
       });
     }
 
-    await db.delete(cartItems).where(eq(cartItems.userId, req.userId!));
     res.json({ orderId });
   } catch (err) {
     if (err instanceof z.ZodError) {
@@ -88,8 +99,57 @@ router.get("/", async (req, res) => {
       .from(orders)
       .where(eq(orders.userId, req.userId!))
       .orderBy(desc(orders.createdAt));
-    res.json(result);
+
+    const allItems = await db
+      .select({
+        id: orderItems.id,
+        orderId: orderItems.orderId,
+        name: orderItems.name,
+        finish: orderItems.finish,
+        color: orderItems.color,
+        assembly: orderItems.assembly,
+        unitPrice: orderItems.unitPrice,
+        qty: orderItems.qty,
+        image: products.image,
+      })
+      .from(orderItems)
+      .leftJoin(products, eq(orderItems.productId, products.id));
+
+    const itemsByOrder = new Map<string, typeof allItems>();
+    for (const item of allItems) {
+      const list = itemsByOrder.get(item.orderId) ?? [];
+      list.push(item);
+      itemsByOrder.set(item.orderId, list);
+    }
+
+    res.json(result.map((o) => ({ ...o, items: itemsByOrder.get(o.id) ?? [] })));
   } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.patch("/:id/cancel", async (req, res) => {
+  try {
+    const db = await getDb();
+    const [order] = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.id, req.params.id))
+      .limit(1);
+    if (!order || order.userId !== req.userId) {
+      res.status(404).json({ error: "Order not found" });
+      return;
+    }
+    if (!["pending", "confirmed"].includes(order.status)) {
+      res.status(400).json({ error: "Order can no longer be cancelled" });
+      return;
+    }
+
+    await db.update(orders).set({ status: "cancelled" }).where(eq(orders.id, req.params.id));
+    res.json({ success: true, status: "cancelled" });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Internal server error" });
   }
 });

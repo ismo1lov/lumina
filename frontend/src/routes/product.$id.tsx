@@ -221,7 +221,7 @@ function ProductPage() {
             </span>
           </div>
 
-          <p className="mt-7 font-display text-3xl">{formatUZS(unitPrice)}</p>
+          <p className="mt-7 font-semibold tabular-nums text-3xl">{formatUZS(unitPrice)}</p>
           <p className="mt-2 text-xs text-muted-foreground">
             {product.inStock ? "In stock · ships in 3–5 days" : "Pre-order · ships in 4 weeks"}
           </p>

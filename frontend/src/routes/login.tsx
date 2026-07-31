@@ -3,9 +3,39 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import { Eye, EyeOff } from "lucide-react";
 import heroChair from "@/assets/hero-chair.jpg";
 
 const registerImage = "https://images.unsplash.com/photo-1618220179428-22790b461013?w=800&q=80";
+
+function PwInput({ value, onChange, required, minLength }: {
+  value: string;
+  onChange: (v: string) => void;
+  required?: boolean;
+  minLength?: number;
+}) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative">
+      <input
+        type={show ? "text" : "password"}
+        required={required}
+        minLength={minLength}
+        autoComplete="new-password"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full border border-input bg-transparent px-3 py-2 pr-10 text-sm outline-none focus:border-primary"
+      />
+      <button
+        type="button"
+        onClick={() => setShow((v) => !v)}
+        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground transition-colors hover:text-primary cursor-pointer bg-transparent border-none"
+      >
+        {show ? <EyeOff size={16} /> : <Eye size={16} />}
+      </button>
+    </div>
+  );
+}
 
 export const Route = createFileRoute("/login")({
   component: AuthPage,
@@ -110,7 +140,7 @@ function LoginForm({ onToggle }: { onToggle: () => void }) {
     setError("");
     setLoading(true);
     try {
-      const result = await api.post<{ user: { id: string; name: string; email: string }; token: string }>(
+      const result = await api.post<{ user: { id: string; name: string; email: string; role: string }; token: string }>(
         "/auth/login", { email, password }
       );
       setAuth(result.user, result.token);
@@ -129,11 +159,11 @@ function LoginForm({ onToggle }: { onToggle: () => void }) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="text-xs uppercase tracking-[0.15em] text-muted-foreground mb-1 block">Email</label>
-          <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full border border-input bg-transparent px-3 py-2 text-sm outline-none focus:border-primary" />
+          <input type="email" required autoComplete="off" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full border border-input bg-transparent px-3 py-2 text-sm outline-none focus:border-primary" />
         </div>
         <div>
           <label className="text-xs uppercase tracking-[0.15em] text-muted-foreground mb-1 block">Password</label>
-          <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full border border-input bg-transparent px-3 py-2 text-sm outline-none focus:border-primary" />
+          <PwInput value={password} onChange={setPassword} required />
         </div>
         {error && <p className="text-sm text-red-500">{error}</p>}
         <button type="submit" disabled={loading} className="w-full bg-primary py-3 text-[11px] uppercase tracking-[0.2em] text-primary-foreground disabled:opacity-50">
@@ -164,7 +194,7 @@ function RegisterForm({ onToggle }: { onToggle: () => void }) {
     setError("");
     setLoading(true);
     try {
-      const result = await api.post<{ user: { id: string; name: string; email: string }; token: string }>(
+      const result = await api.post<{ user: { id: string; name: string; email: string; role: string }; token: string }>(
         "/auth/register", { name, email, password }
       );
       setAuth(result.user, result.token);
@@ -183,15 +213,15 @@ function RegisterForm({ onToggle }: { onToggle: () => void }) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="text-xs uppercase tracking-[0.15em] text-muted-foreground mb-1 block">Name</label>
-          <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full border border-input bg-transparent px-3 py-2 text-sm outline-none focus:border-primary" />
+          <input type="text" required autoComplete="off" value={name} onChange={(e) => setName(e.target.value)} className="w-full border border-input bg-transparent px-3 py-2 text-sm outline-none focus:border-primary" />
         </div>
         <div>
           <label className="text-xs uppercase tracking-[0.15em] text-muted-foreground mb-1 block">Email</label>
-          <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full border border-input bg-transparent px-3 py-2 text-sm outline-none focus:border-primary" />
+          <input type="email" required autoComplete="off" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full border border-input bg-transparent px-3 py-2 text-sm outline-none focus:border-primary" />
         </div>
         <div>
           <label className="text-xs uppercase tracking-[0.15em] text-muted-foreground mb-1 block">Password</label>
-          <input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} className="w-full border border-input bg-transparent px-3 py-2 text-sm outline-none focus:border-primary" />
+          <PwInput value={password} onChange={setPassword} required minLength={6} />
         </div>
         {error && <p className="text-sm text-red-500">{error}</p>}
         <button type="submit" disabled={loading} className="w-full bg-primary py-3 text-[11px] uppercase tracking-[0.2em] text-primary-foreground disabled:opacity-50">

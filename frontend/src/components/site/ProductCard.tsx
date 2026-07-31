@@ -115,7 +115,7 @@ export function ProductCard({ product }: { product: Product }) {
               className="w-full bg-cream object-cover"
             />
             <div className="flex flex-col gap-4">
-              <p className="font-display text-xl">{formatUZS(product.price)}</p>
+              <p className="font-semibold tabular-nums text-xl">{formatUZS(product.price)}</p>
               <p className="text-xs text-muted-foreground">{product.material}</p>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Stars rating={product.rating} />

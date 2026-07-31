@@ -2,6 +2,8 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import mysql from "mysql2/promise";
+import path from "path";
+import { fileURLToPath } from "url";
 
 import authRoutes from "./routes/auth.js";
 import productRoutes from "./routes/products.js";
@@ -9,7 +11,9 @@ import cartRoutes from "./routes/cart.js";
 import wishlistRoutes from "./routes/wishlist.js";
 import orderRoutes from "./routes/orders.js";
 import contactRoutes from "./routes/contact.js";
+import notificationRoutes from "./routes/notifications.js";
 import addressRoutes from "./routes/addresses.js";
+import adminRoutes from "./routes/admin.js";
 
 const DB_USER = process.env.DB_USER || "root";
 const DB_PASSWORD = process.env.DB_PASSWORD || "";
@@ -28,7 +32,10 @@ async function initDatabase() {
   const tables = [
     `CREATE TABLE IF NOT EXISTS users (
       id VARCHAR(36) PRIMARY KEY, name VARCHAR(255) NOT NULL,
+      username VARCHAR(255) NOT NULL DEFAULT '',
       email VARCHAR(255) NOT NULL UNIQUE, password_hash VARCHAR(255) NOT NULL,
+      role VARCHAR(20) NOT NULL DEFAULT 'user',
+      avatar VARCHAR(500) NOT NULL DEFAULT '',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )`,
@@ -59,6 +66,7 @@ async function initDatabase() {
       id VARCHAR(36) PRIMARY KEY, user_id VARCHAR(36) NOT NULL,
       status VARCHAR(20) DEFAULT 'pending', subtotal INT NOT NULL,
       total INT NOT NULL, shipping_address JSON,
+      payment VARCHAR(50) DEFAULT '', delivery VARCHAR(50) DEFAULT '',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )`,
@@ -79,14 +87,78 @@ async function initDatabase() {
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )`,
     `CREATE TABLE IF NOT EXISTS contacts (
-      id VARCHAR(36) PRIMARY KEY, name VARCHAR(255) NOT NULL,
-      email VARCHAR(255) NOT NULL, subject VARCHAR(255) NOT NULL,
+      id VARCHAR(36) PRIMARY KEY, user_id VARCHAR(36) NOT NULL DEFAULT '',
+      name VARCHAR(255) NOT NULL,
+      email VARCHAR(255) NOT NULL, phone VARCHAR(50) NOT NULL DEFAULT '',
+      subject VARCHAR(255) NOT NULL,
       message TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS notifications (
+      id VARCHAR(36) PRIMARY KEY, user_id VARCHAR(36) NOT NULL,
+      title VARCHAR(255) NOT NULL, body TEXT NOT NULL,
+      is_read BOOLEAN DEFAULT FALSE, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      KEY notif_user_idx (user_id)
     )`,
   ];
 
   for (const sql of tables) {
     await conn.query(sql);
+  }
+
+  const [colCheck] = await conn.query(
+    `SELECT COUNT(*) AS c FROM information_schema.columns WHERE table_schema = ? AND table_name = 'users' AND column_name = 'role'`,
+    [DB_NAME],
+  );
+  if ((colCheck as any[])[0].c === 0) {
+    await conn.query(`ALTER TABLE users ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'user'`);
+    console.log("Added role column to users");
+  }
+
+  const [avatarCheck] = await conn.query(
+    `SELECT COUNT(*) AS c FROM information_schema.columns WHERE table_schema = ? AND table_name = 'users' AND column_name = 'avatar'`,
+    [DB_NAME],
+  );
+  if ((avatarCheck as any[])[0].c === 0) {
+    await conn.query(`ALTER TABLE users ADD COLUMN avatar VARCHAR(500) NOT NULL DEFAULT ''`);
+    console.log("Added avatar column to users");
+  }
+
+  const [usernameCheck] = await conn.query(
+    `SELECT COUNT(*) AS c FROM information_schema.columns WHERE table_schema = ? AND table_name = 'users' AND column_name = 'username'`,
+    [DB_NAME],
+  );
+  if ((usernameCheck as any[])[0].c === 0) {
+    await conn.query(`ALTER TABLE users ADD COLUMN username VARCHAR(255) NOT NULL DEFAULT ''`);
+    await conn.query(`UPDATE users SET username = email WHERE username = ''`);
+    console.log("Added username column to users");
+  }
+
+  const [phoneCheck] = await conn.query(
+    `SELECT COUNT(*) AS c FROM information_schema.columns WHERE table_schema = ? AND table_name = 'contacts' AND column_name = 'phone'`,
+    [DB_NAME],
+  );
+  if ((phoneCheck as any[])[0].c === 0) {
+    await conn.query(`ALTER TABLE contacts ADD COLUMN phone VARCHAR(50) NOT NULL DEFAULT ''`);
+    console.log("Added phone column to contacts");
+  }
+
+  const [paymentCheck] = await conn.query(
+    `SELECT COUNT(*) AS c FROM information_schema.columns WHERE table_schema = ? AND table_name = 'orders' AND column_name = 'payment'`,
+    [DB_NAME],
+  );
+  if ((paymentCheck as any[])[0].c === 0) {
+    await conn.query(`ALTER TABLE orders ADD COLUMN payment VARCHAR(50) NOT NULL DEFAULT ''`);
+    await conn.query(`ALTER TABLE orders ADD COLUMN delivery VARCHAR(50) NOT NULL DEFAULT ''`);
+    console.log("Added payment/delivery columns to orders");
+  }
+
+  const [contactUserCheck] = await conn.query(
+    `SELECT COUNT(*) AS c FROM information_schema.columns WHERE table_schema = ? AND table_name = 'contacts' AND column_name = 'user_id'`,
+    [DB_NAME],
+  );
+  if ((contactUserCheck as any[])[0].c === 0) {
+    await conn.query(`ALTER TABLE contacts ADD COLUMN user_id VARCHAR(36) NOT NULL DEFAULT ''`);
+    console.log("Added user_id column to contacts");
   }
 
   await conn.end();
@@ -97,10 +169,13 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(cors({
-  origin: ["http://localhost:8080", "http://localhost:4321", "http://localhost:5173"],
+  origin: ["http://localhost:8080", "http://localhost:8081", "http://localhost:4321", "http://localhost:5173"],
   credentials: true,
 }));
-app.use(express.json());
+app.use(express.json({ limit: "5mb" }));
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
@@ -108,7 +183,9 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/contact", contactRoutes);
+app.use("/api/notifications", notificationRoutes);
 app.use("/api/addresses", addressRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });

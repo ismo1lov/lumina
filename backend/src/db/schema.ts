@@ -16,8 +16,11 @@ export const users = mysqlTable(
   {
     id: varchar("id", { length: 36 }).primaryKey(),
     name: varchar("name", { length: 255 }).notNull(),
+    username: varchar("username", { length: 255 }).notNull().default(""),
     email: varchar("email", { length: 255 }).notNull(),
     passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+    role: varchar("role", { length: 20 }).notNull().default("user"),
+    avatar: varchar("avatar", { length: 500 }).notNull().default(""),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
   },
@@ -95,7 +98,11 @@ export const orders = mysqlTable(
       address: string;
       city: string;
       zip?: string;
+      lat?: string;
+      lng?: string;
     }>(),
+    payment: varchar("payment", { length: 50 }).notNull().default(""),
+    delivery: varchar("delivery", { length: 50 }).notNull().default(""),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
   },
@@ -140,9 +147,26 @@ export const addresses = mysqlTable("addresses", {
 
 export const contacts = mysqlTable("contacts", {
   id: varchar("id", { length: 36 }).primaryKey(),
+  userId: varchar("user_id", { length: 36 }).notNull().default(""),
   name: varchar("name", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).notNull(),
+  phone: varchar("phone", { length: 50 }).notNull().default(""),
   subject: varchar("subject", { length: 255 }).notNull(),
   message: text("message").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const notifications = mysqlTable(
+  "notifications",
+  {
+    id: varchar("id", { length: 36 }).primaryKey(),
+    userId: varchar("user_id", { length: 36 }).notNull(),
+    title: varchar("title", { length: 255 }).notNull(),
+    body: text("body").notNull(),
+    isRead: boolean("is_read").notNull().default(false),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    userIdIdx: index("notif_user_idx").on(table.userId),
+  }),
+);

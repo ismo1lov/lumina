@@ -4,8 +4,75 @@ import { eq } from "drizzle-orm";
 import { getDb } from "../db/index.js";
 import { users } from "../db/schema.js";
 import { hashPassword, verifyPassword, signToken } from "../lib/auth.js";
+import { authMiddleware } from "../middleware/auth.js";
 
 const router = Router();
+
+router.patch("/me", authMiddleware, async (req, res) => {
+  try {
+    const { name } = z.object({ name: z.string().min(2).max(255) }).parse(req.body);
+
+    const db = await getDb();
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, req.userId!))
+      .limit(1);
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    await db.update(users).set({ name }).where(eq(users.id, user.id));
+    res.json({ user: { id: user.id, name, email: user.email, username: user.username, role: user.role, avatar: user.avatar } });
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      res.status(400).json({ error: err.errors[0].message });
+      return;
+    }
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.patch("/password", authMiddleware, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = z
+      .object({ currentPassword: z.string().min(1), newPassword: z.string().min(6) })
+      .parse(req.body);
+
+    const db = await getDb();
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, req.userId!))
+      .limit(1);
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    const valid = await verifyPassword(currentPassword, user.passwordHash);
+    if (!valid) {
+      res.status(400).json({ error: "Current password is incorrect" });
+      return;
+    }
+
+    await db
+      .update(users)
+      .set({ passwordHash: await hashPassword(newPassword) })
+      .where(eq(users.id, user.id));
+
+    res.json({ success: true });
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      res.status(400).json({ error: err.errors[0].message });
+      return;
+    }
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 router.post("/register", async (req, res) => {
   try {
@@ -22,10 +89,11 @@ router.post("/register", async (req, res) => {
 
     const id = crypto.randomUUID();
     const passwordHash = await hashPassword(password);
-    await db.insert(users).values({ id, name, email, passwordHash });
+    const role = email === process.env.ADMIN_EMAIL ? "admin" : "user";
+    await db.insert(users).values({ id, name, email, username: email, passwordHash, role });
 
-    const token = signToken({ userId: id, email });
-    res.json({ user: { id, name, email }, token });
+    const token = signToken({ userId: id, email, role });
+    res.json({ user: { id, name, email, username: email, role, avatar: "" }, token });
   } catch (err) {
     if (err instanceof z.ZodError) {
       res.status(400).json({ error: err.errors[0].message });
@@ -39,24 +107,41 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = z
-      .object({ email: z.string().email(), password: z.string() })
+      .object({ email: z.string().min(1), password: z.string() })
       .parse(req.body);
 
     const db = await getDb();
-    const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    const [user] = email.includes("@")
+      ? await db.select().from(users).where(eq(users.email, email)).limit(1)
+      : await db.select().from(users).where(eq(users.username, email)).limit(1);
     if (!user) {
-      res.status(401).json({ error: "Invalid email or password" });
+      res.status(401).json({ error: "Invalid login or password" });
       return;
     }
 
     const valid = await verifyPassword(password, user.passwordHash);
     if (!valid) {
-      res.status(401).json({ error: "Invalid email or password" });
+      res.status(401).json({ error: "Invalid login or password" });
       return;
     }
 
-    const token = signToken({ userId: user.id, email: user.email });
-    res.json({ user: { id: user.id, name: user.name, email: user.email }, token });
+    if (user.role !== "admin" && user.email === process.env.ADMIN_EMAIL) {
+      await db.update(users).set({ role: "admin" }).where(eq(users.id, user.id));
+      user.role = "admin";
+    }
+
+    const token = signToken({ userId: user.id, email: user.email, role: user.role });
+    res.json({
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+        avatar: user.avatar,
+      },
+      token,
+    });
   } catch (err) {
     if (err instanceof z.ZodError) {
       res.status(400).json({ error: err.errors[0].message });
@@ -88,7 +173,7 @@ router.get("/me", async (req, res) => {
     return;
   }
 
-  res.json({ id: user.id, name: user.name, email: user.email });
+  res.json({ id: user.id, name: user.name, email: user.email, username: user.username, role: user.role, avatar: user.avatar });
 });
 
 export default router;

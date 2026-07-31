@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { useState } from "react";
 import { Reveal } from "@/components/site/Reveal";
+import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -23,7 +25,32 @@ export const Route = createFileRoute("/contact")({
 });
 
 function Contact() {
+  const { user } = useAuth();
+  const [name, setName] = useState(user?.name ?? "");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
   const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setBusy(true);
+    try {
+      await api.post("/contact", { name, phone, ...(user ? {} : { email }), message });
+      setName(user?.name ?? "");
+      setPhone("");
+      setEmail("");
+      setMessage("");
+      setSent(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to send");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
     <div className="mx-auto max-w-[1400px] px-6 pb-24 pt-32 lg:px-12 lg:pt-40">
@@ -59,37 +86,35 @@ function Contact() {
         </Reveal>
 
         <Reveal delay={0.08}>
-          <form
-            className="space-y-6"
-            onSubmit={(e) => {
-              e.preventDefault();
-              setSent(true);
-            }}
-          >
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="grid gap-6 sm:grid-cols-2">
-              <Field label="Name" name="name" />
-              <Field label="Phone" name="phone" type="tel" />
+              <Field label="Name" name="name" value={name} onChange={setName} />
+              <Field label="Phone" name="phone" type="tel" value={phone} onChange={setPhone} />
             </div>
-            <Field label="Email" name="email" type="email" />
+            {!user && <Field label="Email" name="email" type="email" value={email} onChange={setEmail} />}
             <label className="block">
               <span className="eyebrow">Message</span>
               <textarea
                 required
                 rows={5}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
                 className="mt-2 w-full resize-none border-b bg-transparent py-2 text-sm outline-none focus:border-accent"
               />
             </label>
             <button
               type="submit"
-              className="bg-primary px-9 py-4 text-[11px] uppercase tracking-[0.22em] text-primary-foreground transition-opacity hover:opacity-90"
+              disabled={busy}
+              className="cursor-pointer bg-primary px-9 py-4 text-[11px] uppercase tracking-[0.22em] text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
             >
-              Send message
+              {busy ? "Sending…" : "Send message"}
             </button>
             {sent && (
               <p className="text-sm text-accent">
                 Thank you — we'll reply within one working day.
               </p>
             )}
+            {error && <p className="text-sm text-red-500">{error}</p>}
           </form>
         </Reveal>
       </div>
@@ -97,7 +122,19 @@ function Contact() {
   );
 }
 
-function Field({ label, name, type = "text" }: { label: string; name: string; type?: string }) {
+function Field({
+  label,
+  name,
+  type = "text",
+  value,
+  onChange,
+}: {
+  label: string;
+  name: string;
+  type?: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
   return (
     <label className="block">
       <span className="eyebrow">{label}</span>
@@ -105,6 +142,8 @@ function Field({ label, name, type = "text" }: { label: string; name: string; ty
         required
         name={name}
         type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
         className="mt-2 w-full border-b bg-transparent py-2 text-sm outline-none focus:border-accent"
       />
     </label>

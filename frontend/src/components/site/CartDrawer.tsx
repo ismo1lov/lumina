@@ -110,7 +110,7 @@ export function CartDrawer() {
             <footer className="border-t px-6 py-5">
               <div className="flex items-center justify-between pb-4 text-sm">
                 <span className="eyebrow">Subtotal</span>
-                <span className="font-display text-xl">{formatUZS(subtotal)}</span>
+                <span className="font-semibold tabular-nums text-xl">{formatUZS(subtotal)}</span>
               </div>
               <Link
                 to="/checkout"

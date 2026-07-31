@@ -170,6 +170,11 @@
     color: var(--primary-foreground);
   }
 
+  input[type="password"]::-ms-reveal,
+  input[type="password"]::-ms-clear {
+    display: none;
+  }
+
   img {
     max-height: 100vh;
   }
