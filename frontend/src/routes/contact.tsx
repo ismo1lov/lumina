@@ -56,15 +56,17 @@ function Contact() {
     <div className="mx-auto max-w-[1400px] px-6 pb-24 pt-32 lg:px-12 lg:pt-40">
       <Reveal>
         <p className="eyebrow">Contact</p>
-        <h1 className="mt-4 max-w-2xl font-display text-5xl lg:text-6xl">
-          Come sit with the wood
-        </h1>
+        <h1 className="mt-4 max-w-2xl font-display text-5xl lg:text-6xl">Come sit with the wood</h1>
       </Reveal>
 
       <div className="mt-16 grid gap-16 lg:grid-cols-[1fr_1.2fr]">
         <Reveal className="space-y-8">
           {[
-            { icon: MapPin, title: "Showroom", copy: "24 Amir Temur Ave, Tashkent · Daily 10–20" },
+            {
+              icon: MapPin,
+              title: "Showroom",
+              copy: "24 Amir Temur Ave, Tashkent · Daily 10–20",
+            },
             { icon: Phone, title: "Call", copy: "+998 71 200 44 10" },
             { icon: Mail, title: "Email", copy: "hello@luminahome.uz" },
           ].map((c) => (
@@ -91,7 +93,9 @@ function Contact() {
               <Field label="Name" name="name" value={name} onChange={setName} />
               <Field label="Phone" name="phone" type="tel" value={phone} onChange={setPhone} />
             </div>
-            {!user && <Field label="Email" name="email" type="email" value={email} onChange={setEmail} />}
+            {!user && (
+              <Field label="Email" name="email" type="email" value={email} onChange={setEmail} />
+            )}
             <label className="block">
               <span className="eyebrow">Message</span>
               <textarea
@@ -110,9 +114,7 @@ function Contact() {
               {busy ? "Sending…" : "Send message"}
             </button>
             {sent && (
-              <p className="text-sm text-accent">
-                Thank you — we'll reply within one working day.
-              </p>
+              <p className="text-sm text-accent">Thank you — we'll reply within one working day.</p>
             )}
             {error && <p className="text-sm text-red-500">{error}</p>}
           </form>

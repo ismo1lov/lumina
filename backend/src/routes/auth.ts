@@ -1,8 +1,17 @@
 import { Router } from "express";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { getDb } from "../db/index.js";
-import { users } from "../db/schema.js";
+import {
+  users,
+  cartItems,
+  wishlistItems,
+  orders,
+  orderItems,
+  addresses,
+  notifications,
+  contacts,
+} from "../db/schema.js";
 import { hashPassword, verifyPassword, signToken } from "../lib/auth.js";
 import { authMiddleware } from "../middleware/auth.js";
 
@@ -62,6 +71,58 @@ router.patch("/password", authMiddleware, async (req, res) => {
       .update(users)
       .set({ passwordHash: await hashPassword(newPassword) })
       .where(eq(users.id, user.id));
+
+    res.json({ success: true });
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      res.status(400).json({ error: err.errors[0].message });
+      return;
+    }
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.delete("/account", authMiddleware, async (req, res) => {
+  try {
+    const { password } = z.object({ password: z.string().min(1) }).parse(req.body);
+
+    const db = await getDb();
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, req.userId!))
+      .limit(1);
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+    if (user.role === "admin") {
+      res.status(403).json({ error: "Admin accounts cannot be deleted" });
+      return;
+    }
+
+    const valid = await verifyPassword(password, user.passwordHash);
+    if (!valid) {
+      res.status(400).json({ error: "Password is incorrect" });
+      return;
+    }
+
+    const userOrders = await db
+      .select({ id: orders.id })
+      .from(orders)
+      .where(eq(orders.userId, user.id));
+    const orderIds = userOrders.map((o) => o.id);
+    if (orderIds.length > 0) {
+      await db.delete(orderItems).where(inArray(orderItems.orderId, orderIds));
+    }
+    await db.delete(orders).where(eq(orders.userId, user.id));
+    await db.delete(cartItems).where(eq(cartItems.userId, user.id));
+    await db.delete(wishlistItems).where(eq(wishlistItems.userId, user.id));
+    await db.delete(addresses).where(eq(addresses.userId, user.id));
+    await db.delete(notifications).where(eq(notifications.userId, user.id));
+    await db.delete(contacts).where(eq(contacts.userId, user.id));
+    await db.delete(users).where(eq(users.id, user.id));
 
     res.json({ success: true });
   } catch (err) {

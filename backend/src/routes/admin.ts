@@ -5,7 +5,7 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { getDb } from "../db/index.js";
-import { users, orders, orderItems, contacts, addresses, notifications } from "../db/schema.js";
+import { users, orders, orderItems, contacts, addresses } from "../db/schema.js";
 import { adminMiddleware } from "../middleware/admin.js";
 import { hashPassword, verifyPassword } from "../lib/auth.js";
 
@@ -147,6 +147,32 @@ router.patch("/orders/:id", async (req, res) => {
   }
 });
 
+router.delete("/orders/:id", async (req, res) => {
+  try {
+    const db = await getDb();
+    const [order] = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.id, req.params.id))
+      .limit(1);
+    if (!order) {
+      res.status(404).json({ error: "Order not found" });
+      return;
+    }
+    if (order.status !== "cancelled") {
+      res.status(400).json({ error: "Only cancelled orders can be deleted" });
+      return;
+    }
+
+    await db.delete(orderItems).where(eq(orderItems.orderId, order.id));
+    await db.delete(orders).where(eq(orders.id, order.id));
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 router.get("/users", async (_req, res) => {
   try {
     const db = await getDb();
@@ -203,43 +229,6 @@ router.get("/contacts", async (_req, res) => {
       .orderBy(desc(contacts.createdAt));
     res.json(rows);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-router.post("/contacts/:id/reply", async (req, res) => {
-  try {
-    const { message } = z.object({ message: z.string().min(1).max(2000) }).parse(req.body);
-
-    const db = await getDb();
-    const [contact] = await db
-      .select()
-      .from(contacts)
-      .where(eq(contacts.id, req.params.id))
-      .limit(1);
-    if (!contact) {
-      res.status(404).json({ error: "Message not found" });
-      return;
-    }
-    if (!contact.userId) {
-      res.status(400).json({ error: "This message was sent by a guest — no user to reply to" });
-      return;
-    }
-
-    await db.insert(notifications).values({
-      id: crypto.randomUUID(),
-      userId: contact.userId,
-      title: "Reply from Lumina",
-      body: message,
-    });
-
-    res.json({ success: true });
-  } catch (err) {
-    if (err instanceof z.ZodError) {
-      res.status(400).json({ error: err.errors[0].message });
-      return;
-    }
     console.error(err);
     res.status(500).json({ error: "Internal server error" });
   }

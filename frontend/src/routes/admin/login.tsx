@@ -12,10 +12,7 @@ interface LoginResponse {
 
 export const Route = createFileRoute("/admin/login")({
   head: () => ({
-    meta: [
-      { title: "Admin Login — Lumina" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Admin Login — Lumina" }, { name: "robots", content: "noindex" }],
   }),
   component: AdminLoginPage,
 });
@@ -41,7 +38,6 @@ function AdminLoginPage() {
 
   if (loading) return null;
   if (user?.role === "admin") return <Navigate to="/admin" />;
-  if (user && user.role !== "admin") return <Navigate to="/" />;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,6 +66,16 @@ function AdminLoginPage() {
         className="pointer-events-none absolute -left-40 -top-40 size-[460px] rounded-full bg-sand/70 blur-3xl"
       />
       <motion.div
+        animate={{ x: [0, 30, 0], y: [0, 20, 0] }}
+        transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+        className="pointer-events-none absolute left-[55%] top-[-20%] size-[380px] rounded-full bg-accent/15 blur-3xl"
+      />
+      <motion.div
+        animate={{ x: [0, -24, 0], y: [0, 32, 0] }}
+        transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}
+        className="pointer-events-none absolute left-[-8%] top-[45%] size-[340px] rounded-full bg-sand/50 blur-3xl"
+      />
+      <motion.div
         animate={{ x: [0, -30, 0], y: [0, 36, 0] }}
         transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
         className="pointer-events-none absolute -bottom-44 -right-32 size-[520px] rounded-full bg-accent/10 blur-3xl"
@@ -78,6 +84,26 @@ function AdminLoginPage() {
         animate={{ rotate: 360 }}
         transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
         className="pointer-events-none absolute right-[12%] top-[14%] hidden size-24 rounded-full border border-walnut/10 lg:block"
+      />
+      <motion.div
+        animate={{ y: [0, -16, 0], rotate: 360 }}
+        transition={{ duration: 24, repeat: Infinity, ease: "linear" }}
+        className="pointer-events-none absolute left-[8%] top-[18%] hidden size-10 rounded-full border border-walnut/20 lg:block"
+      />
+      <motion.div
+        animate={{ y: [0, 18, 0], rotate: -360 }}
+        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+        className="pointer-events-none absolute bottom-[16%] left-[14%] hidden size-16 rounded-full border border-walnut/10 lg:block"
+      />
+      <motion.div
+        animate={{ x: [0, -20, 0], y: [0, 10, 0], rotate: 360 }}
+        transition={{ duration: 36, repeat: Infinity, ease: "linear" }}
+        className="pointer-events-none absolute right-[26%] bottom-[22%] hidden size-8 rounded-full border border-walnut/20 lg:block"
+      />
+      <motion.div
+        animate={{ y: [0, -12, 0], rotate: -360 }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+        className="pointer-events-none absolute right-[6%] top-[38%] hidden size-6 rounded-full border border-walnut/15 lg:block"
       />
 
       <motion.div
@@ -110,7 +136,11 @@ function AdminLoginPage() {
           >
             <div className="absolute inset-4 rounded-full bg-cream/10 blur-xl" />
             <div className="relative overflow-hidden rounded-2xl bg-cream p-3 shadow-[0_24px_50px_-20px_rgba(0,0,0,0.5)]">
-              <img src="/src/assets/hero-chair.jpg" alt="Lumina chair" className="aspect-square w-full object-cover" />
+              <img
+                src="/src/assets/hero-chair.jpg"
+                alt="Lumina chair"
+                className="aspect-square w-full object-cover"
+              />
             </div>
           </motion.div>
 
@@ -132,9 +162,7 @@ function AdminLoginPage() {
             </span>
 
             <h1 className="mt-5 font-display text-3xl">Welcome back</h1>
-            <p className="mt-1.5 text-sm text-muted-foreground">
-              Sign in to manage your store
-            </p>
+            <p className="mt-1.5 text-sm text-muted-foreground">Sign in to manage your store</p>
 
             <form onSubmit={handleSubmit} className="mt-8 space-y-5">
               <div>
@@ -155,7 +183,9 @@ function AdminLoginPage() {
                     className="w-full rounded-xl border border-input bg-background/50 py-3.5 pl-11 pr-4 text-sm outline-none transition-all duration-300 focus:border-walnut focus:bg-white focus:ring-4 focus:ring-walnut/10"
                   />
                 </div>
-                <p className="mt-1.5 text-[11px] text-muted-foreground/70">Your login name or email</p>
+                <p className="mt-1.5 text-[11px] text-muted-foreground/70">
+                  Your login name or email
+                </p>
               </div>
 
               <div>
@@ -215,7 +245,10 @@ function AdminLoginPage() {
                 ) : (
                   <>
                     Sign in to dashboard
-                    <ArrowRight size={15} className="transition-transform duration-300 group-hover:translate-x-1" />
+                    <ArrowRight
+                      size={15}
+                      className="transition-transform duration-300 group-hover:translate-x-1"
+                    />
                   </>
                 )}
               </motion.button>

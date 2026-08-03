@@ -6,6 +6,7 @@ declare global {
     interface Request {
       userId?: string;
       userEmail?: string;
+      userRole?: string;
     }
   }
 }
@@ -26,5 +27,6 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
 
   req.userId = payload.userId;
   req.userEmail = payload.email;
+  req.userRole = payload.role;
   next();
 }

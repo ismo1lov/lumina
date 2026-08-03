@@ -20,6 +20,7 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { CartDrawer } from "@/components/site/CartDrawer";
 import { WishlistDrawer } from "@/components/site/WishlistDrawer";
+import { ChatWidget } from "@/components/site/ChatWidget";
 
 function NotFoundComponent() {
   return (
@@ -168,6 +169,7 @@ function LayoutSwitch({ children }: { children: ReactNode }) {
       <Footer />
       <CartDrawer />
       <WishlistDrawer />
+      <ChatWidget />
     </>
   );
 }
@@ -198,15 +200,15 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-      <CartProvider>
-        <WishlistProvider>
-          <AuthGuard>
-            <LayoutSwitch>
-              <Outlet />
-            </LayoutSwitch>
-          </AuthGuard>
-        </WishlistProvider>
-      </CartProvider>
+        <CartProvider>
+          <WishlistProvider>
+            <AuthGuard>
+              <LayoutSwitch>
+                <Outlet />
+              </LayoutSwitch>
+            </AuthGuard>
+          </WishlistProvider>
+        </CartProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

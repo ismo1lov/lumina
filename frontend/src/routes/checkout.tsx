@@ -64,7 +64,7 @@ function Checkout() {
     if (!user) return;
     setForm((prev) => ({
       ...prev,
-      first: prev.first || (user.name.split(" ")[0] ?? ""),
+      first: prev.first || user.name.split(" ")[0] || "",
       last: prev.last || user.name.split(" ").slice(1).join(" "),
       email: user.email,
     }));
