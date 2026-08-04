@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { ArrowRight, Eye, EyeOff, Lock, Mail, ShieldCheck } from "lucide-react";
+import heroChair from "@/assets/hero-chair.jpg";
 
 interface LoginResponse {
   user: { id: string; name: string; email: string; role: string };
@@ -137,7 +138,7 @@ function AdminLoginPage() {
             <div className="absolute inset-4 rounded-full bg-cream/10 blur-xl" />
             <div className="relative overflow-hidden rounded-2xl bg-cream p-3 shadow-[0_24px_50px_-20px_rgba(0,0,0,0.5)]">
               <img
-                src="/src/assets/hero-chair.jpg"
+                src={heroChair}
                 alt="Lumina chair"
                 className="aspect-square w-full object-cover"
               />
