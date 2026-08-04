@@ -189,16 +189,8 @@ async function initDatabase() {
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-const allowedOrigins = [
-  "http://localhost:8080",
-  "http://localhost:8081",
-  "http://localhost:4321",
-  "http://localhost:5173",
-  ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(",").map((o) => o.trim()) : []),
-];
-
 app.use(cors({
-  origin: allowedOrigins,
+  origin: (origin, callback) => callback(null, true),
   credentials: true,
 }));
 app.use(express.json({ limit: "5mb" }));
