@@ -4,8 +4,9 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "start": "node dist/index.js",
     "build": "tsc",
+    "prestart": "npm run build",
+    "start": "node dist/index.js",
     "init-db": "tsx config/initDb.js",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
@@ -21,6 +22,8 @@
     "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.23.2",
     "socket.io": "^4.8.3",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.3",
     "zod": "^3.24.2"
   },
   "devDependencies": {
@@ -29,8 +32,6 @@
     "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.16.5",
-    "drizzle-kit": "^0.31.10",
-    "tsx": "^4.19.0",
-    "typescript": "^5.8.3"
+    "drizzle-kit": "^0.31.10"
   }
 }

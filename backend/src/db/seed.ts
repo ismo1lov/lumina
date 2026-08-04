@@ -1,6 +1,6 @@
 import "dotenv/config";
-import { getDb } from "./index";
-import { products } from "./schema";
+import { getDb } from "./index.js";
+import { products } from "./schema.js";
 
 const productData = [
   {

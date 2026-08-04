@@ -15,13 +15,16 @@ import notificationRoutes from "./routes/notifications.js";
 import addressRoutes from "./routes/addresses.js";
 import adminRoutes from "./routes/admin.js";
 
-const DB_USER = process.env.DB_USER || "root";
-const DB_PASSWORD = process.env.DB_PASSWORD || "";
-const DB_NAME = process.env.DB_NAME || "lumina";
+const DB_USER = process.env.DB_USER || process.env.MYSQLUSER || "root";
+const DB_PASSWORD = process.env.DB_PASSWORD || process.env.MYSQLPASSWORD || "";
+const DB_NAME = process.env.DB_NAME || process.env.MYSQLDATABASE || "lumina";
+const DB_HOST = process.env.DB_HOST || process.env.MYSQLHOST || "localhost";
+const DB_PORT = Number(process.env.DB_PORT || process.env.MYSQLPORT || 3306);
 
 async function initDatabase() {
   const conn = await mysql.createConnection({
-    host: "localhost",
+    host: DB_HOST,
+    port: DB_PORT,
     user: DB_USER,
     password: DB_PASSWORD,
   });
