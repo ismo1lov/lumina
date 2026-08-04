@@ -74,6 +74,11 @@ async function initDb() {
       email VARCHAR(255) NOT NULL, subject VARCHAR(255) NOT NULL,
       message TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`,
+    `CREATE TABLE IF NOT EXISTS messages (
+      id VARCHAR(36) PRIMARY KEY, sender_id VARCHAR(36) NOT NULL,
+      receiver_id VARCHAR(36) NOT NULL, content TEXT NOT NULL,
+      is_read BOOLEAN DEFAULT FALSE, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
   ];
 
   for (const sql of tables) {

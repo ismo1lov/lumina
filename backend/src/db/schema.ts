@@ -153,6 +153,8 @@ export const contacts = mysqlTable("contacts", {
   phone: varchar("phone", { length: 50 }).notNull().default(""),
   subject: varchar("subject", { length: 255 }).notNull(),
   message: text("message").notNull(),
+  reply: text("reply"),
+  repliedAt: timestamp("replied_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

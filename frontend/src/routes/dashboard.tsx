@@ -2,6 +2,9 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import { PhoneInput } from "@/components/site/PhoneInput";
+import { isValidUzPhone } from "@/lib/phone";
+import { reverseGeocode, geocodeAddress } from "@/lib/geocode";
 import {
   Bell,
   LogOut,
@@ -90,6 +93,7 @@ function DashboardPage() {
   const [name, setName] = useState("");
   const [nameSaving, setNameSaving] = useState(false);
   const [nameMsg, setNameMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [phoneInvalid, setPhoneInvalid] = useState(false);
   const [pwForm, setPwForm] = useState({ currentPassword: "", newPassword: "" });
   const [pwSaving, setPwSaving] = useState(false);
   const [pwMsg, setPwMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -145,14 +149,26 @@ function DashboardPage() {
 
       const marker = L.marker([form.lat, form.lng], { draggable: true }).addTo(map);
 
+      const applyCoords = async (lat: number, lng: number) => {
+        setForm((prev) => ({ ...prev, lat, lng }));
+        const place = await reverseGeocode(lat, lng);
+        if (place) {
+          setForm((prev) => ({
+            ...prev,
+            address: place.address || prev.address,
+            city: place.city || prev.city,
+          }));
+        }
+      };
+
       marker.on("dragend", () => {
         const pos = marker.getLatLng();
-        setForm((prev) => ({ ...prev, lat: pos.lat, lng: pos.lng }));
+        applyCoords(pos.lat, pos.lng);
       });
 
       map.on("click", (e: any) => {
         marker.setLatLng(e.latlng);
-        setForm((prev) => ({ ...prev, lat: e.latlng.lat, lng: e.latlng.lng }));
+        applyCoords(e.latlng.lat, e.latlng.lng);
       });
 
       mapInstance.current = map;
@@ -170,6 +186,26 @@ function DashboardPage() {
     };
   }, [tab, editingId]);
 
+  useEffect(() => {
+    if (tab !== "addresses" || !showForm) return;
+    const query = `${form.address} ${form.city}`.trim();
+    if (!query) return;
+    const timer = setTimeout(async () => {
+      if (!mapInstance.current || markerRef.current === null) return;
+      const results = await geocodeAddress(query);
+      if (results.length === 0) return;
+      const place = results[0];
+      markerRef.current.setLatLng([place.lat, place.lng]);
+      mapInstance.current.setView([place.lat, place.lng], 13);
+      setForm((prev) =>
+        prev.lat !== place.lat || prev.lng !== place.lng
+          ? { ...prev, lat: place.lat, lng: place.lng }
+          : prev,
+      );
+    }, 900);
+    return () => clearTimeout(timer);
+  }, [form.address, form.city, tab, showForm]);
+
   const updateMarker = (lat: number, lng: number) => {
     if (markerRef.current) {
       markerRef.current.setLatLng([lat, lng]);
@@ -180,6 +216,12 @@ function DashboardPage() {
   };
 
   const handleSave = async () => {
+    setPhoneInvalid(false);
+    if (!isValidUzPhone(form.phone)) {
+      setPhoneInvalid(true);
+      alert("Iltimos, to'liq va to'g'ri telefon raqamini kiriting (+998 ** *** ** **)");
+      return;
+    }
     setSaving(true);
     try {
       if (editingId && editingId !== "new") {
@@ -331,7 +373,7 @@ function DashboardPage() {
 
   const handleLogout = () => {
     logout();
-    router.navigate({ to: "/login" });
+    router.navigate({ to: "/" });
   };
 
   const tabs = [
@@ -529,13 +571,10 @@ function DashboardPage() {
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-                      Phone
-                    </label>
-                    <input
+                    <PhoneInput
                       value={form.phone}
-                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                      className="w-full border border-input bg-transparent px-3 py-2 text-sm outline-none mt-1"
+                      onChange={(v) => setForm({ ...form, phone: v })}
+                      invalid={phoneInvalid}
                     />
                   </div>
                   <div>

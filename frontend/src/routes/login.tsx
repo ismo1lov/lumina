@@ -67,19 +67,25 @@ function AuthPage() {
         {/* Image panel */}
         <div className="relative lg:w-1/2 h-[40vh] lg:h-screen overflow-hidden bg-[#f5f0eb]">
           <motion.img
-            animate={{ opacity: isRegister ? 0 : 1, scale: isRegister ? 1.15 : 1 }}
+            animate={{ x: isRegister ? "-25%" : "0%" }}
             transition={{ duration: 0.45, ease: [0.25, 0.1, 0.25, 1] }}
             src={heroChair}
             alt="Interior"
             className="absolute inset-0 w-full h-full object-cover"
           />
-          <motion.img
-            animate={{ opacity: isRegister ? 1 : 0, scale: isRegister ? 1 : 1.15 }}
-            transition={{ duration: 0.45, ease: [0.25, 0.1, 0.25, 1] }}
-            src={registerImage}
-            alt="Interior"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
+          <AnimatePresence initial={false}>
+            {isRegister && (
+              <motion.img
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ duration: 0.45, ease: [0.25, 0.1, 0.25, 1] }}
+                src={registerImage}
+                alt="Interior"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            )}
+          </AnimatePresence>
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
           <div className="absolute top-8 left-8">
             <p className="font-display text-3xl">
@@ -143,6 +149,10 @@ function LoginForm({ onToggle }: { onToggle: () => void }) {
       const result = await api.post<{ user: { id: string; name: string; email: string; role: string }; token: string }>(
         "/auth/login", { email, password }
       );
+      if (result.user.role === "admin") {
+        setError("Admin accounts cannot sign in here");
+        return;
+      }
       setAuth(result.user, result.token);
       navigate({ to: "/" });
     } catch (err) {
@@ -197,6 +207,10 @@ function RegisterForm({ onToggle }: { onToggle: () => void }) {
       const result = await api.post<{ user: { id: string; name: string; email: string; role: string }; token: string }>(
         "/auth/register", { name, email, password }
       );
+      if (result.user.role === "admin") {
+        setError("Admin accounts cannot be created here");
+        return;
+      }
       setAuth(result.user, result.token);
       navigate({ to: "/" });
     } catch (err) {

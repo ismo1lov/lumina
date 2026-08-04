@@ -1,11 +1,26 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Minus, Plus, ShoppingBag, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { ASSEMBLY_FEE, formatUZS } from "@/data/products";
 import { useCart } from "@/lib/cart";
+import { useAuth } from "@/lib/auth-context";
+import { AuthRequiredDialog } from "@/components/site/AuthRequiredDialog";
+import { useState } from "react";
 
 export function CartDrawer() {
   const { open, setOpen, items, setQty, remove, subtotal } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+
+  const goCheckout = () => {
+    setOpen(false);
+    if (!user) {
+      setShowAuthDialog(true);
+      return;
+    }
+    navigate({ to: "/checkout" });
+  };
 
   return (
     <AnimatePresence>
@@ -112,13 +127,13 @@ export function CartDrawer() {
                 <span className="eyebrow">Subtotal</span>
                 <span className="font-semibold tabular-nums text-xl">{formatUZS(subtotal)}</span>
               </div>
-              <Link
-                to="/checkout"
-                onClick={() => setOpen(false)}
-                className="block bg-primary py-3.5 text-center text-[11px] uppercase tracking-[0.22em] text-primary-foreground transition-opacity hover:opacity-90"
+              <button
+                type="button"
+                onClick={goCheckout}
+                className="block w-full bg-primary py-3.5 text-center text-[11px] uppercase tracking-[0.22em] text-primary-foreground transition-opacity hover:opacity-90"
               >
                 Proceed to checkout
-              </Link>
+              </button>
               <p className="pt-3 text-center text-[11px] text-muted-foreground">
                 Delivery and assembly calculated at checkout.
               </p>
@@ -126,6 +141,7 @@ export function CartDrawer() {
           </motion.aside>
         </div>
       )}
+      <AuthRequiredDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} />
     </AnimatePresence>
   );
 }

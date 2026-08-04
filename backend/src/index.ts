@@ -161,6 +161,24 @@ async function initDatabase() {
     console.log("Added user_id column to contacts");
   }
 
+  const [replyCheck] = await conn.query(
+    `SELECT COUNT(*) AS c FROM information_schema.columns WHERE table_schema = ? AND table_name = 'contacts' AND column_name = 'reply'`,
+    [DB_NAME],
+  );
+  if ((replyCheck as any[])[0].c === 0) {
+    await conn.query(`ALTER TABLE contacts ADD COLUMN reply TEXT`);
+    console.log("Added reply column to contacts");
+  }
+
+  const [repliedAtCheck] = await conn.query(
+    `SELECT COUNT(*) AS c FROM information_schema.columns WHERE table_schema = ? AND table_name = 'contacts' AND column_name = 'replied_at'`,
+    [DB_NAME],
+  );
+  if ((repliedAtCheck as any[])[0].c === 0) {
+    await conn.query(`ALTER TABLE contacts ADD COLUMN replied_at TIMESTAMP NULL DEFAULT NULL`);
+    console.log("Added replied_at column to contacts");
+  }
+
   await conn.end();
   console.log("Database initialized");
 }

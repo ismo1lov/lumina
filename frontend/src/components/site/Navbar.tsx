@@ -23,6 +23,7 @@ export function Navbar() {
   const [search, setSearch] = useState(false);
   const [query, setQuery] = useState("");
   const [menu, setMenu] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -110,9 +111,45 @@ export function Navbar() {
                 <User size={17} />
               </Link>
             ) : (
-              <Link to="/login" aria-label="Sign in" className="hidden cursor-pointer sm:block">
-                <User size={17} />
-              </Link>
+              <div className="relative hidden sm:block">
+                <button
+                  type="button"
+                  aria-label="Account"
+                  className="cursor-pointer"
+                  onClick={() => setProfileOpen((v) => !v)}
+                >
+                  <User size={17} />
+                </button>
+                <AnimatePresence>
+                  {profileOpen && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setProfileOpen(false)} />
+                      <motion.div
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        transition={{ duration: 0.18, ease: "easeOut" }}
+                        className="absolute right-0 top-full z-50 mt-3 min-w-[190px] border border-border bg-background shadow-xl"
+                      >
+                        <Link
+                          to="/login"
+                          onClick={() => setProfileOpen(false)}
+                          className="block px-5 py-3 text-[11px] uppercase tracking-[0.2em] transition-colors hover:bg-cream hover:text-foreground"
+                        >
+                          Sign In
+                        </Link>
+                        <Link
+                          to="/register"
+                          onClick={() => setProfileOpen(false)}
+                          className="block border-t border-border px-5 py-3 text-[11px] uppercase tracking-[0.2em] transition-colors hover:bg-cream hover:text-foreground"
+                        >
+                          Create Account
+                        </Link>
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
+              </div>
             )}
             <button
               type="button"
@@ -163,7 +200,7 @@ export function Navbar() {
                     <button
                       onClick={() => {
                         logout();
-                        navigate({ to: "/login" });
+                        navigate({ to: "/" });
                         setMenu(false);
                       }}
                       className="mt-4 flex items-center gap-3 font-display text-xl text-muted-foreground"

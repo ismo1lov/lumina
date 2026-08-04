@@ -11,9 +11,11 @@ import {
 import { ASSEMBLY_FEE, formatUZS, getProduct, products, type Product } from "@/data/products";
 import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
+import { useAuth } from "@/lib/auth-context";
 import { ProductCard } from "@/components/site/ProductCard";
 import { Reveal } from "@/components/site/Reveal";
 import { Stars } from "@/components/site/Stars";
+import { AuthRequiredDialog } from "@/components/site/AuthRequiredDialog";
 
 export const Route = createFileRoute("/product/$id")({
   loader: ({ params }) => {
@@ -23,7 +25,12 @@ export const Route = createFileRoute("/product/$id")({
   },
   head: ({ loaderData }) => {
     if (!loaderData) {
-      return { meta: [{ title: "Piece unavailable — Lumina Home" }, { name: "robots", content: "noindex" }] };
+      return {
+        meta: [
+          { title: "Piece unavailable — Lumina Home" },
+          { name: "robots", content: "noindex" },
+        ],
+      };
     }
     const p = loaderData.product;
     return {
@@ -60,6 +67,7 @@ function ProductPage() {
   const { product } = Route.useLoaderData() as { product: Product };
   const { add } = useCart();
   const { toggle, has } = useWishlist();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [finish, setFinish] = useState(product.finishes[0]);
@@ -69,6 +77,7 @@ function ProductPage() {
   const [active, setActive] = useState(0);
   const [is3D, setIs3D] = useState(false);
   const [changing, setChanging] = useState(false);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
 
   const finishImages = finish.colorImages || product.colors.map((c) => c.image || product.image);
   const gallery = finishImages;
@@ -130,7 +139,11 @@ function ProductPage() {
                       transition={{ duration: 0.2 }}
                       className="absolute inset-0 flex items-center justify-center bg-cream"
                     >
-                      <Loader size={28} strokeWidth={1.2} className="animate-[spin_0.8s_linear_infinite] text-muted-foreground" />
+                      <Loader
+                        size={28}
+                        strokeWidth={1.2}
+                        className="animate-[spin_0.8s_linear_infinite] text-muted-foreground"
+                      />
                     </motion.div>
                   ) : (
                     <motion.img
@@ -185,12 +198,14 @@ function ProductPage() {
 
           <Accordion type="single" collapsible className="mt-10 border-t">
             <AccordionItem value="dimensions">
-              <AccordionTrigger className="text-sm">Dimensions &amp; specifications</AccordionTrigger>
+              <AccordionTrigger className="text-sm">
+                Dimensions &amp; specifications
+              </AccordionTrigger>
               <AccordionContent className="text-sm text-muted-foreground">
                 <ul className="space-y-1.5">
                   <li>
-                    Width × Height × Depth: {product.dimensions.width} ×{" "}
-                    {product.dimensions.height} × {product.dimensions.depth} cm
+                    Width × Height × Depth: {product.dimensions.width} × {product.dimensions.height}{" "}
+                    × {product.dimensions.depth} cm
                   </li>
                   <li>Primary material: {finish.material}</li>
                   <li>Frame: kiln-dried hardwood, mortise-and-tenon joinery</li>
@@ -201,8 +216,8 @@ function ProductPage() {
             <AccordionItem value="care">
               <AccordionTrigger className="text-sm">Care instructions</AccordionTrigger>
               <AccordionContent className="text-sm text-muted-foreground">
-                Dust with a dry cloth. Wipe spills immediately and re-oil the wood once a year.
-                Keep out of direct sunlight and away from radiators to protect the grain.
+                Dust with a dry cloth. Wipe spills immediately and re-oil the wood once a year. Keep
+                out of direct sunlight and away from radiators to protect the grain.
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -322,6 +337,10 @@ function ProductPage() {
               <button
                 type="button"
                 onClick={() => {
+                  if (!user) {
+                    setShowAuthDialog(true);
+                    return;
+                  }
                   addToCart();
                   navigate({ to: "/checkout" });
                 }}
@@ -331,10 +350,14 @@ function ProductPage() {
               </button>
               <button
                 type="button"
-                onClick={() => toggle({ id: product.id, name: product.name, image: colorImg, price: unitPrice })}
+                onClick={() =>
+                  toggle({ id: product.id, name: product.name, image: colorImg, price: unitPrice })
+                }
                 aria-label={has(product.id) ? "Remove from wishlist" : "Add to wishlist"}
                 className={`grid size-12 place-items-center border transition-colors ${
-                  has(product.id) ? "border-accent text-accent" : "border-foreground/20 hover:text-accent"
+                  has(product.id)
+                    ? "border-accent text-accent"
+                    : "border-foreground/20 hover:text-accent"
                 }`}
               >
                 <Heart size={16} fill={has(product.id) ? "currentColor" : "none"} />
@@ -382,6 +405,7 @@ function ProductPage() {
         </div>
       </section>
 
+      <AuthRequiredDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} />
     </div>
   );
 }

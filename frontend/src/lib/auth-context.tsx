@@ -27,16 +27,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const stored = localStorage.getItem("lumina-token");
+    const cached = localStorage.getItem("lumina-user");
+    if (cached) {
+      try {
+        setUser(JSON.parse(cached));
+      } catch {
+        localStorage.removeItem("lumina-user");
+      }
+    }
     if (stored) {
       api
         .get<User>("/auth/me")
         .then((u) => {
           setUser(u);
           setToken(stored);
+          localStorage.setItem("lumina-user", JSON.stringify(u));
         })
-        .catch(() => localStorage.removeItem("lumina-token"))
+        .catch((err) => {
+          const msg = err instanceof Error ? err.message : "";
+          if (/401|403|unauthorized|invalid token|no token/i.test(msg)) {
+            localStorage.removeItem("lumina-token");
+            localStorage.removeItem("lumina-user");
+            setUser(null);
+            setToken(null);
+          }
+        })
         .finally(() => setLoading(false));
     } else {
+      localStorage.removeItem("lumina-user");
       setLoading(false);
     }
   }, []);
@@ -45,12 +63,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(u);
     setToken(t);
     localStorage.setItem("lumina-token", t);
+    localStorage.setItem("lumina-user", JSON.stringify(u));
   };
 
   const logout = () => {
     setUser(null);
     setToken(null);
     localStorage.removeItem("lumina-token");
+    localStorage.removeItem("lumina-user");
   };
 
   return (

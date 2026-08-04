@@ -20,7 +20,6 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { CartDrawer } from "@/components/site/CartDrawer";
 import { WishlistDrawer } from "@/components/site/WishlistDrawer";
-import { ChatWidget } from "@/components/site/ChatWidget";
 
 function NotFoundComponent() {
   return (
@@ -129,26 +128,29 @@ function RootShell({ children }: { children: ReactNode }) {
 
 const authPaths = ["/login", "/register", "/auth/login", "/auth/register"];
 
+const protectedPaths = ["/checkout", "/dashboard"];
+
 function AuthGuard({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
   const location = useLocation();
   const router = useRouter();
   const isAdminPath = location.pathname.startsWith("/admin");
+  const isProtected = protectedPaths.includes(location.pathname);
 
   useEffect(() => {
     if (loading) return;
     if (isAdminPath) return;
     if (user && authPaths.includes(location.pathname)) {
       router.navigate({ to: "/", replace: true });
-    } else if (!user && !authPaths.includes(location.pathname)) {
+    } else if (!user && isProtected) {
       router.navigate({ to: "/login", replace: true });
     }
-  }, [user, loading, location.pathname, isAdminPath]);
+  }, [user, loading, location.pathname, isAdminPath, isProtected]);
 
   if (loading) return null;
   if (isAdminPath) return <>{children}</>;
   if (user && authPaths.includes(location.pathname)) return null;
-  if (!user && !authPaths.includes(location.pathname)) return null;
+  if (!user && isProtected) return null;
 
   return <>{children}</>;
 }
@@ -169,7 +171,6 @@ function LayoutSwitch({ children }: { children: ReactNode }) {
       <Footer />
       <CartDrawer />
       <WishlistDrawer />
-      <ChatWidget />
     </>
   );
 }

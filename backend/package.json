@@ -12,13 +12,15 @@
     "db:seed": "tsx src/db/seed.ts"
   },
   "dependencies": {
+    "@types/socket.io": "^3.0.1",
     "bcryptjs": "^3.0.3",
-    "cors": "^2.8.5",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
     "express": "^4.21.0",
     "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.23.2",
+    "socket.io": "^4.8.3",
     "zod": "^3.24.2"
   },
   "devDependencies": {

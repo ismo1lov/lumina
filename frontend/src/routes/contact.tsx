@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Reveal } from "@/components/site/Reveal";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import { PhoneInput } from "@/components/site/PhoneInput";
+import { isValidUzPhone } from "@/lib/phone";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -33,10 +35,17 @@ function Contact() {
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [phoneInvalid, setPhoneInvalid] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setPhoneInvalid(false);
+    if (!isValidUzPhone(phone)) {
+      setPhoneInvalid(true);
+      setError("Iltimos, to'liq va to'g'ri telefon raqamini kiriting (+998 ** *** ** **)");
+      return;
+    }
     setBusy(true);
     try {
       await api.post("/contact", { name, phone, ...(user ? {} : { email }), message });
@@ -91,7 +100,7 @@ function Contact() {
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="grid gap-6 sm:grid-cols-2">
               <Field label="Name" name="name" value={name} onChange={setName} />
-              <Field label="Phone" name="phone" type="tel" value={phone} onChange={setPhone} />
+              <PhoneInput value={phone} onChange={setPhone} invalid={phoneInvalid} />
             </div>
             {!user && (
               <Field label="Email" name="email" type="email" value={email} onChange={setEmail} />

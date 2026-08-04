@@ -8,7 +8,6 @@ import {
   Users,
   ShoppingBag,
   Wallet,
-  MessageSquare,
   LayoutDashboard,
   Package,
   Mail,
@@ -90,6 +89,8 @@ interface Contact {
   userId?: string;
   userName?: string | null;
   userEmail?: string | null;
+  reply?: string | null;
+  repliedAt?: string | null;
 }
 
 interface UserDetail {
@@ -143,6 +144,8 @@ function AdminPage() {
   const [mapOrder, setMapOrder] = useState<AdminOrder | null>(null);
   const [detail, setDetail] = useState<UserDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+  const [sendingReply, setSendingReply] = useState<string | null>(null);
 
   const loadOverview = useCallback(() => {
     api
@@ -201,6 +204,25 @@ function AdminPage() {
       alert(err instanceof Error ? err.message : "Failed to load user");
     } finally {
       setDetailLoading(false);
+    }
+  };
+
+  const sendReply = async (c: Contact) => {
+    const text = (replyDrafts[c.id] ?? "").trim();
+    if (!text) return;
+    setSendingReply(c.id);
+    try {
+      await api.post(`/admin/contacts/${c.id}/reply`, { reply: text });
+      setContacts((prev) =>
+        prev.map((x) =>
+          x.id === c.id ? { ...x, reply: text, repliedAt: new Date().toISOString() } : x,
+        ),
+      );
+      setReplyDrafts((prev) => ({ ...prev, [c.id]: "" }));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to send reply");
+    } finally {
+      setSendingReply(null);
     }
   };
 
@@ -310,7 +332,7 @@ function AdminPage() {
                   />
                   <StatCard
                     delay={0.33}
-                    icon={MessageSquare}
+                    icon={Mail}
                     label="Messages"
                     value={Number(stats?.contacts ?? 0)}
                   />
@@ -663,6 +685,44 @@ function AdminPage() {
                       <p className="mt-3.5 border-t border-border pt-3 text-sm leading-relaxed text-muted-foreground">
                         {c.message}
                       </p>
+
+                      {c.reply && (
+                        <div className="mt-4 rounded-xl bg-walnut/5 p-4">
+                          <p className="text-[10px] uppercase tracking-[0.15em] text-walnut">
+                            Your reply
+                            {c.repliedAt ? ` · ${new Date(c.repliedAt).toLocaleString()}` : ""}
+                          </p>
+                          <p className="mt-2 text-sm leading-relaxed">{c.reply}</p>
+                        </div>
+                      )}
+
+                      {c.userId ? (
+                        <div className="mt-4">
+                          <textarea
+                            value={replyDrafts[c.id] ?? ""}
+                            onChange={(e) =>
+                              setReplyDrafts((prev) => ({ ...prev, [c.id]: e.target.value }))
+                            }
+                            rows={3}
+                            placeholder="Javob yozing — foydalanuvchi Messages bo'limida ko'radi..."
+                            className="w-full resize-none rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:border-walnut"
+                          />
+                          <div className="mt-2 flex justify-end">
+                            <button
+                              onClick={() => sendReply(c)}
+                              disabled={sendingReply === c.id || !(replyDrafts[c.id] ?? "").trim()}
+                              className="cursor-pointer rounded-xl bg-walnut px-4 py-2 text-[11px] uppercase tracking-[0.15em] text-cream transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                              {sendingReply === c.id ? "Yuborilmoqda..." : "Javob yuborish"}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="mt-4 rounded-xl bg-cream px-4 py-2.5 text-[11px] text-muted-foreground">
+                          Mehmon xabari — javob faqat ro'yxatdan o'tgan foydalanuvchilarga
+                          yuboriladi.
+                        </p>
+                      )}
                     </motion.div>
                   ))
                 )}
