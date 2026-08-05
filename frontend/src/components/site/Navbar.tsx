@@ -103,7 +103,7 @@ export function Navbar() {
               )}
             </button>
             <span className="hidden h-5 w-px bg-border sm:block" aria-hidden />
-            {user ? (
+            {user && user.role !== "admin" ? (
               <Link
                 to="/dashboard"
                 aria-label="My Account"
@@ -189,7 +189,7 @@ export function Navbar() {
                 </Link>
               ))}
               <div className="mt-4 border-t pt-6">
-                {user ? (
+                {user && user.role !== "admin" ? (
                   <>
                     <Link
                       to="/dashboard"

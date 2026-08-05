@@ -48,7 +48,7 @@ function Checkout() {
   const { items, subtotal, clear } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const isCustomer = !!user;
+  const isCustomer = !!user && user.role !== "admin";
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
   const markerRef = useRef<any>(null);
