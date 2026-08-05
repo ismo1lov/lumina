@@ -1,4 +1,4 @@
-const API = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+const API = import.meta.env.VITE_API_URL || "https://lumina-production-e463.up.railway.app/api";
 export const API_BASE = API.replace(/\/api\/?$/, "");
 
 function getToken(): string | null {
