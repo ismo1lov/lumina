@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth-context";
 import { PhoneInput } from "@/components/site/PhoneInput";
 import { isValidUzPhone } from "@/lib/phone";
 import { reverseGeocode, geocodeAddress } from "@/lib/geocode";
+import { resolveAsset } from "@/lib/assets";
 import {
   Bell,
   LogOut,
