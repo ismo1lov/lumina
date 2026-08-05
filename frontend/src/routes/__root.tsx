@@ -128,7 +128,7 @@ function RootShell({ children }: { children: ReactNode }) {
 
 const authPaths = ["/login", "/register", "/auth/login", "/auth/register"];
 
-const protectedPaths = ["/dashboard"];
+const protectedPaths: string[] = [];
 
 function AuthGuard({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();

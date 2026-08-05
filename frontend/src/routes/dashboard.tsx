@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { PhoneInput } from "@/components/site/PhoneInput";
+import { AuthRequiredDialog } from "@/components/site/AuthRequiredDialog";
 import { isValidUzPhone } from "@/lib/phone";
 import { reverseGeocode, geocodeAddress } from "@/lib/geocode";
 import { resolveAsset } from "@/lib/assets";
@@ -358,16 +359,8 @@ function DashboardPage() {
 
   if (!user) {
     return (
-      <div className="flex min-h-[70vh] items-center justify-center px-4">
-        <div className="text-center">
-          <h1 className="font-display text-xl mb-4">Please sign in</h1>
-          <Link
-            to="/login"
-            className="bg-primary px-6 py-3 text-[11px] uppercase tracking-[0.2em] text-primary-foreground"
-          >
-            Sign In
-          </Link>
-        </div>
+      <div className="min-h-screen">
+        <AuthRequiredDialog open dismissable={false} onOpenChange={() => {}} />
       </div>
     );
   }
