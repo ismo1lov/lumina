@@ -15,6 +15,7 @@ import { useAuth } from "@/lib/auth-context";
 import { ProductCard } from "@/components/site/ProductCard";
 import { Reveal } from "@/components/site/Reveal";
 import { Stars } from "@/components/site/Stars";
+import { resolveAsset } from "@/lib/assets";
 import { AuthRequiredDialog } from "@/components/site/AuthRequiredDialog";
 
 export const Route = createFileRoute("/product/$id")({
@@ -80,8 +81,8 @@ function ProductPage() {
   const [showAuthDialog, setShowAuthDialog] = useState(false);
 
   const finishImages = finish.colorImages || product.colors.map((c) => c.image || product.image);
-  const gallery = finishImages;
-  const colorImg = gallery[product.colors.indexOf(color)] || gallery[0] || product.image;
+  const gallery = finishImages.map((g) => resolveAsset(g) || g);
+  const colorImg = gallery[product.colors.indexOf(color)] || gallery[0] || resolveAsset(product.image);
   const unitPrice = product.price + finish.delta + (assembly ? ASSEMBLY_FEE : 0);
 
   const addToCart = () =>

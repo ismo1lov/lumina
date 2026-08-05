@@ -6,6 +6,7 @@ import { products } from "@/data/products";
 import { useAuth } from "@/lib/auth-context";
 import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
+import { resolveAsset } from "@/lib/assets";
 
 const links = [
   { to: "/", label: "Home" },
@@ -267,7 +268,7 @@ export function Navbar() {
                       }}
                     >
                       <img
-                        src={p.image}
+                        src={resolveAsset(p.image)}
                         alt={p.name}
                         loading="lazy"
                         width={56}

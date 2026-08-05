@@ -449,7 +449,7 @@ function DashboardPage() {
                   {o.items.map((it) => (
                     <div key={it.id} className="flex items-center gap-4 py-3">
                       <img
-                        src={it.image || "/placeholder.svg"}
+                        src={resolveAsset(it.image) || "/placeholder.svg"}
                         alt={it.name}
                         loading="lazy"
                         width={64}

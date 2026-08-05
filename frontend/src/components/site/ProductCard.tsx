@@ -12,12 +12,14 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useState } from "react";
+import { resolveAsset } from "@/lib/assets";
 
 export function ProductCard({ product }: { product: Product }) {
   const { add } = useCart();
   const { toggle, has } = useWishlist();
   const wished = has(product.id);
   const [open, setOpen] = useState(false);
+  const productImage = resolveAsset(product.image);
 
   return (
     <>
@@ -31,7 +33,7 @@ export function ProductCard({ product }: { product: Product }) {
             className="block cursor-pointer"
           >
             <img
-              src={product.image}
+              src={productImage}
               alt={product.name}
               loading="lazy"
               width={1000}
@@ -52,7 +54,7 @@ export function ProductCard({ product }: { product: Product }) {
           aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
           onClick={(e) => {
             e.stopPropagation();
-            toggle({ id: product.id, name: product.name, image: product.image, price: product.price });
+            toggle({ id: product.id, name: product.name, image: productImage!, price: product.price });
           }}
           className="absolute right-4 bottom-4 grid size-9 place-items-center rounded-full bg-background/85 text-foreground opacity-0 backdrop-blur transition-opacity duration-300 group-hover:opacity-100 hover:text-accent"
         >
@@ -85,7 +87,7 @@ export function ProductCard({ product }: { product: Product }) {
             add({
               id: product.id,
               name: product.name,
-              image: product.image,
+              image: productImage!,
               finish: product.finishes[0].name,
               color: product.colors[0].name,
               assembly: false,
@@ -108,7 +110,7 @@ export function ProductCard({ product }: { product: Product }) {
           </DialogHeader>
           <div className="grid gap-6 sm:grid-cols-2">
             <img
-              src={product.image}
+              src={productImage}
               alt={product.name}
               width={400}
               height={400}

@@ -5,6 +5,7 @@ import { ASSEMBLY_FEE, formatUZS } from "@/data/products";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth-context";
 import { AuthRequiredDialog } from "@/components/site/AuthRequiredDialog";
+import { resolveAsset } from "@/lib/assets";
 import { useState } from "react";
 
 export function CartDrawer() {
@@ -67,7 +68,7 @@ export function CartDrawer() {
                   {items.map((item) => (
                     <li key={item.key} className="flex gap-4 py-5">
                       <img
-                        src={item.image}
+                        src={resolveAsset(item.image)}
                         alt={item.name}
                         loading="lazy"
                         width={96}

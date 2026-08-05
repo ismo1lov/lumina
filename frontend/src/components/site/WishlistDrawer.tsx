@@ -3,6 +3,7 @@ import { Heart, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { formatUZS } from "@/data/products";
 import { useWishlist } from "@/lib/wishlist";
+import { resolveAsset } from "@/lib/assets";
 
 export function WishlistDrawer() {
   const { open, setOpen, items, toggle } = useWishlist();
@@ -52,7 +53,7 @@ export function WishlistDrawer() {
                   {items.map((item) => (
                     <li key={item.id} className="flex gap-4 py-5">
                       <img
-                        src={item.image}
+                        src={resolveAsset(item.image)}
                         alt={item.name}
                         loading="lazy"
                         width={96}

@@ -9,6 +9,7 @@ import { PhoneInput } from "@/components/site/PhoneInput";
 import { isValidUzPhone } from "@/lib/phone";
 import { reverseGeocode, geocodeAddress } from "@/lib/geocode";
 import { AuthRequiredDialog } from "@/components/site/AuthRequiredDialog";
+import { resolveAsset } from "@/lib/assets";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -358,7 +359,7 @@ function Checkout() {
               {items.map((i) => (
                 <li key={i.key} className="flex gap-4 py-4">
                   <img
-                    src={i.image}
+                    src={resolveAsset(i.image)}
                     alt={i.name}
                     loading="lazy"
                     width={64}

@@ -5,6 +5,7 @@ import { categoryImages, formatUZS, products, type Category } from "@/data/produ
 import { ProductCard } from "@/components/site/ProductCard";
 import { Reveal } from "@/components/site/Reveal";
 import { Stars } from "@/components/site/Stars";
+import { resolveAsset } from "@/lib/assets";
 
 export const Route = createFileRoute("/catalog")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -180,7 +181,7 @@ function Catalog() {
               <X size={18} />
             </button>
             <img
-              src={quick.image}
+              src={resolveAsset(quick.image)}
               alt={quick.name}
               loading="lazy"
               width={1000}
