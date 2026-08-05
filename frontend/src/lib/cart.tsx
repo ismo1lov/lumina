@@ -58,7 +58,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
         return [...prev, { ...item, key }];
       });
-      setOpen(true);
     };
 
     return {
