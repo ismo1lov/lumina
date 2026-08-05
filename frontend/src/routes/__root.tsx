@@ -141,17 +141,14 @@ function AuthGuard({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (loading) return;
     if (isAdminPath) return;
-    if (user && authPaths.includes(location.pathname)) {
+    if (user && user.role !== "admin" && authPaths.includes(location.pathname)) {
       router.navigate({ to: "/", replace: true });
-    } else if (!user && isProtected) {
-      router.navigate({ to: "/login", replace: true });
     }
   }, [user, loading, location.pathname, isAdminPath, isProtected]);
 
   if (loading) return null;
   if (isAdminPath) return <>{children}</>;
-  if (user && authPaths.includes(location.pathname)) return null;
-  if (!user && isProtected) return null;
+  if (user && user.role !== "admin" && authPaths.includes(location.pathname)) return null;
 
   return <>{children}</>;
 }
