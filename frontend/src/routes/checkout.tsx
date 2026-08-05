@@ -59,7 +59,7 @@ function Checkout() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [phoneInvalid, setPhoneInvalid] = useState(false);
-  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [showAuthDialog, setShowAuthDialog] = useState(!isCustomer);
   const [form, setForm] = useState({
     first: "",
     last: "",
@@ -81,6 +81,10 @@ function Checkout() {
       last: prev.last || user!.name.split(" ").slice(1).join(" "),
       email: user!.email,
     }));
+  }, [isCustomer]);
+
+  useEffect(() => {
+    if (isCustomer) setShowAuthDialog(false);
   }, [isCustomer]);
 
   useEffect(() => {
