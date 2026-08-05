@@ -20,6 +20,7 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { CartDrawer } from "@/components/site/CartDrawer";
 import { WishlistDrawer } from "@/components/site/WishlistDrawer";
+import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -211,6 +212,7 @@ function RootComponent() {
           </WishlistProvider>
         </CartProvider>
       </AuthProvider>
+      <Toaster richColors position="top-center" />
     </QueryClientProvider>
   );
 }

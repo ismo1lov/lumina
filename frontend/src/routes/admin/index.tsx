@@ -4,6 +4,8 @@ import { AnimatePresence, animate, motion, useInView } from "motion/react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { AdminShell, avatarUrl } from "@/components/admin/AdminShell";
+import { useConfirm } from "@/lib/use-confirm";
+import { toast } from "sonner";
 import {
   Users,
   ShoppingBag,
@@ -116,7 +118,7 @@ interface UserDetail {
   orders: AdminOrder[];
 }
 
-const ORDER_STATUSES = ["pending", "confirmed", "shipped", "delivered", "cancelled"] as const;
+const ORDER_STATUSES = ["pending", "confirmed", "shipped", "delivered"] as const;
 
 const statusBadge: Record<string, string> = {
   pending: "bg-amber-50 text-amber-700 ring-amber-600/20",
@@ -137,6 +139,7 @@ export const Route = createFileRoute("/admin/")({
 
 function AdminPage() {
   const { user, loading } = useAuth();
+  const { confirm, dialog } = useConfirm();
   const [tab, setTab] = useState("overview");
   const [stats, setStats] = useState<Stats | null>(null);
   const [orders, setOrders] = useState<AdminOrder[]>([]);
@@ -195,13 +198,20 @@ function AdminPage() {
   if (user.role !== "admin") return <Navigate to="/admin/login" />;
 
   const deleteOrder = async (orderId: string) => {
-    if (!confirm("Delete this cancelled order? This cannot be undone.")) return;
+    const ok = await confirm({
+      title: "Delete order?",
+      description: "Delete this cancelled order? This cannot be undone.",
+      confirmLabel: "Delete order",
+      destructive: true,
+    });
+    if (!ok) return;
     try {
       await api.delete(`/admin/orders/${orderId}`);
       setOrders((prev) => prev.filter((o) => o.id !== orderId));
       setStats((prev) => (prev ? { ...prev, orders: Math.max(0, prev.orders - 1) } : prev));
+      toast.success("Order deleted");
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to delete order");
+      toast.error(err instanceof Error ? err.message : "Failed to delete order");
     }
   };
 
@@ -212,7 +222,7 @@ function AdminPage() {
       const data = await api.get<UserDetail>(`/admin/users/${id}`);
       setDetail(data);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to load user");
+      toast.error(err instanceof Error ? err.message : "Failed to load user");
     } finally {
       setDetailLoading(false);
     }
@@ -230,8 +240,9 @@ function AdminPage() {
         ),
       );
       setReplyDrafts((prev) => ({ ...prev, [c.id]: "" }));
+      toast.success("Reply sent");
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to send reply");
+      toast.error(err instanceof Error ? err.message : "Failed to send reply");
     } finally {
       setSendingReply(null);
     }
@@ -257,8 +268,9 @@ function AdminPage() {
             }
           : prev,
       );
+      toast.success(`Status updated to ${status}`);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to update status");
+      toast.error(err instanceof Error ? err.message : "Failed to update status");
     }
   };
 
@@ -430,17 +442,23 @@ function AdminPage() {
                         </div>
                         <div className="flex items-center gap-3">
                           <p className="font-semibold tabular-nums text-xl">{fmt(o.total)} UZS</p>
-                          <select
-                            value={o.status}
-                            onChange={(e) => changeStatus(o.id, e.target.value)}
-                            className={`cursor-pointer rounded-lg border-0 px-3 py-1.5 text-[11px] font-medium uppercase tracking-wider outline-none ring-1 ring-inset ${statusBadge[o.status] ?? "bg-cream text-muted-foreground ring-border"}`}
-                          >
-                            {ORDER_STATUSES.map((s) => (
-                              <option key={s} value={s}>
-                                {s}
-                              </option>
-                            ))}
-                          </select>
+                          {o.status === "cancelled" ? (
+                            <span className="rounded-lg bg-red-50 px-3 py-1.5 text-[11px] font-medium uppercase tracking-wider text-red-500 ring-1 ring-inset ring-red-200">
+                              Cancelled by customer
+                            </span>
+                          ) : (
+                            <select
+                              value={o.status}
+                              onChange={(e) => changeStatus(o.id, e.target.value)}
+                              className={`cursor-pointer rounded-lg border-0 px-3 py-1.5 text-[11px] font-medium uppercase tracking-wider outline-none ring-1 ring-inset ${statusBadge[o.status] ?? "bg-cream text-muted-foreground ring-border"}`}
+                            >
+                              {ORDER_STATUSES.map((s) => (
+                                <option key={s} value={s}>
+                                  {s}
+                                </option>
+                              ))}
+                            </select>
+                          )}
                           {o.status === "cancelled" && (
                             <button
                               type="button"
@@ -689,14 +707,21 @@ function AdminPage() {
                           </div>
                         </div>
                         <motion.button
-                          onClick={() => {
-                            if (!confirm("Delete this message?")) return;
+                          onClick={async () => {
+                            const ok = await confirm({
+                              title: "Delete message?",
+                              description: "Delete this message? This cannot be undone.",
+                              confirmLabel: "Delete message",
+                              destructive: true,
+                            });
+                            if (!ok) return;
                             api
                               .delete(`/admin/contacts/${c.id}`)
                               .then(() => {
                                 setContacts((prev) => prev.filter((x) => x.id !== c.id));
+                                toast.success("Message deleted");
                               })
-                              .catch(() => alert("Failed to delete"));
+                              .catch(() => toast.error("Failed to delete"));
                           }}
                           whileTap={{ scale: 0.9 }}
                           aria-label="Delete message"
@@ -935,6 +960,7 @@ function AdminPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      {dialog}
     </AdminShell>
   );
 }

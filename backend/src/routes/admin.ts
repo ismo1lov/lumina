@@ -117,7 +117,7 @@ router.get("/orders", async (_req, res) => {
   }
 });
 
-const ORDER_STATUSES = ["pending", "confirmed", "shipped", "delivered", "cancelled"] as const;
+const ORDER_STATUSES = ["pending", "confirmed", "shipped", "delivered"] as const;
 
 router.patch("/orders/:id", async (req, res) => {
   try {
@@ -133,6 +133,12 @@ router.patch("/orders/:id", async (req, res) => {
       .limit(1);
     if (!order) {
       res.status(404).json({ error: "Order not found" });
+      return;
+    }
+    if (order.status === "cancelled") {
+      res
+        .status(400)
+        .json({ error: "This order was cancelled by the customer and cannot be changed" });
       return;
     }
 

@@ -2,6 +2,8 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import { useConfirm } from "@/lib/use-confirm";
+import { toast } from "sonner";
 import { PhoneInput } from "@/components/site/PhoneInput";
 import { AuthRequiredDialog } from "@/components/site/AuthRequiredDialog";
 import { isValidUzPhone } from "@/lib/phone";
@@ -72,6 +74,7 @@ export const Route = createFileRoute("/dashboard")({
 function DashboardPage() {
   const { user, logout, token, setAuth } = useAuth();
   const router = useRouter();
+  const { confirm, dialog } = useConfirm();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
   const markerRef = useRef<any>(null);
@@ -115,11 +118,19 @@ function DashboardPage() {
       .get<Address[]>("/addresses")
       .then(setAddresses)
       .catch(() => {});
-    api
-      .get<Notification[]>("/notifications")
-      .then(setNotifications)
-      .catch(() => {});
     setName(user.name);
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    const loadNotifications = () =>
+      api
+        .get<Notification[]>("/notifications")
+        .then(setNotifications)
+        .catch(() => {});
+    loadNotifications();
+    const t = setInterval(loadNotifications, 10000);
+    return () => clearInterval(t);
   }, [user]);
 
   useEffect(() => {
@@ -221,7 +232,7 @@ function DashboardPage() {
     setPhoneInvalid(false);
     if (!isValidUzPhone(form.phone)) {
       setPhoneInvalid(true);
-      alert("Iltimos, to'liq va to'g'ri telefon raqamini kiriting (+998 ** *** ** **)");
+      toast.error("Iltimos, to'liq va to'g'ri telefon raqamini kiriting (+998 ** *** ** **)");
       return;
     }
     setSaving(true);
@@ -245,7 +256,7 @@ function DashboardPage() {
         isDefault: false,
       });
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to save");
+      toast.error(err instanceof Error ? err.message : "Failed to save");
     } finally {
       setSaving(false);
     }
@@ -273,12 +284,20 @@ function DashboardPage() {
   };
 
   const cancelOrder = async (id: string) => {
-    if (!confirm("Are you sure you want to cancel this order?")) return;
+    const ok = await confirm({
+      title: "Cancel order?",
+      description:
+        "Are you sure you want to cancel this order? This cannot be undone.",
+      confirmLabel: "Cancel order",
+      destructive: true,
+    });
+    if (!ok) return;
     try {
       await api.patch(`/orders/${id}/cancel`);
       setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status: "cancelled" } : o)));
+      toast.success("Order cancelled");
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to cancel order");
+      toast.error(err instanceof Error ? err.message : "Failed to cancel order");
     }
   };
 
@@ -323,15 +342,20 @@ function DashboardPage() {
   };
 
   const deleteAccount = async () => {
-    if (
-      !confirm("Are you sure you want to permanently delete your account? This cannot be undone.")
-    )
-      return;
+    const ok = await confirm({
+      title: "Delete account?",
+      description:
+        "Are you sure you want to permanently delete your account? Your orders, addresses and chat history will be removed. This cannot be undone.",
+      confirmLabel: "Delete account",
+      destructive: true,
+    });
+    if (!ok) return;
     setDelSaving(true);
     setDelMsg(null);
     try {
       await api.delete("/auth/account", { password: delForm.password });
       setDelMsg({ ok: true, text: "Account deleted" });
+      toast.success("Account deleted");
       setTimeout(() => {
         logout();
         router.navigate({ to: "/" });
@@ -393,6 +417,8 @@ function DashboardPage() {
     { id: "profile", label: "Profile", icon: Settings },
   ];
 
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+
   return (
     <div className="mx-auto max-w-4xl px-6 pt-36 pb-24">
       <div className="flex items-center justify-between mb-8">
@@ -421,6 +447,11 @@ function DashboardPage() {
           >
             <t.icon size={14} />
             {t.label}
+            {t.id === "messages" && unreadCount > 0 && (
+              <span className="grid size-5 place-items-center rounded-full bg-red-600 text-[10px] font-semibold text-white">
+                {unreadCount}
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -827,6 +858,8 @@ function DashboardPage() {
           )}
         </div>
       )}
+
+      {dialog}
     </div>
   );
 }
