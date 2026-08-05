@@ -16,6 +16,7 @@ import {
   MapPin,
   X,
   ChevronRight,
+  RefreshCw,
 } from "lucide-react";
 
 interface Stats {
@@ -146,6 +147,7 @@ function AdminPage() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
   const [sendingReply, setSendingReply] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const loadOverview = useCallback(() => {
     api
@@ -175,9 +177,18 @@ function AdminPage() {
       .catch(() => {});
   }, []);
 
-  useEffect(() => {
-    Promise.all([loadOverview(), loadOrders(), loadUsers(), loadContacts()]).catch(() => {});
+  const refreshAll = useCallback(() => {
+    setRefreshing(true);
+    Promise.all([loadOverview(), loadOrders(), loadUsers(), loadContacts()])
+      .catch(() => {})
+      .finally(() => setRefreshing(false));
   }, [loadOverview, loadOrders, loadUsers, loadContacts]);
+
+  useEffect(() => {
+    refreshAll();
+    const t = setInterval(refreshAll, 10000);
+    return () => clearInterval(t);
+  }, [refreshAll]);
 
   if (loading) return null;
   if (!user) return <Navigate to="/admin/login" />;
@@ -258,10 +269,23 @@ function AdminPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       >
-        <h1 className="font-display text-3xl">Admin Dashboard</h1>
-        <p className="mt-1.5 text-sm text-muted-foreground">
-          Your store at a glance — orders, customers and messages.
-        </p>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="font-display text-3xl">Admin Dashboard</h1>
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              Your store at a glance — orders, customers and messages.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={refreshAll}
+            disabled={refreshing}
+            className="flex items-center gap-2 rounded-full border border-border bg-white/70 px-4 py-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:border-walnut/30 hover:text-walnut disabled:opacity-60"
+          >
+            <RefreshCw size={13} className={refreshing ? "animate-spin" : ""} />
+            {refreshing ? "Refreshing…" : "Refresh"}
+          </button>
+        </div>
       </motion.div>
 
       <motion.div

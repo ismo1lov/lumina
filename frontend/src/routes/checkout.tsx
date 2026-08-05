@@ -48,6 +48,7 @@ function Checkout() {
   const { items, subtotal, clear } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const isCustomer = !!user && user.role !== "admin";
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
   const markerRef = useRef<any>(null);
@@ -73,14 +74,14 @@ function Checkout() {
   const total = subtotal + delivery.price;
 
   useEffect(() => {
-    if (!user) return;
+    if (!isCustomer) return;
     setForm((prev) => ({
       ...prev,
-      first: prev.first || user.name.split(" ")[0] || "",
-      last: prev.last || user.name.split(" ").slice(1).join(" "),
-      email: user.email,
+      first: prev.first || user!.name.split(" ")[0] || "",
+      last: prev.last || user!.name.split(" ").slice(1).join(" "),
+      email: user!.email,
     }));
-  }, [user]);
+  }, [isCustomer]);
 
   useEffect(() => {
     if (!mapRef.current || mapInstance.current) return;
@@ -197,7 +198,7 @@ function Checkout() {
       setError("Iltimos, to'liq va to'g'ri telefon raqamini kiriting (+998 ** *** ** **)");
       return;
     }
-    if (!user) {
+    if (!isCustomer) {
       setShowAuthDialog(true);
       return;
     }

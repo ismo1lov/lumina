@@ -20,23 +20,9 @@ interface AuthState {
 
 const AuthContext = createContext<AuthState | null>(null);
 
-function isAdminOnStore(): boolean {
-  try {
-    if (typeof window === "undefined") return false;
-    if (window.location.pathname.startsWith("/admin")) return false;
-    const cached = localStorage.getItem("lumina-user");
-    if (!cached) return false;
-    const u = JSON.parse(cached) as User;
-    return u.role === "admin";
-  } catch {
-    return false;
-  }
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
     try {
-      if (isAdminOnStore()) return null;
       const cached = localStorage.getItem("lumina-user");
       return cached ? JSON.parse(cached) : null;
     } catch {
@@ -45,7 +31,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
   const [token, setToken] = useState<string | null>(() => {
     try {
-      if (isAdminOnStore()) return null;
       return localStorage.getItem("lumina-token");
     } catch {
       return null;
@@ -59,13 +44,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       api
         .get<User>("/auth/me")
         .then((u) => {
-          if (u.role === "admin" && !window.location.pathname.startsWith("/admin")) {
-            localStorage.removeItem("lumina-token");
-            localStorage.removeItem("lumina-user");
-            setUser(null);
-            setToken(null);
-            return;
-          }
           setUser(u);
           setToken(stored);
           localStorage.setItem("lumina-user", JSON.stringify(u));
