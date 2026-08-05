@@ -355,6 +355,22 @@ function DashboardPage() {
     api.delete(`/notifications/${id}`).catch(() => {});
   };
 
+  if (user?.role === "admin") {
+    return (
+      <div className="flex min-h-[70vh] items-center justify-center px-4">
+        <div className="text-center">
+          <h1 className="font-display text-xl mb-4">Admin accounts use the admin panel</h1>
+          <Link
+            to="/admin"
+            className="bg-primary px-6 py-3 text-[11px] uppercase tracking-[0.2em] text-primary-foreground"
+          >
+            Go to admin panel
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   if (!user) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center px-4">
