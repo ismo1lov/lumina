@@ -45,7 +45,6 @@ function SettingsPage() {
   const { user, loading, setAuth } = useAuth();
   const [name, setName] = useState(user?.name ?? "");
   const [username, setUsername] = useState(user?.username ?? "");
-  const [email, setEmail] = useState(user?.email ?? "");
   const [avatar, setAvatar] = useState<string | undefined>(user?.avatar);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
@@ -75,7 +74,7 @@ function SettingsPage() {
     setSaving(true);
     setMsg(null);
     try {
-      const body: { name: string; email: string; username?: string; avatar?: string } = { name, email, username };
+      const body: { name: string; username?: string; avatar?: string } = { name, username };
       if (avatar && avatar.startsWith("data:")) body.avatar = avatar;
       const res = await api.patch<ProfileResponse>("/admin/profile", body);
       const token = localStorage.getItem("lumina-token");
@@ -171,7 +170,6 @@ function SettingsPage() {
             </div>
             <div>
               <p className="font-display">{user.name}</p>
-              <p className="text-xs text-muted-foreground">{user.email}</p>
               <p className="mt-1 text-[10px] uppercase tracking-[0.15em] text-muted-foreground">Admin account</p>
             </div>
           </div>
@@ -199,17 +197,6 @@ function SettingsPage() {
               <p className="mt-1 text-[11px] text-muted-foreground/70">
                 Letters, numbers, dots, dashes and underscores
               </p>
-            </div>
-            <div>
-              <label className="mb-1.5 block text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm outline-none transition-all duration-300 focus:border-walnut focus:bg-white focus:ring-4 focus:ring-walnut/10"
-              />
             </div>
           </div>
 
