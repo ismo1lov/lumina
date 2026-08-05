@@ -103,10 +103,10 @@ export function Navbar() {
               )}
             </button>
             <span className="hidden h-5 w-px bg-border sm:block" aria-hidden />
-            {user && user.role !== "admin" ? (
+            {user ? (
               <Link
-                to="/dashboard"
-                aria-label="My Account"
+                to={user.role === "admin" ? "/admin" : "/dashboard"}
+                aria-label={user.role === "admin" ? "Admin Panel" : "My Account"}
                 className="hidden cursor-pointer sm:block"
               >
                 <User size={17} />
@@ -189,14 +189,14 @@ export function Navbar() {
                 </Link>
               ))}
               <div className="mt-4 border-t pt-6">
-                {user && user.role !== "admin" ? (
+                {user ? (
                   <>
                     <Link
-                      to="/dashboard"
+                      to={user.role === "admin" ? "/admin" : "/dashboard"}
                       onClick={() => setMenu(false)}
                       className="block font-display text-xl"
                     >
-                      My Account
+                      {user.role === "admin" ? "Admin Panel" : "My Account"}
                     </Link>
                     <button
                       onClick={() => {
