@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
 import { resolveAsset } from "@/lib/assets";
+import { PageLoader } from "@/components/site/PageLoader";
 
 const links = [
   { to: "/", label: "Home" },
@@ -25,7 +26,18 @@ export function Navbar() {
   const [query, setQuery] = useState("");
   const [menu, setMenu] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [pageLoading, setPageLoading] = useState(false);
   const navigate = useNavigate();
+
+  const goAuth = (to: "/login" | "/register") => {
+    setProfileOpen(false);
+    setMenu(false);
+    setPageLoading(true);
+    setTimeout(() => {
+      navigate({ to });
+      setPageLoading(false);
+    }, 1000);
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -132,20 +144,20 @@ export function Navbar() {
                         transition={{ duration: 0.18, ease: "easeOut" }}
                         className="absolute right-0 top-full z-50 mt-3 min-w-[190px] border border-border bg-background shadow-xl"
                       >
-                        <Link
-                          to="/login"
-                          onClick={() => setProfileOpen(false)}
-                          className="block px-5 py-3 text-[11px] uppercase tracking-[0.2em] transition-colors hover:bg-cream hover:text-foreground"
+                        <button
+                          type="button"
+                          onClick={() => goAuth("/login")}
+                          className="block w-full cursor-pointer px-5 py-3 text-left text-[11px] uppercase tracking-[0.2em] transition-colors hover:bg-cream hover:text-foreground"
                         >
                           Sign In
-                        </Link>
-                        <Link
-                          to="/register"
-                          onClick={() => setProfileOpen(false)}
-                          className="block border-t border-border px-5 py-3 text-[11px] uppercase tracking-[0.2em] transition-colors hover:bg-cream hover:text-foreground"
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => goAuth("/register")}
+                          className="block w-full cursor-pointer border-t border-border px-5 py-3 text-left text-[11px] uppercase tracking-[0.2em] transition-colors hover:bg-cream hover:text-foreground"
                         >
                           Create Account
-                        </Link>
+                        </button>
                       </motion.div>
                     </>
                   )}
@@ -211,20 +223,20 @@ export function Navbar() {
                   </>
                 ) : (
                   <>
-                    <Link
-                      to="/login"
-                      onClick={() => setMenu(false)}
-                      className="block font-display text-xl"
+                    <button
+                      type="button"
+                      onClick={() => goAuth("/login")}
+                      className="block cursor-pointer text-left font-display text-xl"
                     >
                       Sign In
-                    </Link>
-                    <Link
-                      to="/register"
-                      onClick={() => setMenu(false)}
-                      className="mt-4 block font-display text-xl"
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => goAuth("/register")}
+                      className="mt-4 block cursor-pointer text-left font-display text-xl"
                     >
                       Create Account
-                    </Link>
+                    </button>
                   </>
                 )}
               </div>
@@ -287,6 +299,8 @@ export function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {pageLoading && <PageLoader />}
     </>
   );
 }
