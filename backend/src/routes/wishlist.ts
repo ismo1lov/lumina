@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
+import { randomUUID } from "crypto";
 import { eq, and } from "drizzle-orm";
 import { getDb } from "../db/index.js";
 import { wishlistItems, products } from "../db/schema.js";
@@ -45,7 +46,7 @@ router.post("/toggle", async (req, res) => {
       res.json({ added: false });
     } else {
       await db.insert(wishlistItems).values({
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         userId: req.userId!,
         productId,
       });

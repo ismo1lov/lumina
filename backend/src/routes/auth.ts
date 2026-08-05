@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
+import { randomUUID } from "crypto";
 import { eq, inArray } from "drizzle-orm";
 import { getDb } from "../db/index.js";
 import {
@@ -148,7 +149,7 @@ router.post("/register", async (req, res) => {
       return;
     }
 
-    const id = crypto.randomUUID();
+    const id = randomUUID();
     const passwordHash = await hashPassword(password);
     const role = email === process.env.ADMIN_EMAIL ? "admin" : "user";
     await db.insert(users).values({ id, name, email, username: email, passwordHash, role });

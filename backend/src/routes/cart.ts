@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
+import { randomUUID } from "crypto";
 import { eq, and } from "drizzle-orm";
 import { getDb } from "../db/index.js";
 import { cartItems, products } from "../db/schema.js";
@@ -67,7 +68,7 @@ router.post("/add", async (req, res) => {
         .where(eq(cartItems.id, existing.id));
     } else {
       await db.insert(cartItems).values({
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         userId: req.userId!,
         productId,
         finish,

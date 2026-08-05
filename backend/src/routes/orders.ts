@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
+import { randomUUID } from "crypto";
 import { eq, desc, inArray } from "drizzle-orm";
 import { getDb } from "../db/index.js";
 import { orders, orderItems, products } from "../db/schema.js";
@@ -54,7 +55,7 @@ router.post("/", async (req, res) => {
 
     const subtotal = rows.reduce((sum, r) => sum + r.qty * (r.product!.price ?? 0), 0);
     const fee = DELIVERY_FEES[delivery] ?? 0;
-    const orderId = crypto.randomUUID();
+    const orderId = randomUUID();
 
     await db.insert(orders).values({
       id: orderId,
@@ -68,7 +69,7 @@ router.post("/", async (req, res) => {
 
     for (const r of rows) {
       await db.insert(orderItems).values({
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         orderId,
         productId: r.productId,
         name: r.product!.name,

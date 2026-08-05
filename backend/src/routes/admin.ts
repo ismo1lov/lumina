@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
+import { randomUUID } from "crypto";
 import { eq, ne, desc, asc, count, sum } from "drizzle-orm";
 import path from "path";
 import fs from "fs";
@@ -261,7 +262,7 @@ router.post("/contacts/:id/reply", async (req, res) => {
 
     if (contact.userId) {
       await db.insert(notifications).values({
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         userId: contact.userId,
         title: "Reply from Lumina",
         body: reply,

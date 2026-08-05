@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
+import { randomUUID } from "crypto";
 import { eq } from "drizzle-orm";
 import { getDb } from "../db/index.js";
 import { addresses } from "../db/schema.js";
@@ -49,7 +50,7 @@ router.post("/", async (req, res) => {
     }
 
     await db.insert(addresses).values({
-      id: crypto.randomUUID(),
+      id: randomUUID(),
       userId: req.userId!,
       label: data.label,
       fullName: data.fullName,
