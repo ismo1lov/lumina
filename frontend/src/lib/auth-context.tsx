@@ -29,7 +29,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return null;
     }
   });
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem("lumina-token"));
+  const [token, setToken] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem("lumina-token");
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
