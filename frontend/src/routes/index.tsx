@@ -15,6 +15,7 @@ import heroChair from "@/assets/hero-chair.jpg";
 import { categoryImages, products, type Category } from "@/data/products";
 import { ProductCard } from "@/components/site/ProductCard";
 import { Reveal } from "@/components/site/Reveal";
+import { AmbientGlitter } from "@/components/site/AmbientGlitter";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -51,6 +52,7 @@ function Home() {
     <div>
       {/* Hero */}
       <section className="relative flex h-screen max-h-screen items-center overflow-hidden bg-cream pt-20">
+        <AmbientGlitter />
         <div className="mx-auto grid w-full max-w-[1400px] items-center gap-12 px-6 lg:grid-cols-[1fr_1.05fr] lg:px-12">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
