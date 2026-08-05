@@ -18,6 +18,7 @@ export default defineConfig({
   nitro: {
     // Netlify Functions + static assets are produced under .output/ so the SSR
     // app can run on Netlify instead of the default Cloudflare target.
-    preset: "netlify",
+    // On Vercel the "vercel" preset produces .vercel/output (Build Output API).
+    preset: process.env.NETLIFY ? "netlify" : process.env.VERCEL ? "vercel" : "netlify",
   },
 });
