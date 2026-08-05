@@ -215,27 +215,32 @@ router.post("/login", async (req, res) => {
 });
 
 router.get("/me", async (req, res) => {
-  const header = req.headers.authorization;
-  if (!header?.startsWith("Bearer ")) {
-    res.status(401).json({ error: "No token" });
-    return;
-  }
+  try {
+    const header = req.headers.authorization;
+    if (!header?.startsWith("Bearer ")) {
+      res.status(401).json({ error: "No token" });
+      return;
+    }
 
-  const { verifyToken } = await import("../lib/auth.js");
-  const payload = verifyToken(header.slice(7));
-  if (!payload) {
-    res.status(401).json({ error: "Invalid token" });
-    return;
-  }
+    const { verifyToken } = await import("../lib/auth.js");
+    const payload = verifyToken(header.slice(7));
+    if (!payload) {
+      res.status(401).json({ error: "Invalid token" });
+      return;
+    }
 
-  const db = await getDb();
-  const [user] = await db.select().from(users).where(eq(users.id, payload.userId)).limit(1);
-  if (!user) {
-    res.status(404).json({ error: "User not found" });
-    return;
-  }
+    const db = await getDb();
+    const [user] = await db.select().from(users).where(eq(users.id, payload.userId)).limit(1);
+    if (!user) {
+      res.status(401).json({ error: "User not found" });
+      return;
+    }
 
-  res.json({ id: user.id, name: user.name, email: user.email, username: user.username, role: user.role, avatar: user.avatar });
+    res.json({ id: user.id, name: user.name, email: user.email, username: user.username, role: user.role, avatar: user.avatar });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 export default router;

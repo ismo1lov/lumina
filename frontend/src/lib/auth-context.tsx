@@ -21,20 +21,19 @@ interface AuthState {
 const AuthContext = createContext<AuthState | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const cached = localStorage.getItem("lumina-user");
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem("lumina-token"));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const stored = localStorage.getItem("lumina-token");
-    const cached = localStorage.getItem("lumina-user");
-    if (cached) {
-      try {
-        setUser(JSON.parse(cached));
-      } catch {
-        localStorage.removeItem("lumina-user");
-      }
-    }
     if (stored) {
       api
         .get<User>("/auth/me")
@@ -45,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         })
         .catch((err) => {
           const msg = err instanceof Error ? err.message : "";
-          if (/401|403|unauthorized|invalid token|no token/i.test(msg)) {
+          if (/401|403|unauthorized|invalid token|no token|user not found/i.test(msg)) {
             localStorage.removeItem("lumina-token");
             localStorage.removeItem("lumina-user");
             setUser(null);
@@ -55,6 +54,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .finally(() => setLoading(false));
     } else {
       localStorage.removeItem("lumina-user");
+      setUser(null);
+      setToken(null);
       setLoading(false);
     }
   }, []);
