@@ -105,8 +105,8 @@ export function Navbar() {
             <span className="hidden h-5 w-px bg-border sm:block" aria-hidden />
             {user ? (
               <Link
-                to={user.role === "admin" ? "/admin" : "/dashboard"}
-                aria-label={user.role === "admin" ? "Admin Panel" : "My Account"}
+                to="/dashboard"
+                aria-label="My Account"
                 className="hidden cursor-pointer sm:block"
               >
                 <User size={17} />
@@ -192,11 +192,11 @@ export function Navbar() {
                 {user ? (
                   <>
                     <Link
-                      to={user.role === "admin" ? "/admin" : "/dashboard"}
+                      to="/dashboard"
                       onClick={() => setMenu(false)}
                       className="block font-display text-xl"
                     >
-                      {user.role === "admin" ? "Admin Panel" : "My Account"}
+                      My Account
                     </Link>
                     <button
                       onClick={() => {
