@@ -59,7 +59,6 @@ function Checkout() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [phoneInvalid, setPhoneInvalid] = useState(false);
-  const [showAuthDialog, setShowAuthDialog] = useState(!isCustomer);
   const [form, setForm] = useState({
     first: "",
     last: "",
@@ -81,10 +80,6 @@ function Checkout() {
       last: prev.last || user!.name.split(" ").slice(1).join(" "),
       email: user!.email,
     }));
-  }, [isCustomer]);
-
-  useEffect(() => {
-    if (isCustomer) setShowAuthDialog(false);
   }, [isCustomer]);
 
   useEffect(() => {
@@ -193,6 +188,14 @@ function Checkout() {
     );
   }
 
+  if (!isCustomer) {
+    return (
+      <div className="min-h-screen">
+        <AuthRequiredDialog open dismissable={false} onOpenChange={() => {}} />
+      </div>
+    );
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -200,10 +203,6 @@ function Checkout() {
     if (!isValidUzPhone(form.phone)) {
       setPhoneInvalid(true);
       setError("Iltimos, to'liq va to'g'ri telefon raqamini kiriting (+998 ** *** ** **)");
-      return;
-    }
-    if (!isCustomer) {
-      setShowAuthDialog(true);
       return;
     }
     setBusy(true);
@@ -412,8 +411,6 @@ function Checkout() {
           </div>
         </aside>
       </div>
-
-      <AuthRequiredDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} />
     </div>
   );
 }

@@ -12,9 +12,10 @@ import {
 interface AuthRequiredDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  dismissable?: boolean;
 }
 
-export function AuthRequiredDialog({ open, onOpenChange }: AuthRequiredDialogProps) {
+export function AuthRequiredDialog({ open, onOpenChange, dismissable = true }: AuthRequiredDialogProps) {
   const navigate = useNavigate();
 
   const goRegister = () => {
@@ -23,8 +24,8 @@ export function AuthRequiredDialog({ open, onOpenChange }: AuthRequiredDialogPro
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+    <Dialog open={open} onOpenChange={dismissable ? onOpenChange : () => {}}>
+      <DialogContent className="max-w-md" hideClose={!dismissable}>
         <DialogHeader>
           <DialogTitle className="font-display text-2xl">Ro'yxatdan o'tish kerak</DialogTitle>
           <DialogDescription className="pt-1 leading-relaxed">
