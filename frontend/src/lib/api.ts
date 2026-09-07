@@ -1,4 +1,4 @@
-let API = import.meta.env.VITE_API_URL || "https://lumina-production-8246.up.railway.app/api";
+let API = import.meta.env.VITE_API_URL || "https://lumina-backend-c2wd.onrender.com/api";
 if (!API.endsWith("/api")) API = `${API.replace(/\/+$/, "")}/api`;
 export const API_BASE = API.replace(/\/api\/?$/, "");
 
