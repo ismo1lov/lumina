@@ -57,7 +57,7 @@ router.post("/", async (req, res) => {
     const fee = DELIVERY_FEES[delivery] ?? 0;
     const orderId = randomUUID();
 
-    await db.insert(orders).values({
+    await (db as any).insert(orders).values({
       id: orderId,
       userId: req.userId!,
       subtotal,

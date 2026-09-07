@@ -22,11 +22,13 @@ const DB_HOST = process.env.DB_HOST || process.env.MYSQLHOST || "localhost";
 const DB_PORT = Number(process.env.DB_PORT || process.env.MYSQLPORT || 3306);
 
 async function initDatabase() {
+  const useSsl = DB_HOST.includes("tidbcloud.com");
   const conn = await mysql.createConnection({
     host: DB_HOST,
     port: DB_PORT,
     user: DB_USER,
     password: DB_PASSWORD,
+    ssl: useSsl ? { rejectUnauthorized: true } : undefined,
   });
 
   await conn.query(`CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\``);
