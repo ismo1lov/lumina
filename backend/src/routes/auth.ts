@@ -166,6 +166,57 @@ router.post("/register", async (req, res) => {
   }
 });
 
+router.post("/admin-login", async (req, res) => {
+  try {
+    const { login, password } = z
+      .object({ login: z.string().min(1), password: z.string().min(1) })
+      .parse(req.body);
+
+    const adminLogin = process.env.ADMIN_LOGIN || "admin";
+    const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
+
+    if (login !== adminLogin || password !== adminPassword) {
+      res.status(401).json({ error: "Invalid login or password" });
+      return;
+    }
+
+    const db = await getDb();
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@lumina.uz";
+    const [admin] = await db.select().from(users).where(eq(users.email, adminEmail)).limit(1);
+
+    if (!admin) {
+      const id = randomUUID();
+      const passwordHash = await hashPassword(adminPassword);
+      await db.insert(users).values({ id, name: "Admin", email: adminEmail, username: login, passwordHash, role: "admin" });
+      const token = signToken({ userId: id, email: adminEmail, role: "admin" });
+      res.json({ user: { id, name: "Admin", email: adminEmail, username: login, role: "admin", avatar: "" }, token });
+      return;
+    }
+
+    if (admin.role !== "admin") {
+      await db.update(users).set({ role: "admin" }).where(eq(users.id, admin.id));
+      admin.role = "admin";
+    }
+    if (admin.username !== login) {
+      await db.update(users).set({ username: login }).where(eq(users.id, admin.id));
+      admin.username = login;
+    }
+
+    const token = signToken({ userId: admin.id, email: admin.email, role: "admin" });
+    res.json({
+      user: { id: admin.id, name: admin.name, email: admin.email, username: admin.username, role: "admin", avatar: admin.avatar },
+      token,
+    });
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      res.status(400).json({ error: err.errors[0].message });
+      return;
+    }
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = z

@@ -31,7 +31,7 @@ const rise = {
 function AdminLoginPage() {
   const { user, loading, setAuth } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [loginName, setLoginName] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
@@ -45,7 +45,7 @@ function AdminLoginPage() {
     setError("");
     setBusy(true);
     try {
-      const result = await api.post<LoginResponse>("/auth/login", { email, password });
+      const result = await api.post<LoginResponse>("/auth/admin-login", { login: loginName, password });
       if (result.user.role !== "admin") {
         setError("This account does not have admin access");
         return;
@@ -179,13 +179,13 @@ function AdminLoginPage() {
                     type="text"
                     required
                     autoFocus
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={loginName}
+                    onChange={(e) => setLoginName(e.target.value)}
                     className="w-full rounded-xl border border-input bg-background/50 py-3.5 pl-11 pr-4 text-sm outline-none transition-all duration-300 focus:border-walnut focus:bg-white focus:ring-4 focus:ring-walnut/10"
                   />
                 </div>
                 <p className="mt-1.5 text-[11px] text-muted-foreground/70">
-                  Your login name or email
+                  Admin login name
                 </p>
               </div>
 
