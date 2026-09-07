@@ -71,7 +71,7 @@ export function AdminShell({
               )}
               <div className="leading-tight">
                 <p className="text-sm font-medium">{user?.name}</p>
-                <p className="text-[11px] text-muted-foreground">{user?.email}</p>
+                <p className="text-[11px] text-muted-foreground">{user?.username || user?.name}</p>
               </div>
             </div>
             <motion.button
