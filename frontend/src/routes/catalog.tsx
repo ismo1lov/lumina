@@ -43,7 +43,7 @@ function Catalog() {
     category ? [category] : []
   );
   const [mats, setMats] = useState<string[]>([]);
-  const [maxPrice, setMaxPrice] = useState(20000000);
+  const [maxPrice, setMaxPrice] = useState(10000000);
   const [inStock, setInStock] = useState(false);
   const [preOrder, setPreOrder] = useState(false);
   const [sort, setSort] = useState<Sort>("popularity");
@@ -113,8 +113,8 @@ function Catalog() {
           <Filter title="Price">
             <input
               type="range"
-              min={3000000}
-              max={20000000}
+              min={2000000}
+              max={10000000}
               step={100000}
               value={maxPrice}
               onChange={(e) => setMaxPrice(Number(e.target.value))}

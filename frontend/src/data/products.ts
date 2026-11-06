@@ -70,10 +70,10 @@ export interface Product {
 export const products: Product[] = [
   {
     id: "nordic-walnut-lounge-chair",
-    name: "Nordic Walnut Chair",
+    name: "Nordik yong'oq kursi",
     sku: "LH-CH-0142",
     category: "Living Room",
-    price: 6450000,
+    price: 3200000,
     material: "Solid Walnut",
     materials: ["Walnut", "Velvet"],
     colors: [
@@ -83,7 +83,7 @@ export const products: Product[] = [
     ],
     finishes: [
       { name: "Walnut", delta: 0, colorImages: [creamChair, terracottaChair, walnutChair], material: "Solid Walnut", colorIndex: 0 },
-      { name: "Light Oak", delta: 320000, colorImages: [creamOak, terracottaOak, walnutOak], material: "Solid Oak", colorIndex: 0 },
+      { name: "Light Oak", delta: 160000, colorImages: [creamOak, terracottaOak, walnutOak], material: "Solid Oak", colorIndex: 0 },
     ],
     rating: 4.9,
     reviews: 128,
@@ -99,10 +99,10 @@ export const products: Product[] = [
   },
   {
     id: "halden-boucle-sofa",
-    name: "Halden Bouclé Sofa",
+    name: "Halden bukle divan",
     sku: "LH-SF-0233",
     category: "Living Room",
-    price: 18900000,
+    price: 9500000,
     material: "Bouclé & Oak",
     materials: ["Oak", "Velvet"],
     colors: [
@@ -112,7 +112,7 @@ export const products: Product[] = [
     ],
     finishes: [
       { name: "Walnut", delta: 0, colorImages: [sofaCream, sofaTerracotta, sofaForrest], material: "Solid Walnut", colorIndex: 0 },
-      { name: "Light Oak", delta: 250000, colorImages: [sofaCreamOak, sofaTerracottaOak, sofaForrestOak], material: "Solid Oak", colorIndex: 0 },
+      { name: "Light Oak", delta: 120000, colorImages: [sofaCreamOak, sofaTerracottaOak, sofaForrestOak], material: "Solid Oak", colorIndex: 0 },
     ],
     rating: 4.8,
     reviews: 87,
@@ -128,10 +128,10 @@ export const products: Product[] = [
   },
   {
     id: "lumen-oak-dining-table",
-    name: "Lumen Oak Dining Table",
+    name: "Lumen ovqat stoli",
     sku: "LH-DT-0311",
     category: "Dining Room",
-    price: 14200000,
+    price: 7200000,
     material: "Solid Oak",
     materials: ["Oak"],
     colors: [
@@ -140,7 +140,7 @@ export const products: Product[] = [
     ],
     finishes: [
       { name: "Light Oak", delta: 0, colorImages: [tableOak, tableWalnut], material: "Solid Oak", colorIndex: 0 },
-      { name: "Walnut", delta: 400000, colorImages: [tableOak, tableWalnut], material: "Solid Walnut", colorIndex: 1 },
+      { name: "Walnut", delta: 200000, colorImages: [tableOak, tableWalnut], material: "Solid Walnut", colorIndex: 1 },
     ],
     rating: 4.7,
     reviews: 64,
@@ -156,10 +156,10 @@ export const products: Product[] = [
   },
   {
     id: "sera-slatted-sideboard",
-    name: "Sera Slatted Sideboard",
+    name: "Sera panelli servant",
     sku: "LH-SB-0177",
     category: "Dining Room",
-    price: 11750000,
+    price: 5900000,
     material: "Walnut Veneer",
     materials: ["Walnut", "Oak"],
     colors: [
@@ -168,7 +168,7 @@ export const products: Product[] = [
     ],
     finishes: [
       { name: "Walnut", delta: 0, colorImages: [sideboardWalnut, sideboardOak], material: "Walnut Veneer", colorIndex: 0 },
-      { name: "Light Oak", delta: 180000, colorImages: [sideboardWalnut, sideboardOak], material: "Oak Veneer", colorIndex: 1 },
+      { name: "Light Oak", delta: 90000, colorImages: [sideboardWalnut, sideboardOak], material: "Oak Veneer", colorIndex: 1 },
     ],
     rating: 4.6,
     reviews: 41,
@@ -184,10 +184,10 @@ export const products: Product[] = [
   },
   {
     id: "aalto-platform-bed",
-    name: "Aalto Platform Bed",
+    name: "Aalto platforma karavot",
     sku: "LH-BD-0098",
     category: "Bedroom",
-    price: 16400000,
+    price: 8400000,
     material: "Walnut & Linen",
     materials: ["Walnut", "Velvet"],
     colors: [
@@ -196,7 +196,7 @@ export const products: Product[] = [
     ],
     finishes: [
       { name: "Walnut", delta: 0, colorImages: [bedLinen, bedClay], material: "Solid Walnut", colorIndex: 0 },
-      { name: "Light Oak", delta: 300000, colorImages: [bedLinenOak, bedClayOak], material: "Solid Oak", colorIndex: 0 },
+      { name: "Light Oak", delta: 150000, colorImages: [bedLinenOak, bedClayOak], material: "Solid Oak", colorIndex: 0 },
     ],
     rating: 4.9,
     reviews: 152,
@@ -212,10 +212,10 @@ export const products: Product[] = [
   },
   {
     id: "kori-leather-desk-chair",
-    name: "Kori Leather Desk Chair",
+    name: "Kori charm kursi",
     sku: "LH-OC-0056",
     category: "Home Office",
-    price: 8900000,
+    price: 4500000,
     material: "Full-grain Leather",
     materials: ["Leather", "Oak"],
     colors: [
@@ -226,7 +226,7 @@ export const products: Product[] = [
     ],
     finishes: [
       { name: "Light Oak", delta: 0, colorImages: [chairTerracottaOak, chairCreamOak, chairForrestOak, chairDarkOak], material: "Solid Oak", colorIndex: 0 },
-      { name: "Walnut", delta: 220000, colorImages: [chairTerracottaWalnut, chairCreamWalnut, chairForrestWalnut, chairDarkWalnut], material: "Solid Walnut", colorIndex: 0 },
+      { name: "Walnut", delta: 110000, colorImages: [chairTerracottaWalnut, chairCreamWalnut, chairForrestWalnut, chairDarkWalnut], material: "Solid Walnut", colorIndex: 0 },
     ],
     rating: 4.5,
     reviews: 33,
@@ -242,10 +242,10 @@ export const products: Product[] = [
   },
   {
     id: "ovi-round-coffee-table",
-    name: "Ovi Round Coffee Table",
+    name: "Ovi dumaloq stol",
     sku: "LH-CT-0264",
     category: "Living Room",
-    price: 5300000,
+    price: 2700000,
     material: "Solid Walnut",
     materials: ["Walnut"],
     colors: [
@@ -254,7 +254,7 @@ export const products: Product[] = [
     ],
     finishes: [
       { name: "Walnut", delta: 0, colorImages: [coffee, coffeeOak], material: "Solid Walnut", colorIndex: 0 },
-      { name: "Light Oak", delta: 150000, colorImages: [coffee, coffeeOak], material: "Solid Oak", colorIndex: 1 },
+      { name: "Light Oak", delta: 80000, colorImages: [coffee, coffeeOak], material: "Solid Oak", colorIndex: 1 },
     ],
     rating: 4.7,
     reviews: 58,
@@ -270,10 +270,10 @@ export const products: Product[] = [
   },
   {
     id: "atlas-oak-writing-desk",
-    name: "Atlas Oak Writing Desk",
+    name: "Atlas yozuv stoli",
     sku: "LH-DK-0201",
     category: "Home Office",
-    price: 9800000,
+    price: 5200000,
     material: "Solid Oak",
     materials: ["Oak", "Walnut"],
     colors: [
@@ -282,7 +282,7 @@ export const products: Product[] = [
     ],
     finishes: [
       { name: "Light Oak", delta: 0, colorImages: [deskOak, desk], material: "Solid Oak", colorIndex: 0 },
-      { name: "Walnut", delta: 260000, colorImages: [deskOak, desk], material: "Solid Walnut", colorIndex: 1 },
+      { name: "Walnut", delta: 130000, colorImages: [deskOak, desk], material: "Solid Walnut", colorIndex: 1 },
     ],
     rating: 4.8,
     reviews: 72,
