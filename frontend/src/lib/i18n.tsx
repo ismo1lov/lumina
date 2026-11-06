@@ -392,6 +392,10 @@ const translations: Record<string, Entry> = {
     ru: "Админ-аккаунты нельзя создать здесь",
   },
   "Login failed": { uz: "Kirish amalga oshmadi", ru: "Не удалось войти" },
+  "Sign in with Google": { uz: "Google orqali kirish", ru: "Войти через Google" },
+  "Sign up with Google": { uz: "Google orqali hisob yarating", ru: "Зарегистрироваться через Google" },
+  "Or": { uz: "Yoki", ru: "Ile" },
+  "Google sign-in failed": { uz: "Google orqali kirish amalga oshmadi", ru: "Не удалось войти через Google" },
   "Registration failed": { uz: "Ro‘yxatdan o‘tish amalga oshmadi", ru: "Не удалось зарегистрироваться" },
   "Invalid login or password": {
     uz: "Login yoki parol noto‘g‘ri",

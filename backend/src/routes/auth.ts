@@ -1,6 +1,7 @@
 import { Router } from "express";
+import type { Request } from "express";
 import { z } from "zod";
-import { randomUUID } from "crypto";
+import { randomBytes, randomUUID } from "crypto";
 import { eq, inArray } from "drizzle-orm";
 import { getDb } from "../db/index.js";
 import {
@@ -275,6 +276,143 @@ router.post("/login", async (req, res) => {
       res.status(400).json({ error: err.errors[0].message });
       return;
     }
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+const GOOGLE_AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
+const GOOGLE_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
+const GOOGLE_USERINFO_ENDPOINT = "https://www.googleapis.com/oauth2/v3/userinfo";
+const GOOGLE_STATE_COOKIE = "google_oauth_state";
+
+function getGoogleConfig(): { clientId: string; clientSecret: string; redirectUri: string } | null {
+  const clientId = process.env.GOOGLE_CLIENT_ID?.trim();
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  if (!clientId || !clientSecret) return null;
+  const redirectUri =
+    process.env.GOOGLE_REDIRECT_URI?.trim() ||
+    `http://localhost:${process.env.PORT || 3001}/api/auth/google/callback`;
+  return { clientId, clientSecret, redirectUri };
+}
+
+function getFrontendUrl(): string {
+  return (process.env.PUBLIC_APP_URL || "http://localhost:5173").trim().replace(/\/+$/, "");
+}
+
+function getGoogleStateFromCookie(req: Request): string | undefined {
+  const cookieHeader = req.headers.cookie;
+  if (!cookieHeader) return undefined;
+  const match = cookieHeader
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${GOOGLE_STATE_COOKIE}=`));
+  if (!match) return undefined;
+  const value = match.slice(GOOGLE_STATE_COOKIE.length + 1);
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+// Step 1: send the browser to Google's consent screen.
+router.get("/google", (req, res) => {
+  try {
+    const config = getGoogleConfig();
+    if (!config) {
+      res.status(503).json({ error: "Google sign-in is not configured" });
+      return;
+    }
+
+    const state = randomBytes(16).toString("hex");
+    res.cookie(GOOGLE_STATE_COOKIE, state, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 15 * 60 * 1000,
+      path: "/",
+    });
+
+    const params = new URLSearchParams({
+      client_id: config.clientId,
+      redirect_uri: config.redirectUri,
+      response_type: "code",
+      scope: "openid email profile",
+      access_type: "offline",
+      state,
+      prompt: "select_account",
+    });
+
+    res.redirect(`${GOOGLE_AUTH_ENDPOINT}?${params.toString()}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Step 2: Google redirects back here with a code; exchange it, find/create the
+// user by verified Google email and issue our own JWT for the storefront.
+router.get("/google/callback", async (req, res) => {
+  try {
+    const config = getGoogleConfig();
+    if (!config) {
+      res.status(503).json({ error: "Google sign-in is not configured" });
+      return;
+    }
+
+    const { code, state } = req.query as { code?: string; state?: string };
+    const frontendUrl = getFrontendUrl();
+    const failRedirect = () => res.redirect(`${frontendUrl}/login?error=google`);
+
+    if (!code || !state || state !== getGoogleStateFromCookie(req)) {
+      failRedirect();
+      return;
+    }
+
+    const tokenRes = await fetch(GOOGLE_TOKEN_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        code,
+        client_id: config.clientId,
+        client_secret: config.clientSecret,
+        redirect_uri: config.redirectUri,
+        grant_type: "authorization_code",
+      }),
+    });
+    const tokenData = (await tokenRes.json().catch(() => null)) as { access_token?: string } | null;
+    if (!tokenData?.access_token) {
+      failRedirect();
+      return;
+    }
+
+    const profileRes = await fetch(GOOGLE_USERINFO_ENDPOINT, {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` },
+    });
+    const profile = (await profileRes.json().catch(() => null)) as { email?: string; name?: string } | null;
+    const email = profile?.email;
+    if (!email) {
+      failRedirect();
+      return;
+    }
+    const name = profile?.name || email.split("@")[0];
+
+    const db = await getDb();
+    const [existing] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    const id = existing?.id ?? randomUUID();
+    const passwordHash = existing?.passwordHash ?? (await hashPassword(randomUUID()));
+    const role = existing?.role ?? "user";
+
+    if (!existing) {
+      await db
+        .insert(users)
+        .values({ id, name, email, username: email, passwordHash, role });
+    }
+
+    const token = signToken({ userId: id, email, role });
+    res.redirect(`${frontendUrl}/login?token=${token}`);
+  } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Internal server error" });
   }

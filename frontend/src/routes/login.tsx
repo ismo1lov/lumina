@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { api } from "@/lib/api";
+import { api, API_BASE } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { Eye, EyeOff } from "lucide-react";
 import heroChair from "@/assets/hero-chair.jpg";
@@ -41,8 +41,10 @@ function PwInput({ value, onChange, required, minLength }: {
 
 export const Route = createFileRoute("/login")({
   component: AuthPage,
-  validateSearch: (search: Record<string, unknown>): { mode?: string } => ({
+  validateSearch: (search: Record<string, unknown>): { mode?: string; token?: string; error?: string } => ({
     mode: typeof search.mode === "string" ? search.mode : undefined,
+    token: typeof search.token === "string" ? search.token : undefined,
+    error: typeof search.error === "string" ? search.error : undefined,
   }),
   head: () => ({
     links: [
@@ -54,15 +56,48 @@ export const Route = createFileRoute("/login")({
 
 function AuthPage() {
   const { t } = useI18n();
-  const { mode } = useSearch({ from: "/login" });
+  const { mode, token, error: googleError } = useSearch({ from: "/login" });
   const navigate = useNavigate();
+  const { setAuth } = useAuth();
   const isRegister = mode === "register";
   const toggle = () => navigate({ to: "/login", search: { mode: isRegister ? "login" : "register" } });
+  const [error, setError] = useState("");
 
   useEffect(() => {
     document.body.style.overscrollBehaviorX = "none";
     return () => { document.body.style.overscrollBehaviorX = ""; };
   }, []);
+
+  // Google OAuth callback redirects back here with a short-lived token.
+  useEffect(() => {
+    if (!token) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        localStorage.setItem("lumina-token", token);
+        const user = await api.get<{
+          id: string;
+          name: string;
+          email: string;
+          username?: string;
+          role: string;
+          avatar?: string;
+        }>("/auth/me");
+        if (cancelled) return;
+        setAuth(user, token);
+        navigate({ to: "/" });
+      } catch {
+        if (!cancelled) navigate({ to: "/login", search: { mode } });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [token, mode, navigate, setAuth]);
+
+  useEffect(() => {
+    if (googleError) setError(t("Google sign-in failed"));
+  }, [googleError, t]);
 
   return (
     <div className="relative flex min-h-screen overflow-hidden">
@@ -131,6 +166,7 @@ function AuthPage() {
         {/* Form panel */}
         <div className="flex-1 flex items-center justify-center px-6 py-12">
           <div className="w-full max-w-md">
+            {error && <p className="text-sm text-red-500 text-center mb-4">{error}</p>}
             <AnimatePresence mode="wait">
               <motion.div
                 key={isRegister ? "register-form" : "login-form"}
@@ -145,6 +181,53 @@ function AuthPage() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function GoogleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <path
+        fill="#4285F4"
+        d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09C6.22 6.86 8.87 4.75 12 4.75z"
+      />
+    </svg>
+  );
+}
+
+function GoogleSignInButton({ mode }: { mode: "login" | "register" }) {
+  const { t } = useI18n();
+  const label = mode === "register" ? t("Sign up with Google") : t("Sign in with Google");
+  return (
+    <div>
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-border" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase tracking-[0.15em]">
+          <span className="bg-background px-2 text-muted-foreground">{t("Or")}</span>
+        </div>
+      </div>
+      <a
+        href={`${API_BASE}/api/auth/google`}
+        className="mt-4 w-full flex items-center justify-center gap-3 rounded-md border border-input bg-background py-3 text-sm font-medium text-foreground transition-colors hover:border-[#E85D1F] hover:text-[#E85D1F]"
+      >
+        <GoogleIcon />
+        {label}
+      </a>
     </div>
   );
 }
@@ -193,6 +276,7 @@ function LoginForm({ onToggle }: { onToggle: () => void }) {
           <PwInput value={password} onChange={setPassword} required />
         </div>
         {error && <p className="text-sm text-red-500">{error}</p>}
+        <GoogleSignInButton mode="login" />
         <button type="submit" disabled={loading} className="w-full bg-primary py-3 text-[11px] uppercase tracking-[0.2em] text-primary-foreground disabled:opacity-50">
           {loading ? t("Signing in...") : t("Sign In")}
         </button>
@@ -256,6 +340,7 @@ function RegisterForm({ onToggle }: { onToggle: () => void }) {
           <PwInput value={password} onChange={setPassword} required minLength={6} />
         </div>
         {error && <p className="text-sm text-red-500">{error}</p>}
+        <GoogleSignInButton mode="register" />
         <button type="submit" disabled={loading} className="w-full bg-primary py-3 text-[11px] uppercase tracking-[0.2em] text-primary-foreground disabled:opacity-50">
           {loading ? t("Creating account...") : t("Create Account")}
         </button>
