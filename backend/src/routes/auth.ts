@@ -290,9 +290,7 @@ function getGoogleConfig(): { clientId: string; clientSecret: string; redirectUr
   const clientId = process.env.GOOGLE_CLIENT_ID?.trim();
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
   if (!clientId || !clientSecret) return null;
-  const redirectUri =
-    process.env.GOOGLE_REDIRECT_URI?.trim() ||
-    `http://localhost:${process.env.PORT || 3001}/api/auth/google/callback`;
+  const redirectUri = "http://localhost:3001/api/auth/google/callback";
   return { clientId, clientSecret, redirectUri };
 }
 
