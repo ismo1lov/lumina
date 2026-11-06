@@ -33,6 +33,7 @@ interface Stats {
 interface RecentOrder {
   id: string;
   status: string;
+  paymentStatus: string;
   total: number;
   createdAt: string;
   userName: string | null;
@@ -53,6 +54,7 @@ interface AdminOrder {
     lng?: string;
   } | null;
   payment: string;
+  paymentStatus: string;
   delivery: string;
   createdAt: string;
   userId: string;
@@ -125,6 +127,15 @@ const statusBadge: Record<string, string> = {
   confirmed: "bg-sky-50 text-sky-700 ring-sky-600/20",
   shipped: "bg-violet-50 text-violet-700 ring-violet-600/20",
   delivered: "bg-emerald-50 text-emerald-700 ring-emerald-600/20",
+  cancelled: "bg-red-50 text-red-600 ring-red-500/20",
+};
+
+const paymentBadge: Record<string, string> = {
+  paid: "bg-emerald-50 text-emerald-700 ring-emerald-600/20",
+  pending: "bg-amber-50 text-amber-700 ring-amber-600/20",
+  unpaid: "bg-cream text-muted-foreground ring-border",
+  failed: "bg-red-50 text-red-600 ring-red-500/20",
+  refunded: "bg-sky-50 text-sky-700 ring-sky-600/20",
   cancelled: "bg-red-50 text-red-600 ring-red-500/20",
 };
 
@@ -356,7 +367,7 @@ function AdminPage() {
                   <StatCard
                     delay={0.19}
                     icon={Wallet}
-                    label="Revenue"
+                    label="Revenue (excl. cancelled)"
                     value={Number(stats?.revenue ?? 0)}
                     suffix=" UZS"
                   />
@@ -407,6 +418,7 @@ function AdminPage() {
                         </div>
                         <div className="flex items-center gap-5">
                           <StatusBadge status={o.status} />
+                          <PaymentBadge status={o.paymentStatus} />
                           <span className="font-semibold tabular-nums">{fmt(o.total)} UZS</span>
                         </div>
                       </motion.div>
@@ -442,6 +454,7 @@ function AdminPage() {
                         </div>
                         <div className="flex items-center gap-3">
                           <p className="font-semibold tabular-nums text-xl">{fmt(o.total)} UZS</p>
+                          <PaymentBadge status={o.paymentStatus} />
                           {o.status === "cancelled" ? (
                             <span className="rounded-lg bg-red-50 px-3 py-1.5 text-[11px] font-medium uppercase tracking-wider text-red-500 ring-1 ring-inset ring-red-200">
                               Cancelled by customer
@@ -508,6 +521,9 @@ function AdminPage() {
                                 : o.payment
                               : "—"}
                           </p>
+                          <div className="mt-1.5">
+                            <PaymentBadge status={o.paymentStatus} />
+                          </div>
                         </div>
                         <div>
                           <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -889,6 +905,7 @@ function AdminPage() {
                               </p>
                               <div className="flex items-center gap-3">
                                 <StatusBadge status={o.status} />
+                                <PaymentBadge status={o.paymentStatus} />
                                 <span className="font-semibold tabular-nums text-sm">
                                   {fmt(o.total)} UZS
                                 </span>
@@ -1018,6 +1035,22 @@ function StatusBadge({ status }: { status: string }) {
         <span className="size-1.5 animate-pulse rounded-full bg-amber-500" />
       )}
       {status}
+    </span>
+  );
+}
+
+function PaymentBadge({ status }: { status?: string }) {
+  const value = status || "unpaid";
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] uppercase tracking-wider ring-1 ring-inset ${
+        paymentBadge[value] ?? "bg-cream text-muted-foreground ring-border"
+      }`}
+    >
+      {value === "pending" && (
+        <span className="size-1.5 animate-pulse rounded-full bg-amber-500" />
+      )}
+      {value}
     </span>
   );
 }

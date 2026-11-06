@@ -17,6 +17,7 @@ import { Reveal } from "@/components/site/Reveal";
 import { Stars } from "@/components/site/Stars";
 import { resolveAsset } from "@/lib/assets";
 import { AuthRequiredDialog } from "@/components/site/AuthRequiredDialog";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/product/$id")({
   loader: ({ params }) => {
@@ -66,6 +67,7 @@ const reviews = [
 
 function ProductPage() {
   const { product } = Route.useLoaderData() as { product: Product };
+  const { t } = useI18n();
   const { add } = useCart();
   const { toggle, has } = useWishlist();
   const { user } = useAuth();
@@ -82,7 +84,8 @@ function ProductPage() {
 
   const finishImages = finish.colorImages || product.colors.map((c) => c.image || product.image);
   const gallery = finishImages.map((g) => resolveAsset(g) || g);
-  const colorImg = gallery[product.colors.indexOf(color)] || gallery[0] || resolveAsset(product.image);
+  const colorImg =
+    gallery[product.colors.indexOf(color)] || gallery[0] || resolveAsset(product.image) || product.image;
   const unitPrice = product.price + finish.delta + (assembly ? ASSEMBLY_FEE : 0);
 
   const addToCart = () =>
@@ -99,8 +102,8 @@ function ProductPage() {
 
   useEffect(() => {
     setChanging(true);
-    const t = setTimeout(() => setChanging(false), 400);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setChanging(false), 400);
+    return () => clearTimeout(timer);
   }, [gallery[active], finish]);
 
   const related = products.filter((p) => p.id !== product.id && p.category === product.category);
@@ -109,11 +112,11 @@ function ProductPage() {
     <div className="mx-auto max-w-[1400px] px-6 pb-24 pt-32 lg:px-12 lg:pt-36">
       <nav className="mb-10 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
         <Link to="/" className="link-underline">
-          Home
+          {t("Home")}
         </Link>
         <span className="px-2">/</span>
         <Link to="/catalog" className="link-underline">
-          Catalog
+          {t("Catalog")}
         </Link>
         <span className="px-2">/</span>
         <span className="text-foreground">{product.name}</span>
@@ -126,7 +129,7 @@ function ProductPage() {
             {is3D ? (
               <div className="flex aspect-square w-full flex-col items-center justify-center gap-3 text-muted-foreground">
                 <Box size={38} strokeWidth={1} className="animate-[spin_9s_linear_infinite]" />
-                <p className="text-[11px] uppercase tracking-[0.2em]">360° view loading</p>
+                <p className="text-[11px] uppercase tracking-[0.2em]">{t("360° view loading")}</p>
               </div>
             ) : (
               <div className="relative aspect-square w-full">
@@ -167,7 +170,7 @@ function ProductPage() {
               onClick={() => setIs3D(!is3D)}
               className="absolute right-4 top-4 flex items-center gap-2 bg-background/90 px-4 py-2 text-[10px] uppercase tracking-[0.2em] backdrop-blur"
             >
-              <Box size={13} /> {is3D ? "Photos" : "3D view"}
+              <Box size={13} /> {is3D ? t("Photos") : t("3D view")}
             </button>
           </div>
           <div className="mt-4 flex gap-4">
@@ -183,7 +186,7 @@ function ProductPage() {
                 className={`w-24 border transition-colors ${
                   active === i && !is3D ? "border-foreground" : "border-transparent"
                 }`}
-                aria-label={`View image ${i + 1}`}
+                aria-label={t("View image {index}", { index: i + 1 })}
               >
                 <img
                   src={g}
@@ -200,25 +203,29 @@ function ProductPage() {
           <Accordion type="single" collapsible className="mt-10 border-t">
             <AccordionItem value="dimensions">
               <AccordionTrigger className="text-sm">
-                Dimensions &amp; specifications
+                {t("Dimensions & specifications")}
               </AccordionTrigger>
               <AccordionContent className="text-sm text-muted-foreground">
                 <ul className="space-y-1.5">
                   <li>
-                    Width × Height × Depth: {product.dimensions.width} × {product.dimensions.height}{" "}
-                    × {product.dimensions.depth} cm
+                    {t("Width × Height × Depth: {width} × {height} × {depth} cm", {
+                      width: product.dimensions.width,
+                      height: product.dimensions.height,
+                      depth: product.dimensions.depth,
+                    })}
                   </li>
-                  <li>Primary material: {finish.material}</li>
-                  <li>Frame: kiln-dried hardwood, mortise-and-tenon joinery</li>
-                  <li>Finish: plant-based hardwax oil</li>
+                  <li>{t("Primary material: {material}", { material: t(finish.material) })}</li>
+                  <li>{t("Frame: kiln-dried hardwood, mortise-and-tenon joinery")}</li>
+                  <li>{t("Finish: plant-based hardwax oil")}</li>
                 </ul>
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="care">
-              <AccordionTrigger className="text-sm">Care instructions</AccordionTrigger>
+              <AccordionTrigger className="text-sm">{t("Care instructions")}</AccordionTrigger>
               <AccordionContent className="text-sm text-muted-foreground">
-                Dust with a dry cloth. Wipe spills immediately and re-oil the wood once a year. Keep
-                out of direct sunlight and away from radiators to protect the grain.
+                {t(
+                  "Dust with a dry cloth. Wipe spills immediately and re-oil the wood once a year. Keep out of direct sunlight and away from radiators to protect the grain.",
+                )}
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -227,28 +234,28 @@ function ProductPage() {
         {/* Details */}
         <div>
           <p className="eyebrow">
-            {product.category} · SKU {product.sku}
+            {t(product.category)} · SKU {product.sku}
           </p>
-          <h1 className="mt-4 font-display text-4xl lg:text-5xl">{product.name}</h1>
+          <h1 className="mt-4 font-display text-4xl lg:text-5xl">{t(product.name)}</h1>
           <div className="mt-4 flex items-center gap-3 text-xs text-muted-foreground">
             <Stars rating={product.rating} size={14} />
             <span>
-              {product.rating} · {product.reviews} reviews
+              {product.rating} · {t("{count} reviews", { count: product.reviews })}
             </span>
           </div>
 
           <p className="mt-7 font-semibold tabular-nums text-3xl">{formatUZS(unitPrice)}</p>
           <p className="mt-2 text-xs text-muted-foreground">
-            {product.inStock ? "In stock · ships in 3–5 days" : "Pre-order · ships in 4 weeks"}
+            {product.inStock ? t("In stock · ships in 3–5 days") : t("Pre-order · ships in 4 weeks")}
           </p>
 
           <p className="mt-7 max-w-lg text-sm leading-relaxed text-muted-foreground">
-            {product.description}
+            {t(product.description)}
           </p>
 
           <div className="mt-9 space-y-7">
             <div>
-              <p className="eyebrow">Wood finish</p>
+              <p className="eyebrow">{t("Wood finish")}</p>
               <div className="mt-3 flex gap-3">
                 {product.finishes.map((f) => (
                   <button
@@ -265,7 +272,7 @@ function ProductPage() {
                         : "border-border hover:border-foreground"
                     }`}
                   >
-                    {f.name}
+                    {t(f.name)}
                     {f.delta > 0 && <span className="ml-2 opacity-70">+{f.delta / 1000}k</span>}
                   </button>
                 ))}
@@ -273,13 +280,13 @@ function ProductPage() {
             </div>
 
             <div>
-              <p className="eyebrow">Fabric / colour — {color.name}</p>
+              <p className="eyebrow">{t("Fabric / colour — {name}", { name: t(color.name) })}</p>
               <div className="mt-3 flex gap-3">
                 {product.colors.map((c) => (
                   <button
                     key={c.name}
                     type="button"
-                    aria-label={c.name}
+                    aria-label={t(c.name)}
                     onClick={() => {
                       const ci = product.colors.indexOf(c);
                       setColor(c);
@@ -305,7 +312,7 @@ function ProductPage() {
                 onChange={() => setAssembly(!assembly)}
                 className="size-4 accent-[var(--terracotta)]"
               />
-              Add Home Assembly (+{formatUZS(ASSEMBLY_FEE)})
+              {t("Add Home Assembly (+{price})", { price: formatUZS(ASSEMBLY_FEE) })}
             </label>
 
             <div className="flex flex-wrap items-center gap-4">
@@ -314,7 +321,7 @@ function ProductPage() {
                   type="button"
                   className="px-4 py-3.5"
                   onClick={() => setQty(Math.max(1, qty - 1))}
-                  aria-label="Decrease quantity"
+                  aria-label={t("Decrease quantity")}
                 >
                   <Minus size={13} />
                 </button>
@@ -323,7 +330,7 @@ function ProductPage() {
                   type="button"
                   className="px-4 py-3.5"
                   onClick={() => setQty(qty + 1)}
-                  aria-label="Increase quantity"
+                  aria-label={t("Increase quantity")}
                 >
                   <Plus size={13} />
                 </button>
@@ -333,7 +340,7 @@ function ProductPage() {
                 onClick={addToCart}
                 className="flex-1 bg-primary px-8 py-4 text-[11px] uppercase tracking-[0.22em] text-primary-foreground transition-opacity hover:opacity-90"
               >
-                Add to cart
+                {t("Add to cart")}
               </button>
               <button
                 type="button"
@@ -347,14 +354,14 @@ function ProductPage() {
                 }}
                 className="border border-foreground/25 px-8 py-4 text-[11px] uppercase tracking-[0.22em] transition-colors hover:border-foreground"
               >
-                Buy now
+                {t("Buy now")}
               </button>
               <button
                 type="button"
                 onClick={() =>
                   toggle({ id: product.id, name: product.name, image: colorImg, price: unitPrice })
                 }
-                aria-label={has(product.id) ? "Remove from wishlist" : "Add to wishlist"}
+                aria-label={has(product.id) ? t("Remove from wishlist") : t("Add to wishlist")}
                 className={`grid size-12 place-items-center border transition-colors ${
                   has(product.id)
                     ? "border-accent text-accent"
@@ -366,15 +373,16 @@ function ProductPage() {
             </div>
 
             <p className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Truck size={14} /> Free delivery across Uzbekistan · 2-year warranty
+              <Truck size={14} /> {t("Free delivery across Uzbekistan · 2-year warranty")}
             </p>
 
             <Accordion type="single" collapsible className="mt-10 border-t">
               <AccordionItem value="delivery">
-                <AccordionTrigger className="text-sm">Delivery information</AccordionTrigger>
+                <AccordionTrigger className="text-sm">{t("Delivery information")}</AccordionTrigger>
                 <AccordionContent className="text-sm text-muted-foreground">
-                  Free standard delivery in 3–5 working days within Tashkent, 5–9 days elsewhere in
-                  Uzbekistan. Express with in-home assembly available at checkout.
+                  {t(
+                    "Free standard delivery in 3–5 working days within Tashkent, 5–9 days elsewhere in Uzbekistan. Express with in-home assembly available at checkout.",
+                  )}
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -386,11 +394,11 @@ function ProductPage() {
       <section className="mt-28 border-t pt-14">
         <Reveal className="flex flex-wrap items-end justify-between gap-6">
           <div>
-            <p className="eyebrow">Reviews</p>
+            <p className="eyebrow">{t("Reviews")}</p>
             <h2 className="mt-3 font-display text-4xl">
-              {product.rating} out of 5
+              {t("{rating} out of 5", { rating: product.rating })}
               <span className="ml-3 align-middle text-sm text-muted-foreground">
-                {product.reviews} verified buyers
+                {t("{count} verified buyers", { count: product.reviews })}
               </span>
             </h2>
           </div>
@@ -399,7 +407,7 @@ function ProductPage() {
           {reviews.map((r, i) => (
             <Reveal key={r.name} delay={i * 0.07} className="border-t pt-6">
               <Stars rating={r.rating} />
-              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{r.text}</p>
+              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{t(r.text)}</p>
               <p className="mt-4 text-[11px] uppercase tracking-[0.2em]">{r.name}</p>
             </Reveal>
           ))}

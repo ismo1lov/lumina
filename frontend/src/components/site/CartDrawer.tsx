@@ -7,8 +7,10 @@ import { useAuth } from "@/lib/auth-context";
 import { AuthRequiredDialog } from "@/components/site/AuthRequiredDialog";
 import { resolveAsset } from "@/lib/assets";
 import { useState } from "react";
+import { useI18n } from "@/lib/i18n";
 
 export function CartDrawer() {
+  const { t } = useI18n();
   const { open, setOpen, items, setQty, remove, subtotal } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -29,7 +31,7 @@ export function CartDrawer() {
         <div className="fixed inset-0 z-[60]">
           <motion.button
             type="button"
-            aria-label="Close cart"
+            aria-label={t("Close cart")}
             className="absolute inset-0 bg-foreground/30 backdrop-blur-[2px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -44,8 +46,8 @@ export function CartDrawer() {
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
           >
             <header className="flex items-center justify-between border-b px-6 py-5">
-              <h2 className="font-display text-xl">Your cart</h2>
-              <button type="button" onClick={() => setOpen(false)} aria-label="Close cart">
+              <h2 className="font-display text-xl">{t("Your cart")}</h2>
+              <button type="button" onClick={() => setOpen(false)} aria-label={t("Close cart")}>
                 <X size={18} />
               </button>
             </header>
@@ -54,13 +56,13 @@ export function CartDrawer() {
               {items.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
                   <ShoppingBag size={26} className="text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">Your cart is quietly empty.</p>
+                  <p className="text-sm text-muted-foreground">{t("Your cart is quietly empty.")}</p>
                   <Link
                     to="/catalog"
                     onClick={() => setOpen(false)}
                     className="text-[11px] uppercase tracking-[0.2em] link-underline"
                   >
-                    Browse the collection
+                    {t("Browse the collection")}
                   </Link>
                 </div>
               ) : (
@@ -81,17 +83,17 @@ export function CartDrawer() {
                           <button
                             type="button"
                             onClick={() => remove(item.key)}
-                            aria-label={`Remove ${item.name}`}
+                            aria-label={t("Remove {name}", { name: item.name })}
                           >
                             <X size={14} className="text-muted-foreground" />
                           </button>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          {item.finish} · {item.color}
+                          {t(item.finish)} · {t(item.color)}
                         </p>
                         {item.assembly && (
                           <p className="text-xs text-accent">
-                            + Home assembly ({formatUZS(ASSEMBLY_FEE)})
+                            {t("+ Home assembly ({price})", { price: formatUZS(ASSEMBLY_FEE) })}
                           </p>
                         )}
                         <div className="mt-auto flex items-center justify-between pt-2">
@@ -100,7 +102,7 @@ export function CartDrawer() {
                               type="button"
                               className="px-2.5 py-1.5"
                               onClick={() => setQty(item.key, item.qty - 1)}
-                              aria-label="Decrease quantity"
+                              aria-label={t("Decrease quantity")}
                             >
                               <Minus size={12} />
                             </button>
@@ -109,7 +111,7 @@ export function CartDrawer() {
                               type="button"
                               className="px-2.5 py-1.5"
                               onClick={() => setQty(item.key, item.qty + 1)}
-                              aria-label="Increase quantity"
+                              aria-label={t("Increase quantity")}
                             >
                               <Plus size={12} />
                             </button>
@@ -125,7 +127,7 @@ export function CartDrawer() {
 
             <footer className="border-t px-6 py-5">
               <div className="flex items-center justify-between pb-4 text-sm">
-                <span className="eyebrow">Subtotal</span>
+                <span className="eyebrow">{t("Subtotal")}</span>
                 <span className="font-semibold tabular-nums text-xl">{formatUZS(subtotal)}</span>
               </div>
               <button
@@ -133,10 +135,10 @@ export function CartDrawer() {
                 onClick={goCheckout}
                 className="block w-full bg-primary py-3.5 text-center text-[11px] uppercase tracking-[0.22em] text-primary-foreground transition-opacity hover:opacity-90"
               >
-                Proceed to checkout
+                {t("Proceed to checkout")}
               </button>
               <p className="pt-3 text-center text-[11px] text-muted-foreground">
-                Delivery and assembly calculated at checkout.
+                {t("Delivery and assembly calculated at checkout.")}
               </p>
             </footer>
           </motion.aside>

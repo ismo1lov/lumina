@@ -6,7 +6,7 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { getDb } from "../db/index.js";
-import { users, orders, orderItems, contacts, addresses, notifications } from "../db/schema.js";
+import { users, orders, orderItems, contacts, addresses, notifications, payments } from "../db/schema.js";
 import { adminMiddleware } from "../middleware/admin.js";
 import { hashPassword, verifyPassword } from "../lib/auth.js";
 
@@ -39,7 +39,10 @@ router.get("/stats", async (_req, res) => {
       .from(users)
       .where(ne(users.role, "admin"));
     const [orderCount] = await db.select({ c: count() }).from(orders);
-    const [revenueRow] = await db.select({ total: sum(orders.total) }).from(orders);
+    const [revenueRow] = await db
+      .select({ total: sum(orders.total) })
+      .from(orders)
+      .where(ne(orders.status, "cancelled"));
     const [contactCount] = await db.select({ c: count() }).from(contacts);
     const [pendingCount] = await db
       .select({ c: count() })
@@ -50,6 +53,7 @@ router.get("/stats", async (_req, res) => {
       .select({
         id: orders.id,
         status: orders.status,
+        paymentStatus: orders.paymentStatus,
         total: orders.total,
         createdAt: orders.createdAt,
         userName: users.name,
@@ -86,6 +90,7 @@ router.get("/orders", async (_req, res) => {
         total: orders.total,
         shippingAddress: orders.shippingAddress,
         payment: orders.payment,
+        paymentStatus: orders.paymentStatus,
         delivery: orders.delivery,
         createdAt: orders.createdAt,
         userId: users.id,
@@ -172,6 +177,7 @@ router.delete("/orders/:id", async (req, res) => {
     }
 
     await db.delete(orderItems).where(eq(orderItems.orderId, order.id));
+    await db.delete(payments).where(eq(payments.orderId, order.id));
     await db.delete(orders).where(eq(orders.id, order.id));
     res.json({ success: true });
   } catch (err) {

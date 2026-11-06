@@ -1,4 +1,4 @@
-const modules = import.meta.glob("../assets/**/*.{jpg,jpeg,png,webp}", {
+const modules = import.meta.glob("../assets/**/*.{jpg,jpeg,png,webp,svg}", {
   eager: true,
   import: "default",
 }) as Record<string, string>;

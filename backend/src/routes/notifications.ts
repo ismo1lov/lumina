@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { eq, desc } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { getDb } from "../db/index.js";
 import { notifications } from "../db/schema.js";
 import { authMiddleware } from "../middleware/auth.js";
@@ -28,10 +28,21 @@ router.patch("/:id/read", async (req, res) => {
   try {
     const { isRead } = z.object({ isRead: z.boolean() }).parse(req.body);
     const db = await getDb();
+    const [notification] = await db
+      .select({ id: notifications.id })
+      .from(notifications)
+      .where(
+        and(eq(notifications.id, req.params.id), eq(notifications.userId, req.userId!)),
+      )
+      .limit(1);
+    if (!notification) {
+      res.status(404).json({ error: "Notification not found" });
+      return;
+    }
     await db
       .update(notifications)
       .set({ isRead })
-      .where(eq(notifications.id, req.params.id));
+      .where(and(eq(notifications.id, req.params.id), eq(notifications.userId, req.userId!)));
     res.json({ success: true });
   } catch (err) {
     if (err instanceof z.ZodError) {
@@ -46,7 +57,9 @@ router.patch("/:id/read", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const db = await getDb();
-    await db.delete(notifications).where(eq(notifications.id, req.params.id));
+    await db
+      .delete(notifications)
+      .where(and(eq(notifications.id, req.params.id), eq(notifications.userId, req.userId!)));
     res.json({ success: true });
   } catch (err) {
     console.error(err);

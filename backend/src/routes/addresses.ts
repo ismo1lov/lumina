@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { randomUUID } from "crypto";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { getDb } from "../db/index.js";
 import { addresses } from "../db/schema.js";
 import { authMiddleware } from "../middleware/auth.js";
@@ -91,6 +91,15 @@ router.put("/:id", async (req, res) => {
       .parse(req.body);
 
     const db = await getDb();
+    const [existing] = await db
+      .select({ id: addresses.id })
+      .from(addresses)
+      .where(and(eq(addresses.id, req.params.id), eq(addresses.userId, req.userId!)))
+      .limit(1);
+    if (!existing) {
+      res.status(404).json({ error: "Address not found" });
+      return;
+    }
 
     if (data.isDefault) {
       await db
@@ -113,10 +122,15 @@ router.put("/:id", async (req, res) => {
     await db
       .update(addresses)
       .set(updateData)
-      .where(eq(addresses.id, req.params.id));
+      .where(and(eq(addresses.id, req.params.id), eq(addresses.userId, req.userId!)));
 
     res.json({ success: true });
   } catch (err) {
+    if (err instanceof z.ZodError) {
+      res.status(400).json({ error: err.errors[0].message });
+      return;
+    }
+    console.error(err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -124,9 +138,12 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const db = await getDb();
-    await db.delete(addresses).where(eq(addresses.id, req.params.id));
+    await db
+      .delete(addresses)
+      .where(and(eq(addresses.id, req.params.id), eq(addresses.userId, req.userId!)));
     res.json({ success: true });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Internal server error" });
   }
 });

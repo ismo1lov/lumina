@@ -9,6 +9,7 @@ import { AuthRequiredDialog } from "@/components/site/AuthRequiredDialog";
 import { isValidUzPhone } from "@/lib/phone";
 import { reverseGeocode, geocodeAddress } from "@/lib/geocode";
 import { resolveAsset } from "@/lib/assets";
+import { useI18n } from "@/lib/i18n";
 import {
   Bell,
   LogOut,
@@ -34,10 +35,21 @@ interface OrderItem {
 interface Order {
   id: string;
   status: string;
+  payment: string;
+  paymentStatus: string;
   total: number;
   createdAt: string;
   items: OrderItem[];
 }
+
+const paymentStatusColors: Record<string, string> = {
+  paid: "bg-emerald-50 text-emerald-700",
+  pending: "bg-amber-50 text-amber-700",
+  unpaid: "bg-cream text-muted-foreground",
+  failed: "bg-red-50 text-red-600",
+  refunded: "bg-sky-50 text-sky-700",
+  cancelled: "bg-red-50 text-red-600",
+};
 
 const statusColors: Record<string, string> = {
   pending: "bg-amber-50 text-amber-700",
@@ -72,6 +84,7 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 function DashboardPage() {
+  const { t: tr, lang } = useI18n();
   const { user, logout, token, setAuth } = useAuth();
   const router = useRouter();
   const { confirm, dialog } = useConfirm();
@@ -129,8 +142,8 @@ function DashboardPage() {
         .then(setNotifications)
         .catch(() => {});
     loadNotifications();
-    const t = setInterval(loadNotifications, 10000);
-    return () => clearInterval(t);
+    const timer = setInterval(loadNotifications, 10000);
+    return () => clearInterval(timer);
   }, [user]);
 
   useEffect(() => {
@@ -232,7 +245,7 @@ function DashboardPage() {
     setPhoneInvalid(false);
     if (!isValidUzPhone(form.phone)) {
       setPhoneInvalid(true);
-      toast.error("Iltimos, to'liq va to'g'ri telefon raqamini kiriting (+998 ** *** ** **)");
+      toast.error(tr("Please enter a complete and valid phone number (+998 ** *** ** **)"));
       return;
     }
     setSaving(true);
@@ -256,7 +269,7 @@ function DashboardPage() {
         isDefault: false,
       });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to save");
+      toast.error(err instanceof Error ? tr(err.message) : tr("Failed to save"));
     } finally {
       setSaving(false);
     }
@@ -285,19 +298,37 @@ function DashboardPage() {
 
   const cancelOrder = async (id: string) => {
     const ok = await confirm({
-      title: "Cancel order?",
-      description:
-        "Are you sure you want to cancel this order? This cannot be undone.",
-      confirmLabel: "Cancel order",
+      title: tr("Cancel order?"),
+      description: tr("Are you sure you want to cancel this order? This cannot be undone."),
+      confirmLabel: tr("Cancel order"),
       destructive: true,
     });
     if (!ok) return;
     try {
       await api.patch(`/orders/${id}/cancel`);
-      setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status: "cancelled" } : o)));
-      toast.success("Order cancelled");
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === id
+            ? {
+                ...o,
+                status: "cancelled",
+                paymentStatus: o.payment === "cod" ? "unpaid" : "cancelled",
+              }
+            : o,
+        ),
+      );
+      toast.success(tr("Order cancelled"));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to cancel order");
+      toast.error(err instanceof Error ? tr(err.message) : tr("Failed to cancel order"));
+    }
+  };
+
+  const payNow = async (order: Order) => {
+    try {
+      const result = await api.post<{ redirectUrl: string }>(`/payments/retry/${order.id}`);
+      window.location.assign(result.redirectUrl);
+    } catch (err) {
+      toast.error(err instanceof Error ? tr(err.message) : tr("Could not start payment"));
     }
   };
 
@@ -316,9 +347,12 @@ function DashboardPage() {
         };
       }>("/auth/me", { name });
       setAuth(res.user as never, token!);
-      setNameMsg({ ok: true, text: "Name updated" });
+      setNameMsg({ ok: true, text: tr("Name updated") });
     } catch (err) {
-      setNameMsg({ ok: false, text: err instanceof Error ? err.message : "Failed to update name" });
+      setNameMsg({
+        ok: false,
+        text: err instanceof Error ? tr(err.message) : tr("Failed to update name"),
+      });
     } finally {
       setNameSaving(false);
     }
@@ -330,11 +364,11 @@ function DashboardPage() {
     try {
       await api.patch("/auth/password", pwForm);
       setPwForm({ currentPassword: "", newPassword: "" });
-      setPwMsg({ ok: true, text: "Password updated" });
+      setPwMsg({ ok: true, text: tr("Password updated") });
     } catch (err) {
       setPwMsg({
         ok: false,
-        text: err instanceof Error ? err.message : "Failed to update password",
+        text: err instanceof Error ? tr(err.message) : tr("Failed to update password"),
       });
     } finally {
       setPwSaving(false);
@@ -343,10 +377,11 @@ function DashboardPage() {
 
   const deleteAccount = async () => {
     const ok = await confirm({
-      title: "Delete account?",
-      description:
+      title: tr("Delete account?"),
+      description: tr(
         "Are you sure you want to permanently delete your account? Your orders, addresses and chat history will be removed. This cannot be undone.",
-      confirmLabel: "Delete account",
+      ),
+      confirmLabel: tr("Delete account"),
       destructive: true,
     });
     if (!ok) return;
@@ -354,8 +389,8 @@ function DashboardPage() {
     setDelMsg(null);
     try {
       await api.delete("/auth/account", { password: delForm.password });
-      setDelMsg({ ok: true, text: "Account deleted" });
-      toast.success("Account deleted");
+      setDelMsg({ ok: true, text: tr("Account deleted") });
+      toast.success(tr("Account deleted"));
       setTimeout(() => {
         logout();
         router.navigate({ to: "/" });
@@ -363,7 +398,7 @@ function DashboardPage() {
     } catch (err) {
       setDelMsg({
         ok: false,
-        text: err instanceof Error ? err.message : "Failed to delete account",
+        text: err instanceof Error ? tr(err.message) : tr("Failed to delete account"),
       });
     } finally {
       setDelSaving(false);
@@ -393,12 +428,12 @@ function DashboardPage() {
     return (
       <div className="flex min-h-[70vh] items-center justify-center px-4">
         <div className="text-center">
-          <h1 className="font-display text-xl mb-4">Admin accounts use the admin panel</h1>
+          <h1 className="font-display text-xl mb-4">{tr("Admin accounts use the admin panel")}</h1>
           <Link
             to="/admin"
             className="bg-primary px-6 py-3 text-[11px] uppercase tracking-[0.2em] text-primary-foreground"
           >
-            Go to Admin Panel
+            {tr("Go to Admin Panel")}
           </Link>
         </div>
       </div>
@@ -411,23 +446,28 @@ function DashboardPage() {
   };
 
   const tabs = [
-    { id: "orders", label: "My Orders", icon: Package },
-    { id: "addresses", label: "Addresses", icon: MapPin },
-    { id: "messages", label: "Messages", icon: Bell },
-    { id: "profile", label: "Profile", icon: Settings },
+    { id: "orders", label: tr("My Orders"), icon: Package },
+    { id: "addresses", label: tr("Addresses"), icon: MapPin },
+    { id: "messages", label: tr("Messages"), icon: Bell },
+    { id: "profile", label: tr("Profile"), icon: Settings },
   ];
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const addressLabel = (label: string) => {
+    if (label === "Home") return tr("Home address");
+    if (label === "Work") return tr("Work address");
+    return tr("Other address");
+  };
 
   return (
     <div className="mx-auto max-w-4xl px-6 pt-36 pb-24">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="font-display text-2xl">My Account</h1>
+        <h1 className="font-display text-2xl">{tr("My Account")}</h1>
         <button
           onClick={handleLogout}
           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
         >
-          <LogOut size={15} /> Sign Out
+          <LogOut size={15} /> {tr("Sign Out")}
         </button>
       </div>
 
@@ -461,12 +501,12 @@ function DashboardPage() {
           {orders.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <ShoppingBag size={40} className="mx-auto mb-4 opacity-30" />
-              <p>No orders yet</p>
+              <p>{tr("No orders yet")}</p>
               <Link
                 to="/catalog"
                 className="mt-3 inline-block text-sm underline underline-offset-4"
               >
-                Start shopping
+                {tr("Start shopping")}
               </Link>
             </div>
           ) : (
@@ -474,16 +514,25 @@ function DashboardPage() {
               <div key={o.id} className="border p-5">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b pb-3">
                   <div>
-                    <p className="text-xs text-muted-foreground">Order #{o.id.slice(0, 8)}</p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(o.createdAt).toLocaleDateString()}
+                      {tr("Order #{id}", { id: o.id.slice(0, 8) })}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(o.createdAt).toLocaleDateString(lang === "ru" ? "ru-RU" : "uz-UZ")}
                     </p>
                   </div>
-                  <span
-                    className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-wider ${statusColors[o.status] ?? "bg-cream text-muted-foreground"}`}
-                  >
-                    {o.status}
-                  </span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span
+                      className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-wider ${statusColors[o.status] ?? "bg-cream text-muted-foreground"}`}
+                    >
+                      {tr(o.status)}
+                    </span>
+                    <span
+                      className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-wider ${paymentStatusColors[o.paymentStatus] ?? "bg-cream text-muted-foreground"}`}
+                    >
+                      {tr(o.paymentStatus)}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="divide-y">
@@ -501,8 +550,8 @@ function DashboardPage() {
                         <p className="font-display">{it.name}</p>
                         <p className="text-xs text-muted-foreground">
                           ×{it.qty}
-                          {it.finish ? ` · ${it.finish}` : ""}
-                          {it.assembly ? " · assembly" : ""}
+                          {it.finish ? ` · ${tr(it.finish)}` : ""}
+                          {it.assembly ? ` · ${tr("assembly")}` : ""}
                         </p>
                         <p className="mt-0.5 text-sm">
                           {new Intl.NumberFormat("en-US").format(it.unitPrice * it.qty)} UZS
@@ -512,22 +561,35 @@ function DashboardPage() {
                   ))}
                 </div>
 
-                <div className="flex items-center justify-between gap-3 border-t pt-3">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-3">
                   <p className="text-sm">
-                    Paid:{" "}
+                    {tr("Total")}:{" "}
                     <span className="font-semibold tabular-nums">
                       {new Intl.NumberFormat("en-US").format(o.total)} UZS
                     </span>
                   </p>
-                  {["pending", "confirmed"].includes(o.status) && (
-                    <button
-                      onClick={() => cancelOrder(o.id)}
-                      className="flex cursor-pointer items-center gap-1.5 border border-red-200 px-3 py-1.5 text-[11px] uppercase tracking-wider text-red-500 transition-colors hover:bg-red-50"
-                    >
-                      <XCircle size={13} />
-                      Cancel order
-                    </button>
-                  )}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {["click", "payme"].includes(o.payment) &&
+                      o.status !== "cancelled" &&
+                      !["paid", "refunded"].includes(o.paymentStatus) && (
+                        <button
+                          onClick={() => payNow(o)}
+                          className="cursor-pointer bg-primary px-3 py-1.5 text-[11px] uppercase tracking-wider text-primary-foreground transition-opacity hover:opacity-90"
+                        >
+                          {tr("Pay now")}
+                        </button>
+                      )}
+                    {["pending", "confirmed"].includes(o.status) &&
+                      !["paid", "refunded"].includes(o.paymentStatus) && (
+                        <button
+                          onClick={() => cancelOrder(o.id)}
+                          className="flex cursor-pointer items-center gap-1.5 border border-red-200 px-3 py-1.5 text-[11px] uppercase tracking-wider text-red-500 transition-colors hover:bg-red-50"
+                        >
+                          <XCircle size={13} />
+                          {tr("Cancel order")}
+                        </button>
+                      )}
+                  </div>
                 </div>
               </div>
             ))
@@ -539,18 +601,18 @@ function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div>
             {addresses.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No address saved yet</p>
+              <p className="text-sm text-muted-foreground">{tr("No address saved yet")}</p>
             ) : (
               addresses.map((a) => (
                 <div key={a.id} className="border p-6 min-h-[300px] flex flex-col">
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex gap-2 items-center">
                       <span className="text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
-                        {a.label}
+                        {addressLabel(a.label)}
                       </span>
                       {a.isDefault && (
                         <span className="text-[9px] bg-primary px-1.5 py-0.5 text-primary-foreground">
-                          DEFAULT
+                          {tr("DEFAULT")}
                         </span>
                       )}
                     </div>
@@ -559,13 +621,13 @@ function DashboardPage() {
                         onClick={() => editAddress(a)}
                         className="text-[11px] underline underline-offset-2"
                       >
-                        Edit
+                        {tr("Edit")}
                       </button>
                       <button
                         onClick={() => deleteAddress(a.id)}
                         className="text-[11px] text-red-400 underline underline-offset-2"
                       >
-                        Delete
+                        {tr("Delete")}
                       </button>
                     </div>
                   </div>
@@ -584,26 +646,26 @@ function DashboardPage() {
             {showForm ? (
               <div key={editingId || "add"}>
                 <h2 className="font-display text-base mb-4">
-                  {editingId ? "Edit Address" : "Add Address"}
+                  {editingId ? tr("Edit Address") : tr("Add Address")}
                 </h2>
                 <div className="border p-4 space-y-3">
                   <div>
                     <label className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-                      Label
+                      {tr("Label")}
                     </label>
                     <select
                       value={form.label}
                       onChange={(e) => setForm({ ...form, label: e.target.value })}
                       className="w-full border border-input bg-transparent px-3 py-2 text-sm outline-none mt-1"
                     >
-                      <option>Home</option>
-                      <option>Work</option>
-                      <option>Other</option>
+                      <option value="Home">{addressLabel("Home")}</option>
+                      <option value="Work">{addressLabel("Work")}</option>
+                      <option value="Other">{addressLabel("Other")}</option>
                     </select>
                   </div>
                   <div>
                     <label className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-                      Full Name
+                      {tr("Full Name")}
                     </label>
                     <input
                       value={form.fullName}
@@ -620,7 +682,7 @@ function DashboardPage() {
                   </div>
                   <div>
                     <label className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-                      Address
+                      {tr("Address")}
                     </label>
                     <textarea
                       value={form.address}
@@ -631,7 +693,7 @@ function DashboardPage() {
                   </div>
                   <div>
                     <label className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-                      City
+                      {tr("City")}
                     </label>
                     <input
                       value={form.city}
@@ -642,11 +704,11 @@ function DashboardPage() {
 
                   <div>
                     <label className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground mb-1 block">
-                      Pin your location on map
+                      {tr("Pin your location on map")}
                     </label>
                     <div ref={mapRef} className="h-48 w-full border" style={{ zIndex: 1 }} />
                     <p className="text-[10px] text-muted-foreground mt-1">
-                      Click or drag the marker
+                      {tr("Click or drag the marker")}
                     </p>
                   </div>
 
@@ -658,7 +720,7 @@ function DashboardPage() {
                         onChange={(e) => setForm({ ...form, isDefault: e.target.checked })}
                         className="accent-primary"
                       />
-                      Set as default
+                      {tr("Set as default")}
                     </label>
                     {editingId && (
                       <button
@@ -677,7 +739,7 @@ function DashboardPage() {
                         }}
                         className="text-[11px] underline underline-offset-2 ml-auto"
                       >
-                        Cancel
+                        {tr("Cancel")}
                       </button>
                     )}
                   </div>
@@ -687,7 +749,11 @@ function DashboardPage() {
                     disabled={saving}
                     className="w-full bg-primary py-2.5 text-[11px] uppercase tracking-[0.2em] text-primary-foreground disabled:opacity-50"
                   >
-                    {saving ? "Saving..." : editingId ? "Update Address" : "Save Address"}
+                    {saving
+                      ? tr("Saving...")
+                      : editingId
+                        ? tr("Update Address")
+                        : tr("Save Address")}
                   </button>
                 </div>
               </div>
@@ -697,7 +763,7 @@ function DashboardPage() {
                 className="w-full border-2 border-dashed border-border/30 py-3 text-center cursor-not-allowed opacity-50"
               >
                 <span className="text-sm">+</span>
-                <p className="font-display text-xs mt-0.5">Add Address</p>
+                <p className="font-display text-xs mt-0.5">{tr("Add Address")}</p>
               </button>
             )}
           </div>
@@ -707,10 +773,10 @@ function DashboardPage() {
         <>
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
             <div className="border p-6">
-              <h2 className="font-display text-base mb-5">Profile</h2>
+              <h2 className="font-display text-base mb-5">{tr("Profile")}</h2>
               <div>
                 <label className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-                  Full name
+                  {tr("Full name")}
                 </label>
                 <input
                   value={name}
@@ -720,7 +786,7 @@ function DashboardPage() {
               </div>
               <div className="mt-4">
                 <label className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-                  Email
+                  {tr("Email")}
                 </label>
                 <input
                   value={user.email}
@@ -738,15 +804,15 @@ function DashboardPage() {
                 disabled={nameSaving || name.trim().length < 2}
                 className="mt-5 w-full bg-primary py-2.5 text-[11px] uppercase tracking-[0.2em] text-primary-foreground disabled:opacity-50"
               >
-                {nameSaving ? "Saving..." : "Save Name"}
+                {nameSaving ? tr("Saving...") : tr("Save Name")}
               </button>
             </div>
 
             <div className="border p-6">
-              <h2 className="font-display text-base mb-5">Change password</h2>
+              <h2 className="font-display text-base mb-5">{tr("Change password")}</h2>
               <div>
                 <label className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-                  Current password
+                  {tr("Current password")}
                 </label>
                 <input
                   type="password"
@@ -758,7 +824,7 @@ function DashboardPage() {
               </div>
               <div className="mt-4">
                 <label className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-                  New password
+                  {tr("New password")}
                 </label>
                 <input
                   type="password"
@@ -778,20 +844,21 @@ function DashboardPage() {
                 disabled={pwSaving || !pwForm.currentPassword || pwForm.newPassword.length < 6}
                 className="mt-5 w-full bg-primary py-2.5 text-[11px] uppercase tracking-[0.2em] text-primary-foreground disabled:opacity-50"
               >
-                {pwSaving ? "Updating..." : "Update Password"}
+                {pwSaving ? tr("Updating...") : tr("Update Password")}
               </button>
             </div>
           </div>
 
           <div className="mt-8 border border-red-200 p-6">
-            <h2 className="font-display text-base mb-1 text-red-600">Delete account</h2>
+            <h2 className="font-display text-base mb-1 text-red-600">{tr("Delete account")}</h2>
             <p className="text-xs text-muted-foreground">
-              This permanently removes your account, orders, addresses and chat history. This action
-              cannot be undone.
+              {tr(
+                "This permanently removes your account, orders, addresses and chat history. This action cannot be undone.",
+              )}
             </p>
             <div className="mt-4">
               <label className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-                Enter your password to confirm
+                {tr("Enter your password to confirm")}
               </label>
               <input
                 type="password"
@@ -811,7 +878,7 @@ function DashboardPage() {
               disabled={delSaving || delForm.password.length === 0}
               className="mt-5 bg-red-600 py-2.5 px-6 text-[11px] uppercase tracking-[0.2em] text-white disabled:opacity-50"
             >
-              {delSaving ? "Deleting..." : "Delete my account"}
+              {delSaving ? tr("Deleting...") : tr("Delete my account")}
             </button>
           </div>
         </>
@@ -822,8 +889,8 @@ function DashboardPage() {
           {notifications.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <Bell size={40} className="mx-auto mb-4 opacity-30" />
-              <p>No notifications yet</p>
-              <p className="mt-1 text-xs">Replies from Lumina will appear here</p>
+              <p>{tr("No notifications yet")}</p>
+              <p className="mt-1 text-xs">{tr("Replies from Lumina will appear here")}</p>
             </div>
           ) : (
             notifications.map((n) => (
@@ -838,7 +905,7 @@ function DashboardPage() {
                   </div>
                   <button
                     onClick={() => deleteNotification(n.id)}
-                    aria-label="Delete notification"
+                    aria-label={tr("Delete notification")}
                     className="cursor-pointer text-muted-foreground/50 opacity-60 transition-all hover:text-red-500 sm:opacity-0 sm:group-hover:opacity-100"
                   >
                     <Trash2 size={14} />
@@ -851,7 +918,7 @@ function DashboardPage() {
                   <p className="text-sm leading-relaxed text-muted-foreground">{n.body}</p>
                 </button>
                 <p className="mt-2 text-[11px] text-muted-foreground/70">
-                  {new Date(n.createdAt).toLocaleString()}
+                  {new Date(n.createdAt).toLocaleString(lang === "ru" ? "ru-RU" : "uz-UZ")}
                 </p>
               </div>
             ))

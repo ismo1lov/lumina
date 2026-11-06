@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { categoryImages, products, type Category } from "@/data/products";
 import { Reveal } from "@/components/site/Reveal";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/categories")({
   head: () => ({
@@ -30,14 +31,15 @@ const blurbs: Record<Category, string> = {
 };
 
 function Categories() {
+  const { t } = useI18n();
   const cats = Object.keys(categoryImages) as Category[];
 
   return (
     <div className="mx-auto max-w-[1400px] px-6 pb-24 pt-32 lg:px-12 lg:pt-40">
       <Reveal>
-        <p className="eyebrow">Categories</p>
+        <p className="eyebrow">{t("Categories")}</p>
         <h1 className="mt-4 max-w-2xl font-display text-5xl lg:text-6xl">
-          Four rooms, one quiet language
+          {t("Four rooms, one quiet language")}
         </h1>
       </Reveal>
 
@@ -46,12 +48,13 @@ function Categories() {
           <Reveal key={cat} delay={i * 0.06}>
             <Link
               to="/catalog"
+              search={{ category: cat }}
               className="group grid items-center gap-8 overflow-hidden bg-cream md:grid-cols-[1fr_1.1fr]"
             >
               <div className="overflow-hidden">
                 <img
                   src={categoryImages[cat]}
-                  alt={`${cat} furniture by Lumina Home`}
+                  alt={t("{category} furniture", { category: t(cat) })}
                   loading="lazy"
                   width={900}
                   height={1100}
@@ -60,12 +63,14 @@ function Categories() {
               </div>
               <div className="px-6 py-8 md:px-10">
                 <p className="eyebrow">
-                  {products.filter((p) => p.category === cat).length} pieces
+                  {t("{count} pieces", {
+                    count: products.filter((p) => p.category === cat).length,
+                  })}
                 </p>
-                <h2 className="mt-3 font-display text-4xl">{cat}</h2>
-                <p className="mt-4 max-w-md text-sm text-muted-foreground">{blurbs[cat]}</p>
+                <h2 className="mt-3 font-display text-4xl">{t(cat)}</h2>
+                <p className="mt-4 max-w-md text-sm text-muted-foreground">{t(blurbs[cat])}</p>
                 <span className="mt-7 inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.2em]">
-                  Shop {cat}
+                  {t("Shop {category}", { category: t(cat) })}
                   <ArrowRight
                     size={14}
                     className="transition-transform duration-300 group-hover:translate-x-1"

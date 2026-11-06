@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { digitsOf, formatUzPhone, isValidUzPhone } from "@/lib/phone";
+import { useI18n } from "@/lib/i18n";
 
 interface PhoneInputProps {
   value: string;
@@ -18,6 +19,7 @@ export function PhoneInput({
   showHint = true,
   invalid = false,
 }: PhoneInputProps) {
+  const { t } = useI18n();
   const [touched, setTouched] = useState(false);
 
   useEffect(() => {
@@ -33,7 +35,7 @@ export function PhoneInput({
 
   return (
     <label className="block">
-      <span className="eyebrow">Phone</span>
+      <span className="eyebrow">{t("Phone")}</span>
       <input
         type="tel"
         inputMode="numeric"
@@ -50,8 +52,8 @@ export function PhoneInput({
       {showHint && (showError || showIncomplete) && (
         <span className="mt-1 block text-[11px] text-red-500">
           {showError
-            ? "To'g'ri O'zbekiston raqamini kiriting (masalan +998 90 123 45 67)"
-            : "Raqamni to'liq kiriting"}
+            ? t("Enter a valid Uzbekistan number (e.g. +998 90 123 45 67)")
+            : t("Enter the full number")}
         </span>
       )}
     </label>

@@ -6,10 +6,11 @@ import { ProductCard } from "@/components/site/ProductCard";
 import { Reveal } from "@/components/site/Reveal";
 import { Stars } from "@/components/site/Stars";
 import { resolveAsset } from "@/lib/assets";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/catalog")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    category: search.category as string | undefined,
+  validateSearch: (search: Record<string, unknown>): { category?: string } => ({
+    category: typeof search.category === "string" ? search.category : undefined,
   }),
   head: () => ({
     meta: [
@@ -35,6 +36,7 @@ const allMaterials = ["Walnut", "Oak", "Velvet", "Leather"];
 type Sort = "newest" | "price-asc" | "popularity";
 
 function Catalog() {
+  const { t } = useI18n();
   const { category } = useSearch({ from: "/catalog" });
   const navigate = useNavigate();
   const [cats, setCats] = useState<string[]>(() =>
@@ -85,10 +87,12 @@ function Catalog() {
   return (
     <div className="mx-auto max-w-[1400px] px-6 pb-24 pt-32 lg:px-12 lg:pt-40">
       <Reveal>
-        <p className="eyebrow">The collection</p>
-        <h1 className="mt-4 font-display text-5xl lg:text-6xl">Every piece, one place</h1>
+        <p className="eyebrow">{t("The collection")}</p>
+        <h1 className="mt-4 font-display text-5xl lg:text-6xl">{t("Every piece, one place")}</h1>
         <p className="mt-4 max-w-lg text-sm text-muted-foreground">
-          {filtered.length} pieces, hand-finished in our Tashkent workshop.
+          {t("{count} pieces, hand-finished in our Tashkent workshop.", {
+            count: filtered.length,
+          })}
         </p>
       </Reveal>
 
@@ -115,9 +119,11 @@ function Catalog() {
               value={maxPrice}
               onChange={(e) => setMaxPrice(Number(e.target.value))}
               className="w-full accent-[var(--terracotta)]"
-              aria-label="Maximum price"
+              aria-label={t("Maximum price")}
             />
-            <p className="text-xs text-muted-foreground">Up to {formatUZS(maxPrice)}</p>
+            <p className="text-xs text-muted-foreground">
+              {t("Up to {price}", { price: formatUZS(maxPrice) })}
+            </p>
           </Filter>
 
           <Filter title="Material">
@@ -140,7 +146,9 @@ function Catalog() {
         {/* Grid */}
         <div>
           <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-4">
-            <span className="text-xs text-muted-foreground">{filtered.length} results</span>
+            <span className="text-xs text-muted-foreground">
+              {t("{count} results", { count: filtered.length })}
+            </span>
           </div>
 
           <div className="mt-10 grid gap-x-8 gap-y-14 sm:grid-cols-2 xl:grid-cols-3">
@@ -153,7 +161,7 @@ function Catalog() {
                     onClick={() => setQuickView(p.id)}
                     className="absolute left-1/2 top-[42%] -translate-x-1/2 bg-background/90 px-5 py-2.5 text-[10px] uppercase tracking-[0.2em] opacity-0 backdrop-blur transition-opacity duration-300 hover:bg-background focus:opacity-100 group-hover:opacity-100"
                   >
-                    Quick view
+                    {t("Quick view")}
                   </button>
                 </div>
               </Reveal>
@@ -162,7 +170,7 @@ function Catalog() {
 
           {filtered.length === 0 && (
             <p className="py-20 text-center text-sm text-muted-foreground">
-              No pieces match these filters yet.
+              {t("No pieces match these filters yet.")}
             </p>
           )}
         </div>
@@ -174,7 +182,7 @@ function Catalog() {
           <div className="relative grid w-full max-w-3xl gap-8 bg-background p-6 sm:grid-cols-2 sm:p-8">
             <button
               type="button"
-              aria-label="Close quick view"
+              aria-label={t("Close quick view")}
               onClick={() => setQuickView(null)}
               className="absolute right-4 top-4"
             >
@@ -189,21 +197,21 @@ function Catalog() {
               className="aspect-square w-full bg-cream object-cover"
             />
             <div className="flex flex-col">
-              <p className="eyebrow">{quick.category}</p>
-              <h2 className="mt-3 font-display text-3xl">{quick.name}</h2>
+              <p className="eyebrow">{t(quick.category)}</p>
+              <h2 className="mt-3 font-display text-3xl">{t(quick.name)}</h2>
               <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
                 <Stars rating={quick.rating} />
-                {quick.rating} · {quick.reviews} reviews
+                {quick.rating} · {t("{count} reviews", { count: quick.reviews })}
               </div>
               <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
-                {quick.description}
+                {t(quick.description)}
               </p>
               <p className="mt-6 font-semibold tabular-nums text-2xl">{formatUZS(quick.price)}</p>
               <a
                 href={`/product/${quick.id}`}
                 className="mt-auto bg-primary py-3.5 text-center text-[11px] uppercase tracking-[0.22em] text-primary-foreground"
               >
-                View full details
+                {t("View full details")}
               </a>
             </div>
           </div>
@@ -214,9 +222,10 @@ function Catalog() {
 }
 
 function Filter({ title, children }: { title: string; children: React.ReactNode }) {
+  const { t } = useI18n();
   return (
     <div className="space-y-3 border-b pb-7">
-      <p className="eyebrow">{title}</p>
+      <p className="eyebrow">{t(title)}</p>
       <div className="space-y-2.5">{children}</div>
     </div>
   );
@@ -231,6 +240,7 @@ function Check({
   checked: boolean;
   onChange: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <label className="flex cursor-pointer items-center gap-3 text-sm">
       <input
@@ -239,7 +249,7 @@ function Check({
         onChange={onChange}
         className="size-3.5 accent-[var(--terracotta)]"
       />
-      {label}
+      {t(label)}
     </label>
   );
 }

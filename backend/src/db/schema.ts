@@ -2,6 +2,7 @@ import {
   mysqlTable,
   varchar,
   int,
+  bigint,
   decimal,
   boolean,
   text,
@@ -102,6 +103,7 @@ export const orders = mysqlTable(
       lng?: string;
     }>(),
     payment: varchar("payment", { length: 50 }).notNull().default(""),
+    paymentStatus: varchar("payment_status", { length: 20 }).notNull().default("unpaid"),
     delivery: varchar("delivery", { length: 50 }).notNull().default(""),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
@@ -172,3 +174,36 @@ export const notifications = mysqlTable(
     userIdIdx: index("notif_user_idx").on(table.userId),
   }),
 );
+
+export const payments = mysqlTable(
+  "payments",
+  {
+    id: varchar("id", { length: 36 }).primaryKey(),
+    orderId: varchar("order_id", { length: 36 }).notNull(),
+    userId: varchar("user_id", { length: 36 }).notNull(),
+    provider: varchar("provider", { length: 20 }).notNull(),
+    providerTransactionId: varchar("provider_transaction_id", { length: 100 }).notNull().default(""),
+    amount: int("amount").notNull(),
+    state: varchar("state", { length: 20 }).notNull().default("created"),
+    providerCreateTime: bigint("provider_create_time", { mode: "number" }).notNull().default(0),
+    providerPerformTime: bigint("provider_perform_time", { mode: "number" }).notNull().default(0),
+    providerCancelTime: bigint("provider_cancel_time", { mode: "number" }).notNull().default(0),
+    cancelReason: int("cancel_reason").notNull().default(0),
+    rawRequest: text("raw_request"),
+    rawResponse: text("raw_response"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+  },
+  (table) => ({
+    orderIdx: index("payment_order_idx").on(table.orderId),
+    transactionIdx: index("payment_transaction_idx").on(
+      table.provider,
+      table.providerTransactionId,
+    ),
+  }),
+);
+
+export const newsletterSubscribers = mysqlTable("newsletter_subscribers", {
+  email: varchar("email", { length: 255 }).primaryKey(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});

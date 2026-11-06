@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { Heart, LogOut, Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
@@ -7,17 +7,18 @@ import { useAuth } from "@/lib/auth-context";
 import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
 import { resolveAsset } from "@/lib/assets";
-import { PageLoader } from "@/components/site/PageLoader";
+import { LanguageSwitcher } from "@/components/site/LanguageSwitcher";
+import { useI18n } from "@/lib/i18n";
 
 const links = [
   { to: "/", label: "Home" },
   { to: "/catalog", label: "Catalog" },
-  { to: "/categories", label: "Categories" },
   { to: "/about", label: "About Us" },
   { to: "/contact", label: "Contact" },
 ] as const;
 
 export function Navbar() {
+  const { t } = useI18n();
   const { count, setOpen } = useCart();
   const { count: wishCount, setOpen: setWishOpen } = useWishlist();
   const { user, logout } = useAuth();
@@ -26,17 +27,14 @@ export function Navbar() {
   const [query, setQuery] = useState("");
   const [menu, setMenu] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [pageLoading, setPageLoading] = useState(false);
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const isAboutPage = pathname === "/about";
 
-  const goAuth = (to: "/login" | "/register") => {
+  const goAuth = (mode: "login" | "register") => {
     setProfileOpen(false);
     setMenu(false);
-    setPageLoading(true);
-    setTimeout(() => {
-      navigate({ to });
-      setPageLoading(false);
-    }, 1000);
+    navigate({ to: "/login", search: { mode } });
   };
 
   useEffect(() => {
@@ -54,7 +52,11 @@ export function Navbar() {
     <>
       <header
         className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
-          scrolled ? "border-b bg-background/85 backdrop-blur-md" : "bg-transparent"
+          isAboutPage
+            ? "border-b bg-background"
+            : scrolled
+              ? "border-b bg-background/85 backdrop-blur-md"
+              : "bg-transparent"
         }`}
       >
         <div className="mx-auto flex h-20 max-w-[1400px] items-center justify-between gap-6 px-6 lg:px-12">
@@ -74,15 +76,16 @@ export function Navbar() {
                 inactiveProps={{ className: "text-muted-foreground" }}
                 className="text-[11px] uppercase tracking-[0.2em] transition-colors hover:text-foreground pb-0.5"
               >
-                {l.label}
+                {t(l.label)}
               </Link>
             ))}
           </nav>
 
           <div className="flex items-center gap-5">
+            <LanguageSwitcher className="mr-3 hidden sm:flex" />
             <button
               type="button"
-              aria-label="Search"
+              aria-label={t("Search")}
               className="cursor-pointer"
               onClick={() => setSearch(true)}
             >
@@ -90,7 +93,7 @@ export function Navbar() {
             </button>
             <button
               type="button"
-              aria-label="Wishlist"
+              aria-label={t("Wishlist")}
               className="relative hidden cursor-pointer sm:block"
               onClick={() => setWishOpen(true)}
             >
@@ -103,7 +106,7 @@ export function Navbar() {
             </button>
             <button
               type="button"
-              aria-label="Open cart"
+              aria-label={t("Open cart")}
               className="relative cursor-pointer"
               onClick={() => setOpen(true)}
             >
@@ -118,7 +121,7 @@ export function Navbar() {
             {user && user.role !== "admin" ? (
               <Link
                 to="/dashboard"
-                aria-label="My Account"
+                aria-label={t("My Account")}
                 className="hidden cursor-pointer sm:block"
               >
                 <User size={17} />
@@ -127,7 +130,7 @@ export function Navbar() {
               <div className="relative hidden sm:block">
                 <button
                   type="button"
-                  aria-label="Account"
+                  aria-label={t("Account")}
                   className="cursor-pointer"
                   onClick={() => setProfileOpen((v) => !v)}
                 >
@@ -146,17 +149,17 @@ export function Navbar() {
                       >
                         <button
                           type="button"
-                          onClick={() => goAuth("/login")}
+                          onClick={() => goAuth("login")}
                           className="block w-full cursor-pointer px-5 py-3 text-left text-[11px] uppercase tracking-[0.2em] transition-colors hover:bg-cream hover:text-foreground"
                         >
-                          Sign In
+                          {t("Sign In")}
                         </button>
                         <button
                           type="button"
-                          onClick={() => goAuth("/register")}
+                          onClick={() => goAuth("register")}
                           className="block w-full cursor-pointer border-t border-border px-5 py-3 text-left text-[11px] uppercase tracking-[0.2em] transition-colors hover:bg-cream hover:text-foreground"
                         >
-                          Create Account
+                          {t("Create Account")}
                         </button>
                       </motion.div>
                     </>
@@ -166,7 +169,7 @@ export function Navbar() {
             )}
             <button
               type="button"
-              aria-label="Open menu"
+              aria-label={t("Open menu")}
               className="cursor-pointer lg:hidden"
               onClick={() => setMenu(true)}
             >
@@ -185,7 +188,7 @@ export function Navbar() {
             exit={{ opacity: 0 }}
           >
             <div className="flex justify-end">
-              <button type="button" aria-label="Close menu" onClick={() => setMenu(false)}>
+              <button type="button" aria-label={t("Close menu")} onClick={() => setMenu(false)}>
                 <X size={20} />
               </button>
             </div>
@@ -197,9 +200,10 @@ export function Navbar() {
                   onClick={() => setMenu(false)}
                   className="font-display text-3xl"
                 >
-                  {l.label}
+                  {t(l.label)}
                 </Link>
               ))}
+              <LanguageSwitcher className="mt-2" />
               <div className="mt-4 border-t pt-6">
                 {user && user.role !== "admin" ? (
                   <>
@@ -208,7 +212,7 @@ export function Navbar() {
                       onClick={() => setMenu(false)}
                       className="block font-display text-xl"
                     >
-                      My Account
+                      {t("My Account")}
                     </Link>
                     <button
                       onClick={() => {
@@ -218,24 +222,24 @@ export function Navbar() {
                       }}
                       className="mt-4 flex items-center gap-3 font-display text-xl text-muted-foreground"
                     >
-                      <LogOut size={18} /> Sign Out
+                      <LogOut size={18} /> {t("Sign Out")}
                     </button>
                   </>
                 ) : (
                   <>
                     <button
                       type="button"
-                      onClick={() => goAuth("/login")}
+                      onClick={() => goAuth("login")}
                       className="block cursor-pointer text-left font-display text-xl"
                     >
-                      Sign In
+                      {t("Sign In")}
                     </button>
                     <button
                       type="button"
-                      onClick={() => goAuth("/register")}
+                      onClick={() => goAuth("register")}
                       className="mt-4 block cursor-pointer text-left font-display text-xl"
                     >
-                      Create Account
+                      {t("Create Account")}
                     </button>
                   </>
                 )}
@@ -260,10 +264,10 @@ export function Navbar() {
                   autoFocus
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search chairs, tables, beds…"
+                  placeholder={t("Search chairs, tables, beds…")}
                   className="w-full bg-transparent font-display text-2xl outline-none placeholder:text-muted-foreground/60"
                 />
-                <button type="button" aria-label="Close search" onClick={() => setSearch(false)}>
+                <button type="button" aria-label={t("Close search")} onClick={() => setSearch(false)}>
                   <X size={18} />
                 </button>
               </div>
@@ -289,7 +293,7 @@ export function Navbar() {
                       />
                       <span>
                         <span className="block font-display text-base">{p.name}</span>
-                        <span className="block text-xs text-muted-foreground">{p.category}</span>
+                        <span className="block text-xs text-muted-foreground">{t(p.category)}</span>
                       </span>
                     </button>
                   </li>
@@ -300,7 +304,6 @@ export function Navbar() {
         )}
       </AnimatePresence>
 
-      {pageLoading && <PageLoader />}
     </>
   );
 }

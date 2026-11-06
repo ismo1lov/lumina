@@ -15,7 +15,7 @@ import heroChair from "@/assets/hero-chair.jpg";
 import { categoryImages, products, type Category } from "@/data/products";
 import { ProductCard } from "@/components/site/ProductCard";
 import { Reveal } from "@/components/site/Reveal";
-import { AmbientGlitter } from "@/components/site/AmbientGlitter";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -46,13 +46,13 @@ const values = [
 ];
 
 function Home() {
+  const { t } = useI18n();
   const bestSellers = [...products].sort((a, b) => b.popularity - a.popularity).slice(0, 6);
 
   return (
     <div>
       {/* Hero */}
       <section className="relative flex h-screen max-h-screen items-center overflow-hidden bg-cream pt-20">
-        <AmbientGlitter />
         <div className="mx-auto grid w-full max-w-[1400px] items-center gap-12 px-6 lg:grid-cols-[1fr_1.05fr] lg:px-12">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -65,7 +65,7 @@ function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
             >
-              Crafting Comfort for Your Modern Sanctuary
+              {t("Crafted Comfort for Your Modern Sanctuary")}
             </motion.h1>
             <motion.p
               className="mt-7 max-w-md text-[15px] leading-relaxed text-muted-foreground"
@@ -73,8 +73,9 @@ function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.2 }}
             >
-              Cozy, hand-finished furniture shaped from solid walnut and oak. Each piece is oiled by
-              hand, built to soften with time, and delivered ready to live in.
+              {t(
+                "Cozy, hand-finished furniture shaped from solid walnut and oak. Each piece is oiled by hand, built to soften with time, and delivered ready to live in.",
+              )}
             </motion.p>
             <motion.div
               className="mt-10 flex flex-wrap items-center gap-4"
@@ -86,7 +87,7 @@ function Home() {
                 to="/catalog"
                 className="group inline-flex items-center gap-3 bg-primary px-8 py-4 text-[11px] uppercase tracking-[0.22em] text-primary-foreground transition-opacity hover:opacity-90"
               >
-                Explore Collection
+                {t("Explore Collection")}
                 <ArrowRight
                   size={14}
                   className="transition-transform duration-300 group-hover:translate-x-1"
@@ -96,7 +97,7 @@ function Home() {
                 to="/contact"
                 className="inline-flex items-center gap-3 border border-foreground/25 px-8 py-4 text-[11px] uppercase tracking-[0.22em] transition-colors hover:border-foreground"
               >
-                Contact Us
+                {t("Contact Us")}
               </Link>
             </motion.div>
           </motion.div>
@@ -116,14 +117,14 @@ function Home() {
               className="relative w-full rounded-2xl object-contain"
             />
             <div className="absolute bottom-4 left-4 hidden rounded-2xl bg-background/90 px-5 py-4 backdrop-blur sm:block">
-              <p className="eyebrow">Featured</p>
-              <p className="mt-1 font-display text-base">Nordic Walnut Chair</p>
+              <p className="eyebrow">{t("Featured")}</p>
+              <p className="mt-1 font-display text-base">{t("Nordic Walnut Chair")}</p>
               <Link
                 to="/product/$id"
                 params={{ id: "nordic-walnut-lounge-chair" }}
                 className="mt-1 inline-block text-[11px] uppercase tracking-[0.2em] text-accent link-underline"
               >
-                View piece
+                {t("View piece")}
               </Link>
             </div>
           </motion.div>
@@ -135,7 +136,7 @@ function Home() {
           transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
         >
           <span className="flex flex-col items-center gap-2 text-muted-foreground">
-            <span className="text-[10px] uppercase tracking-[0.22em]">Scroll</span>
+            <span className="text-[10px] uppercase tracking-[0.22em]">{t("Scroll")}</span>
             <ArrowDown size={14} />
           </span>
         </motion.div>
@@ -145,16 +146,16 @@ function Home() {
       <section className="mx-auto max-w-[1400px] px-6 py-24 lg:px-12 lg:py-32">
         <Reveal className="flex flex-wrap items-end justify-between gap-6">
           <div>
-            <p className="eyebrow">Browse by room</p>
+            <p className="eyebrow">{t("Browse by room")}</p>
             <h2 className="mt-4 max-w-lg font-display text-4xl lg:text-5xl">
-              Rooms that breathe, pieces that stay
+              {t("Rooms that breathe, pieces that stay")}
             </h2>
           </div>
           <Link
             to="/categories"
             className="text-[11px] uppercase tracking-[0.2em] link-underline"
           >
-            All categories
+            {t("All categories")}
           </Link>
         </Reveal>
 
@@ -163,13 +164,14 @@ function Home() {
             <Reveal key={cat} delay={i * 0.08}>
               <Link
                 to="/catalog"
+                search={{ category: cat }}
                 className="group block overflow-hidden bg-cream"
-                aria-label={`Shop ${cat}`}
+                aria-label={t("Shop {category}", { category: t(cat) })}
               >
                 <div className="overflow-hidden">
                   <img
                     src={categoryImages[cat]}
-                    alt={`${cat} furniture`}
+                    alt={t("{category} furniture", { category: t(cat) })}
                     loading="lazy"
                     width={900}
                     height={1100}
@@ -177,7 +179,7 @@ function Home() {
                   />
                 </div>
                 <div className="flex items-center justify-between px-5 py-5">
-                  <span className="font-display text-xl">{cat}</span>
+                  <span className="font-display text-xl">{t(cat)}</span>
                   <ArrowRight
                     size={15}
                     className="text-muted-foreground transition-transform duration-300 group-hover:translate-x-1"
@@ -194,54 +196,34 @@ function Home() {
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
           <Reveal className="flex flex-wrap items-end justify-between gap-6">
             <div>
-              <p className="eyebrow">Best sellers</p>
-              <h2 className="mt-4 font-display text-4xl lg:text-5xl">Loved in many homes</h2>
+              <p className="eyebrow">{t("Best sellers")}</p>
+              <h2 className="mt-4 font-display text-4xl lg:text-5xl">{t("Loved in many homes")}</h2>
             </div>
             <Link to="/catalog" className="text-[11px] uppercase tracking-[0.2em] link-underline">
-              Shop all
+              {t("Shop all")}
             </Link>
           </Reveal>
 
           <div className="relative mt-14">
             <button
               type="button"
-              aria-label="Scroll left"
+              aria-label={t("Scroll left")}
               onClick={() => {
                 const el = document.getElementById("bestsellers-scroll")!;
-                const start = el.scrollLeft;
-                const target = start - 360;
-                const duration = 500;
-                const startTime = performance.now();
-                const ease = (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t));
-                function raf(now: number) {
-                  const p = Math.min((now - startTime) / duration, 1);
-                  el.scrollLeft = start + (target - start) * ease(p);
-                  if (p < 1) requestAnimationFrame(raf);
-                }
-                requestAnimationFrame(raf);
+                el.scrollBy({ left: -372, behavior: "smooth" });
               }}
-              className="absolute -left-4 top-1/2 z-10 hidden -translate-y-1/2 rounded-full border bg-background/90 p-2.5 shadow-sm backdrop-blur transition-colors hover:bg-background lg:block"
+              className="absolute -left-4 top-1/2 z-10 hidden -translate-y-1/2 cursor-pointer rounded-full border bg-background/90 p-2.5 shadow-sm backdrop-blur transition-colors hover:bg-background lg:block"
             >
               <ChevronLeft size={18} />
             </button>
             <button
               type="button"
-              aria-label="Scroll right"
+              aria-label={t("Scroll right")}
               onClick={() => {
                 const el = document.getElementById("bestsellers-scroll")!;
-                const start = el.scrollLeft;
-                const target = start + 360;
-                const duration = 500;
-                const startTime = performance.now();
-                const ease = (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t));
-                function raf(now: number) {
-                  const p = Math.min((now - startTime) / duration, 1);
-                  el.scrollLeft = start + (target - start) * ease(p);
-                  if (p < 1) requestAnimationFrame(raf);
-                }
-                requestAnimationFrame(raf);
+                el.scrollBy({ left: 372, behavior: "smooth" });
               }}
-              className="absolute -right-4 top-1/2 z-10 hidden -translate-y-1/2 rounded-full border bg-background/90 p-2.5 shadow-sm backdrop-blur transition-colors hover:bg-background lg:block"
+              className="absolute -right-4 top-1/2 z-10 hidden -translate-y-1/2 cursor-pointer rounded-full border bg-background/90 p-2.5 shadow-sm backdrop-blur transition-colors hover:bg-background lg:block"
             >
               <ChevronRight size={18} />
             </button>
@@ -267,25 +249,46 @@ function Home() {
       <section className="bg-cream py-24 lg:py-32">
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
           <Reveal className="text-center">
-            <p className="eyebrow">Why Lumina Home</p>
-            <h2 className="mt-4 font-display text-4xl lg:text-5xl">Crafted with care, delivered with heart</h2>
+            <p className="eyebrow">{t("Why Lumina Home")}</p>
+            <h2 className="mt-4 font-display text-4xl lg:text-5xl">
+              {t("Crafted with care, delivered with heart")}
+            </h2>
             <p className="mx-auto mt-4 max-w-lg text-sm text-muted-foreground">
-              Every piece we make is built to last — from materials that matter, by hands that care,
-              for homes that deserve the best.
+              {t(
+                "Every piece we make is built to last — from materials that matter, by hands that care, for homes that deserve the best.",
+              )}
             </p>
           </Reveal>
-          <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:items-start lg:gap-6">
             {values.map((v, i) => (
-              <Reveal key={v.title} delay={i * 0.07}>
-                <div className="group flex h-full flex-col gap-5 rounded-[1.75rem] border border-border/80 bg-[#F7F4EF] p-7 transition-all duration-300 hover:border-accent/30 hover:bg-white">
-                  <span className="grid size-12 place-items-center rounded-xl border border-border/60 bg-white">
-                    <v.icon size={20} strokeWidth={1.3} className="text-accent" />
-                  </span>
-                  <div>
-                    <p className="font-display text-lg text-foreground">{v.title}</p>
-                    <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{v.copy}</p>
+              <Reveal
+                key={v.title}
+                delay={i * 0.07}
+                className={i % 2 === 1 ? "lg:mt-10" : undefined}
+              >
+                <article className="group relative flex h-full min-h-[250px] flex-col justify-start overflow-hidden rounded-xl border border-border/70 bg-[#F7F4EF] p-7 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-2 hover:border-accent/30 hover:bg-white hover:shadow-[0_30px_60px_-35px_rgba(61,42,31,0.45)]">
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute -right-10 -top-10 size-36 rounded-full bg-accent/[0.05] blur-2xl transition-colors duration-500 group-hover:bg-accent/10"
+                  />
+
+                  <div className="relative flex items-center justify-between">
+                    <span className="grid size-12 place-items-center rounded-lg border border-accent bg-accent text-accent-foreground transition-all duration-500">
+                      <v.icon size={20} strokeWidth={1.4} />
+                    </span>
+                    <span className="font-display text-sm tracking-[0.18em] text-muted-foreground/60">
+                      0{i + 1}
+                    </span>
                   </div>
-                </div>
+
+                  <div className="relative mt-8">
+                    <h3 className="font-display text-xl text-foreground">{t(v.title)}</h3>
+                    <span className="mt-3 block h-px w-10 bg-accent/40 transition-all duration-500 group-hover:w-16 group-hover:bg-accent" />
+                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                      {t(v.copy)}
+                    </p>
+                  </div>
+                </article>
               </Reveal>
             ))}
           </div>

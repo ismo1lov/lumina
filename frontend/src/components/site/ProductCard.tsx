@@ -13,8 +13,10 @@ import {
 } from "@/components/ui/dialog";
 import { useState } from "react";
 import { resolveAsset } from "@/lib/assets";
+import { useI18n } from "@/lib/i18n";
 
 export function ProductCard({ product }: { product: Product }) {
+  const { t } = useI18n();
   const { add } = useCart();
   const { toggle, has } = useWishlist();
   const wished = has(product.id);
@@ -42,16 +44,16 @@ export function ProductCard({ product }: { product: Product }) {
             />
           </Link>
         <span className="absolute left-4 top-4 bg-background/85 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground backdrop-blur">
-          {product.material}
+          {t(product.material)}
         </span>
         {!product.inStock && (
           <span className="absolute right-4 top-4 bg-accent px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-accent-foreground">
-            Pre-order
+            {t("Pre-order")}
           </span>
         )}
         <button
           type="button"
-          aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
+          aria-label={wished ? t("Remove from wishlist") : t("Add to wishlist")}
           onClick={(e) => {
             e.stopPropagation();
             toggle({ id: product.id, name: product.name, image: productImage!, price: product.price });
@@ -77,7 +79,7 @@ export function ProductCard({ product }: { product: Product }) {
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Stars rating={product.rating} />
           <span>
-            {product.rating} · {product.reviews} reviews
+            {product.rating} · {t("{count} reviews", { count: product.reviews })}
           </span>
         </div>
         <button
@@ -97,7 +99,7 @@ export function ProductCard({ product }: { product: Product }) {
           }}
           className="mt-3 w-full border border-foreground/20 py-2.5 text-[11px] uppercase tracking-[0.2em] transition-colors duration-300 hover:bg-primary hover:text-primary-foreground"
         >
-          Add to cart
+          {t("Add to cart")}
         </button>
       </div>
     </article>
@@ -106,7 +108,7 @@ export function ProductCard({ product }: { product: Product }) {
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle className="font-display text-2xl">{product.name}</DialogTitle>
-            <DialogDescription className="text-sm">{product.description}</DialogDescription>
+            <DialogDescription className="text-sm">{t(product.description)}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-6 sm:grid-cols-2">
             <img
@@ -118,19 +120,19 @@ export function ProductCard({ product }: { product: Product }) {
             />
             <div className="flex flex-col gap-4">
               <p className="font-semibold tabular-nums text-xl">{formatUZS(product.price)}</p>
-              <p className="text-xs text-muted-foreground">{product.material}</p>
+              <p className="text-xs text-muted-foreground">{t(product.material)}</p>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Stars rating={product.rating} />
-                <span>{product.rating} · {product.reviews} reviews</span>
+                <span>{product.rating} · {t("{count} reviews", { count: product.reviews })}</span>
               </div>
-              <p className="text-xs leading-relaxed text-muted-foreground">{product.description}</p>
+              <p className="text-xs leading-relaxed text-muted-foreground">{t(product.description)}</p>
               <Link
                 to="/product/$id"
                 params={{ id: product.id }}
                 className="mt-auto text-center border border-foreground/20 py-2.5 text-[11px] uppercase tracking-[0.2em] transition-colors hover:bg-primary hover:text-primary-foreground"
                 onClick={() => setOpen(false)}
               >
-                View full details
+                {t("View full details")}
               </Link>
             </div>
           </div>

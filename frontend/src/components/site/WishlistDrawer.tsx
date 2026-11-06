@@ -4,8 +4,10 @@ import { AnimatePresence, motion } from "motion/react";
 import { formatUZS } from "@/data/products";
 import { useWishlist } from "@/lib/wishlist";
 import { resolveAsset } from "@/lib/assets";
+import { useI18n } from "@/lib/i18n";
 
 export function WishlistDrawer() {
+  const { t } = useI18n();
   const { open, setOpen, items, toggle } = useWishlist();
 
   return (
@@ -14,7 +16,7 @@ export function WishlistDrawer() {
         <div className="fixed inset-0 z-[60]">
           <motion.button
             type="button"
-            aria-label="Close wishlist"
+            aria-label={t("Close wishlist")}
             className="absolute inset-0 bg-foreground/30 backdrop-blur-[2px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -29,8 +31,8 @@ export function WishlistDrawer() {
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
           >
             <header className="flex items-center justify-between border-b px-6 py-5">
-              <h2 className="font-display text-xl">Wishlist</h2>
-              <button type="button" onClick={() => setOpen(false)} aria-label="Close wishlist">
+              <h2 className="font-display text-xl">{t("Wishlist")}</h2>
+              <button type="button" onClick={() => setOpen(false)} aria-label={t("Close wishlist")}>
                 <X size={18} />
               </button>
             </header>
@@ -39,13 +41,13 @@ export function WishlistDrawer() {
               {items.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
                   <Heart size={26} className="text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">Your wishlist is empty.</p>
+                  <p className="text-sm text-muted-foreground">{t("Your wishlist is empty.")}</p>
                   <Link
                     to="/catalog"
                     onClick={() => setOpen(false)}
                     className="text-[11px] uppercase tracking-[0.2em] link-underline"
                   >
-                    Browse the collection
+                    {t("Browse the collection")}
                   </Link>
                 </div>
               ) : (
@@ -73,7 +75,7 @@ export function WishlistDrawer() {
                           <button
                             type="button"
                             onClick={() => toggle(item)}
-                            aria-label={`Remove ${item.name}`}
+                            aria-label={t("Remove {name}", { name: item.name })}
                           >
                             <X size={14} className="text-muted-foreground" />
                           </button>

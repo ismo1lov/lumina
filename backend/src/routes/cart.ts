@@ -97,12 +97,22 @@ router.post("/update", async (req, res) => {
 
     const db = await getDb();
     if (qty <= 0) {
-      await db.delete(cartItems).where(eq(cartItems.id, id));
+      await db
+        .delete(cartItems)
+        .where(and(eq(cartItems.id, id), eq(cartItems.userId, req.userId!)));
     } else {
-      await db.update(cartItems).set({ qty }).where(eq(cartItems.id, id));
+      await db
+        .update(cartItems)
+        .set({ qty })
+        .where(and(eq(cartItems.id, id), eq(cartItems.userId, req.userId!)));
     }
     res.json({ success: true });
   } catch (err) {
+    if (err instanceof z.ZodError) {
+      res.status(400).json({ error: err.errors[0].message });
+      return;
+    }
+    console.error(err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -111,9 +121,16 @@ router.post("/remove", async (req, res) => {
   try {
     const { id } = z.object({ id: z.string() }).parse(req.body);
     const db = await getDb();
-    await db.delete(cartItems).where(eq(cartItems.id, id));
+    await db
+      .delete(cartItems)
+      .where(and(eq(cartItems.id, id), eq(cartItems.userId, req.userId!)));
     res.json({ success: true });
   } catch (err) {
+    if (err instanceof z.ZodError) {
+      res.status(400).json({ error: err.errors[0].message });
+      return;
+    }
+    console.error(err);
     res.status(500).json({ error: "Internal server error" });
   }
 });

@@ -6,6 +6,7 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { PhoneInput } from "@/components/site/PhoneInput";
 import { isValidUzPhone } from "@/lib/phone";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -27,6 +28,7 @@ export const Route = createFileRoute("/contact")({
 });
 
 function Contact() {
+  const { t } = useI18n();
   const { user } = useAuth();
   const [name, setName] = useState(user?.name ?? "");
   const [phone, setPhone] = useState("");
@@ -43,7 +45,7 @@ function Contact() {
     setPhoneInvalid(false);
     if (!isValidUzPhone(phone)) {
       setPhoneInvalid(true);
-      setError("Iltimos, to'liq va to'g'ri telefon raqamini kiriting (+998 ** *** ** **)");
+      setError(t("Please enter a complete and valid phone number (+998 ** *** ** **)"));
       return;
     }
     setBusy(true);
@@ -55,7 +57,7 @@ function Contact() {
       setMessage("");
       setSent(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to send");
+      setError(err instanceof Error ? t(err.message) : t("Failed to send"));
     } finally {
       setBusy(false);
     }
@@ -64,8 +66,8 @@ function Contact() {
   return (
     <div className="mx-auto max-w-[1400px] px-6 pb-24 pt-32 lg:px-12 lg:pt-40">
       <Reveal>
-        <p className="eyebrow">Contact</p>
-        <h1 className="mt-4 max-w-2xl font-display text-5xl lg:text-6xl">Come sit with the wood</h1>
+        <p className="eyebrow">{t("Contact")}</p>
+        <h1 className="mt-4 max-w-2xl font-display text-5xl lg:text-6xl">{t("Come sit with the wood")}</h1>
       </Reveal>
 
       <div className="mt-16 grid gap-16 lg:grid-cols-[1fr_1.2fr]">
@@ -82,16 +84,17 @@ function Contact() {
             <div key={c.title} className="flex gap-4">
               <c.icon size={18} strokeWidth={1.5} className="mt-1 text-accent" />
               <div>
-                <p className="font-display text-lg">{c.title}</p>
-                <p className="text-sm text-muted-foreground">{c.copy}</p>
+                <p className="font-display text-lg">{t(c.title)}</p>
+                <p className="text-sm text-muted-foreground">{t(c.copy)}</p>
               </div>
             </div>
           ))}
           <div className="border-t pt-8">
-            <p className="eyebrow">Custom work</p>
+            <p className="eyebrow">{t("Custom work")}</p>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              Send your room dimensions and we'll draft a piece scaled to the space, usually within
-              five working days.
+              {t(
+                "Send your room dimensions and we'll draft a piece scaled to the space, usually within five working days.",
+              )}
             </p>
           </div>
         </Reveal>
@@ -106,7 +109,7 @@ function Contact() {
               <Field label="Email" name="email" type="email" value={email} onChange={setEmail} />
             )}
             <label className="block">
-              <span className="eyebrow">Message</span>
+              <span className="eyebrow">{t("Message")}</span>
               <textarea
                 required
                 rows={5}
@@ -120,10 +123,10 @@ function Contact() {
               disabled={busy}
               className="cursor-pointer bg-primary px-9 py-4 text-[11px] uppercase tracking-[0.22em] text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
             >
-              {busy ? "Sending…" : "Send message"}
+              {busy ? t("Sending…") : t("Send message")}
             </button>
             {sent && (
-              <p className="text-sm text-accent">Thank you — we'll reply within one working day.</p>
+              <p className="text-sm text-accent">{t("Thank you — we'll reply within one working day.")}</p>
             )}
             {error && <p className="text-sm text-red-500">{error}</p>}
           </form>
@@ -146,9 +149,10 @@ function Field({
   value: string;
   onChange: (v: string) => void;
 }) {
+  const { t } = useI18n();
   return (
     <label className="block">
-      <span className="eyebrow">{label}</span>
+      <span className="eyebrow">{t(label)}</span>
       <input
         required
         name={name}

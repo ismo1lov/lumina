@@ -10,6 +10,8 @@ import { isValidUzPhone } from "@/lib/phone";
 import { reverseGeocode, geocodeAddress } from "@/lib/geocode";
 import { AuthRequiredDialog } from "@/components/site/AuthRequiredDialog";
 import { resolveAsset } from "@/lib/assets";
+import { useI18n } from "@/lib/i18n";
+import { PaymentBrandLogo, PaymentLogos } from "@/components/site/PaymentLogos";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -44,7 +46,15 @@ const payments = [
   { id: "cod", label: "Cash on delivery" },
 ];
 
+interface PaymentConfig {
+  payme: boolean;
+  click: boolean;
+  visa: boolean;
+  mock: boolean;
+}
+
 function Checkout() {
+  const { t } = useI18n();
   const { items, subtotal, clear } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -54,8 +64,10 @@ function Checkout() {
   const markerRef = useRef<any>(null);
 
   const [delivery, setDelivery] = useState(deliveryOptions[0]);
-  const [payment, setPayment] = useState(payments[0].id);
+  const [payment, setPayment] = useState("cod");
+  const [paymentConfig, setPaymentConfig] = useState<PaymentConfig | null>(null);
   const [placed, setPlaced] = useState(false);
+  const [placedOrderId, setPlacedOrderId] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [phoneInvalid, setPhoneInvalid] = useState(false);
@@ -81,6 +93,24 @@ function Checkout() {
       email: user!.email,
     }));
   }, [isCustomer]);
+
+  useEffect(() => {
+    let active = true;
+    api
+      .get<PaymentConfig>("/payments/config")
+      .then((config) => {
+        if (!active) return;
+        setPaymentConfig(config);
+        if (config.click) setPayment("click");
+        else if (config.payme) setPayment("payme");
+      })
+      .catch(() => {
+        if (active) setPaymentConfig({ payme: false, click: false, visa: false, mock: false });
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!mapRef.current || mapInstance.current) return;
@@ -174,15 +204,22 @@ function Checkout() {
         <span className="grid size-14 place-items-center rounded-full bg-accent text-accent-foreground">
           <Check size={22} />
         </span>
-        <h1 className="mt-8 font-display text-4xl">Order placed</h1>
+        <h1 className="mt-8 font-display text-4xl">{t("Order placed")}</h1>
+        {placedOrderId && (
+          <p className="mt-3 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+            {t("Order number")}: {placedOrderId}
+          </p>
+        )}
         <p className="mt-4 text-sm text-muted-foreground">
-          Thank you. Our workshop will call you within a few hours to confirm delivery and assembly.
+          {t(
+            "Thank you. Our workshop will call you within a few hours to confirm delivery and assembly.",
+          )}
         </p>
         <Link
           to="/catalog"
           className="mt-9 bg-primary px-8 py-4 text-[11px] uppercase tracking-[0.22em] text-primary-foreground"
         >
-          Continue shopping
+          {t("Continue shopping")}
         </Link>
       </div>
     );
@@ -202,13 +239,21 @@ function Checkout() {
     setPhoneInvalid(false);
     if (!isValidUzPhone(form.phone)) {
       setPhoneInvalid(true);
-      setError("Iltimos, to'liq va to'g'ri telefon raqamini kiriting (+998 ** *** ** **)");
+      setError(t("Please enter a complete and valid phone number (+998 ** *** ** **)"));
+      return;
+    }
+    const onlineAvailable =
+      payment === "cod" ||
+      (payment === "click" && !!paymentConfig?.click) ||
+      (payment === "payme" && !!paymentConfig?.payme);
+    if (!onlineAvailable) {
+      setError(t("This payment method is not configured yet"));
       return;
     }
     setBusy(true);
     try {
       const name = `${form.first} ${form.last}`.trim();
-      await api.post("/orders", {
+      const result = await api.post<{ orderId: string; redirectUrl?: string }>("/orders", {
         shippingAddress: {
           name,
           phone: form.phone,
@@ -227,10 +272,26 @@ function Checkout() {
           qty: i.qty,
         })),
       });
+
+      if (payment !== "cod") {
+        clear();
+        try {
+          localStorage.setItem("lumina-last-order", result.orderId);
+        } catch {
+          /* ignore */
+        }
+        window.location.assign(
+          result.redirectUrl ||
+            `/payment/result?orderId=${encodeURIComponent(result.orderId)}`,
+        );
+        return;
+      }
+
       clear();
+      setPlacedOrderId(result.orderId);
       setPlaced(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to place order");
+      setError(err instanceof Error ? t(err.message) : t("Failed to place order"));
     } finally {
       setBusy(false);
     }
@@ -238,14 +299,14 @@ function Checkout() {
 
   return (
     <div className="mx-auto max-w-[1400px] px-6 pb-24 pt-32 lg:px-12 lg:pt-40">
-      <p className="eyebrow">Checkout</p>
-      <h1 className="mt-4 font-display text-5xl">Almost home</h1>
+      <p className="eyebrow">{t("Checkout")}</p>
+      <h1 className="mt-4 font-display text-5xl">{t("Almost home")}</h1>
 
       <div className="mt-14 grid gap-16 lg:grid-cols-[1.3fr_1fr]">
         {/* Left */}
         <form className="space-y-12" onSubmit={handleSubmit}>
           <section>
-            <h2 className="font-display text-2xl">Shipping details</h2>
+            <h2 className="font-display text-2xl">{t("Shipping details")}</h2>
             <div className="mt-6 grid gap-6 sm:grid-cols-2">
               <Field
                 label="First name"
@@ -264,7 +325,7 @@ function Checkout() {
               />
               <div>
                 <label className="block">
-                  <span className="eyebrow">Email</span>
+                  <span className="eyebrow">{t("Email")}</span>
                   <input
                     type="email"
                     readOnly
@@ -273,7 +334,7 @@ function Checkout() {
                   />
                 </label>
                 <span className="mt-1 block text-[11px] text-muted-foreground">
-                  Your account email
+                  {t("Your account email")}
                 </span>
               </div>
               <div className="sm:col-span-2">
@@ -290,10 +351,10 @@ function Checkout() {
               />
               <div className="sm:col-span-2">
                 <label className="block">
-                  <span className="eyebrow">Pin your location on map</span>
+                  <span className="eyebrow">{t("Pin your location on map")}</span>
                   <div ref={mapRef} className="mt-2 h-56 w-full border" style={{ zIndex: 1 }} />
                   <span className="mt-1 block text-[11px] text-muted-foreground">
-                    Click or drag the marker
+                    {t("Click or drag the marker")}
                   </span>
                 </label>
               </div>
@@ -301,7 +362,7 @@ function Checkout() {
           </section>
 
           <section>
-            <h2 className="font-display text-2xl">Delivery method</h2>
+            <h2 className="font-display text-2xl">{t("Delivery method")}</h2>
             <div className="mt-6 space-y-3">
               {deliveryOptions.map((d) => (
                 <label
@@ -319,11 +380,11 @@ function Checkout() {
                       className="accent-[var(--terracotta)]"
                     />
                     <span>
-                      <span className="block text-sm">{d.label}</span>
-                      <span className="block text-xs text-muted-foreground">{d.copy}</span>
+                      <span className="block text-sm">{t(d.label)}</span>
+                      <span className="block text-xs text-muted-foreground">{t(d.copy)}</span>
                     </span>
                   </span>
-                  <span className="text-sm">{d.price ? formatUZS(d.price) : "Free"}</span>
+                  <span className="text-sm">{d.price ? formatUZS(d.price) : t("Free")}</span>
                 </label>
               ))}
             </div>
@@ -337,10 +398,10 @@ function Checkout() {
             {busy ? (
               <span className="inline-flex items-center gap-2">
                 <Loader size={14} className="animate-spin" />
-                Placing order…
+                {t("Placing order…")}
               </span>
             ) : (
-              `Place order · ${formatUZS(total)}`
+              t("Place order · {total}", { total: formatUZS(total) })
             )}
           </button>
           {error && <p className="text-sm text-red-500">{error}</p>}
@@ -348,13 +409,13 @@ function Checkout() {
 
         {/* Right */}
         <aside className="h-fit bg-cream p-7 lg:sticky lg:top-28">
-          <h2 className="font-display text-2xl">Order summary</h2>
+          <h2 className="font-display text-2xl">{t("Order summary")}</h2>
 
           {items.length === 0 ? (
             <p className="mt-6 text-sm text-muted-foreground">
-              Your cart is empty.{" "}
+              {t("Your cart is empty.")}{" "}
               <Link to="/catalog" className="link-underline">
-                Browse the collection
+                {t("Browse the collection")}
               </Link>
               .
             </p>
@@ -373,9 +434,11 @@ function Checkout() {
                   <div className="flex-1 text-sm">
                     <p className="font-display text-base">{i.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {i.finish} · {i.color} · ×{i.qty}
+                      {t(i.finish)} · {t(i.color)} · ×{i.qty}
                     </p>
-                    {i.assembly && <p className="text-xs text-accent">Home assembly included</p>}
+                    {i.assembly && (
+                      <p className="text-xs text-accent">{t("Home assembly included")}</p>
+                    )}
                   </div>
                   <span className="text-sm">{formatUZS(i.unitPrice * i.qty)}</span>
                 </li>
@@ -385,28 +448,59 @@ function Checkout() {
 
           <div className="mt-6 space-y-2 border-t pt-6 text-sm">
             <Row label="Subtotal" value={formatUZS(subtotal)} />
-            <Row label="Delivery" value={delivery.price ? formatUZS(delivery.price) : "Free"} />
+            <Row
+              label="Delivery"
+              value={delivery.price ? formatUZS(delivery.price) : t("Free")}
+            />
             <div className="flex justify-between border-t pt-3">
-              <span className="eyebrow">Total</span>
+              <span className="eyebrow">{t("Total")}</span>
               <span className="font-semibold tabular-nums text-2xl">{formatUZS(total)}</span>
             </div>
           </div>
 
           <div className="mt-7">
-            <p className="eyebrow">Payment</p>
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              {payments.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setPayment(p.id)}
-                  className={`cursor-pointer border px-2 py-3 text-[10px] uppercase tracking-[0.14em] transition-colors ${
-                    payment === p.id ? "border-foreground bg-background" : "border-border"
-                  }`}
-                >
-                  {p.label}
-                </button>
-              ))}
+            <p className="eyebrow">{t("Payment")}</p>
+            <div className="mt-3 grid grid-cols-1 gap-2">
+              {payments
+                .filter((p) => {
+                  if (p.id === "cod") return true;
+                  if (p.id === "click") return !!paymentConfig?.click;
+                  if (p.id === "payme") return !!paymentConfig?.payme;
+                  return false;
+                })
+                .map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setPayment(p.id)}
+                    className={`flex cursor-pointer items-center justify-between gap-3 border px-3 py-2.5 text-left text-[11px] uppercase tracking-[0.14em] transition-colors ${
+                      payment === p.id ? "border-foreground bg-background" : "border-border"
+                    }`}
+                  >
+                    <span>{t(p.label)}</span>
+                    {p.id === "click" && <PaymentBrandLogo brand="click" className="h-6 w-16" />}
+                    {p.id === "payme" && <PaymentBrandLogo brand="payme" className="h-6 w-16" />}
+                  </button>
+                ))}
+            </div>
+
+            {paymentConfig && !paymentConfig.click && !paymentConfig.payme && (
+              <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
+                {t("Online payment is temporarily unavailable")}.{" "}
+                {t("Please choose cash on delivery or contact us.")}
+              </p>
+            )}
+
+            <div className="mt-5 border-t pt-4">
+              <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                {t("Accepted cards")}
+              </p>
+              <PaymentLogos className="mt-2" imageClassName="h-6 w-16" />
+              <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+                {t(
+                  "Visa, UZCARD and HUMO cards are accepted through our payment partners.",
+                )}
+              </p>
             </div>
           </div>
         </aside>
@@ -416,9 +510,10 @@ function Checkout() {
 }
 
 function Row({ label, value }: { label: string; value: string }) {
+  const { t } = useI18n();
   return (
     <div className="flex justify-between text-muted-foreground">
-      <span>{label}</span>
+      <span>{t(label)}</span>
       <span className="text-foreground">{value}</span>
     </div>
   );
@@ -435,9 +530,10 @@ function Field({
   value: string;
   onChange: (v: string) => void;
 }) {
+  const { t } = useI18n();
   return (
     <label className="block">
-      <span className="eyebrow">{label}</span>
+      <span className="eyebrow">{t(label)}</span>
       <input
         type={type}
         required

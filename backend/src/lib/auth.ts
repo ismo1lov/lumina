@@ -1,7 +1,13 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { randomBytes } from "crypto";
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
+const JWT_SECRET = process.env.JWT_SECRET || randomBytes(32).toString("hex");
+if (!process.env.JWT_SECRET) {
+  console.warn(
+    "JWT_SECRET is not set. Using a random secret for this process; tokens will be invalid after restart.",
+  );
+}
 
 export function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 10);

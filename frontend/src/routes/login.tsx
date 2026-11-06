@@ -5,6 +5,8 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { Eye, EyeOff } from "lucide-react";
 import heroChair from "@/assets/hero-chair.jpg";
+import { LanguageSwitcher } from "@/components/site/LanguageSwitcher";
+import { useI18n } from "@/lib/i18n";
 
 const registerImage = "https://images.unsplash.com/photo-1618220179428-22790b461013?w=800&q=80";
 
@@ -39,8 +41,8 @@ function PwInput({ value, onChange, required, minLength }: {
 
 export const Route = createFileRoute("/login")({
   component: AuthPage,
-  validateSearch: (search: Record<string, unknown>) => ({
-    mode: (search.mode as string) || "login",
+  validateSearch: (search: Record<string, unknown>): { mode?: string } => ({
+    mode: typeof search.mode === "string" ? search.mode : undefined,
   }),
   head: () => ({
     links: [
@@ -51,6 +53,7 @@ export const Route = createFileRoute("/login")({
 });
 
 function AuthPage() {
+  const { t } = useI18n();
   const { mode } = useSearch({ from: "/login" });
   const navigate = useNavigate();
   const isRegister = mode === "register";
@@ -62,7 +65,10 @@ function AuthPage() {
   }, []);
 
   return (
-    <div className="flex min-h-screen overflow-hidden">
+    <div className="relative flex min-h-screen overflow-hidden">
+      <div className="absolute right-6 top-6 z-20 rounded-full bg-background/80 px-3 py-2 backdrop-blur">
+        <LanguageSwitcher />
+      </div>
       <div className="flex w-full lg:flex-row flex-col">
         {/* Image panel */}
         <div className="relative lg:w-1/2 h-[40vh] lg:h-screen overflow-hidden bg-[#f5f0eb]">
@@ -98,16 +104,26 @@ function AuthPage() {
               animate={{ opacity: isRegister ? 0 : 1 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
             >
-              <p className="font-display text-[44px] font-[500] tracking-[0.02em] leading-tight">Bringing Warmth to<br />Every Home</p>
-              <p className="text-base opacity-90 mt-3 leading-relaxed">Handcrafted hardwood furniture for modern sanctuaries — sofas, beds, dining tables and more.</p>
+              <p className="font-display text-[44px] font-[500] tracking-[0.02em] leading-tight">
+                {t("Bringing Warmth to Every Home")}
+              </p>
+              <p className="text-base opacity-90 mt-3 leading-relaxed">
+                {t(
+                  "Handcrafted hardwood furniture for modern sanctuaries — sofas, beds, dining tables and more.",
+                )}
+              </p>
             </motion.div>
             <motion.div
               animate={{ opacity: isRegister ? 1 : 0 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
               style={{ position: "absolute", inset: 0 }}
             >
-              <p className="font-display text-[44px] font-[500] tracking-[0.02em] leading-tight">Join the<br />Lumina Family</p>
-              <p className="text-base opacity-90 mt-3 leading-relaxed">Create your account and explore our handcrafted collection.</p>
+              <p className="font-display text-[44px] font-[500] tracking-[0.02em] leading-tight">
+                {t("Join the Lumina Family")}
+              </p>
+              <p className="text-base opacity-90 mt-3 leading-relaxed">
+                {t("Create your account and explore our handcrafted collection.")}
+              </p>
             </motion.div>
           </div>
         </div>
@@ -134,6 +150,7 @@ function AuthPage() {
 }
 
 function LoginForm({ onToggle }: { onToggle: () => void }) {
+  const { t } = useI18n();
   const { setAuth } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -150,13 +167,13 @@ function LoginForm({ onToggle }: { onToggle: () => void }) {
         "/auth/login", { email, password }
       );
       if (result.user.role === "admin") {
-        setError("Admin accounts cannot sign in here");
+        setError(t("Admin accounts cannot sign in here"));
         return;
       }
       setAuth(result.user, result.token);
       navigate({ to: "/" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(err instanceof Error ? t(err.message) : t("Login failed"));
     } finally {
       setLoading(false);
     }
@@ -164,26 +181,26 @@ function LoginForm({ onToggle }: { onToggle: () => void }) {
 
   return (
     <>
-      <h1 className="font-display text-3xl text-center mb-1">Sign In</h1>
-      <p className="text-sm text-muted-foreground text-center mb-8">Welcome back to Lumina</p>
+      <h1 className="font-display text-3xl text-center mb-1">{t("Sign In")}</h1>
+      <p className="text-sm text-muted-foreground text-center mb-8">{t("Welcome back to Lumina")}</p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="text-xs uppercase tracking-[0.15em] text-muted-foreground mb-1 block">Email</label>
+          <label className="text-xs uppercase tracking-[0.15em] text-muted-foreground mb-1 block">{t("Email")}</label>
           <input type="email" required autoComplete="off" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full border border-input bg-transparent px-3 py-2 text-sm outline-none focus:border-primary" />
         </div>
         <div>
-          <label className="text-xs uppercase tracking-[0.15em] text-muted-foreground mb-1 block">Password</label>
+          <label className="text-xs uppercase tracking-[0.15em] text-muted-foreground mb-1 block">{t("Password")}</label>
           <PwInput value={password} onChange={setPassword} required />
         </div>
         {error && <p className="text-sm text-red-500">{error}</p>}
         <button type="submit" disabled={loading} className="w-full bg-primary py-3 text-[11px] uppercase tracking-[0.2em] text-primary-foreground disabled:opacity-50">
-          {loading ? "Signing in..." : "Sign In"}
+          {loading ? t("Signing in...") : t("Sign In")}
         </button>
       </form>
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        Don't have an account?{" "}
+        {t("Don't have an account?")}{" "}
         <button onClick={onToggle} className="underline underline-offset-4 hover:text-primary cursor-pointer bg-transparent border-none p-0 text-sm">
-          Create one
+          {t("Create one")}
         </button>
       </p>
     </>
@@ -191,6 +208,7 @@ function LoginForm({ onToggle }: { onToggle: () => void }) {
 }
 
 function RegisterForm({ onToggle }: { onToggle: () => void }) {
+  const { t } = useI18n();
   const { setAuth } = useAuth();
   const navigate = useNavigate();
   const [name, setName] = useState("");
@@ -208,13 +226,13 @@ function RegisterForm({ onToggle }: { onToggle: () => void }) {
         "/auth/register", { name, email, password }
       );
       if (result.user.role === "admin") {
-        setError("Admin accounts cannot be created here");
+        setError(t("Admin accounts cannot be created here"));
         return;
       }
       setAuth(result.user, result.token);
       navigate({ to: "/" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Registration failed");
+      setError(err instanceof Error ? t(err.message) : t("Registration failed"));
     } finally {
       setLoading(false);
     }
@@ -222,30 +240,30 @@ function RegisterForm({ onToggle }: { onToggle: () => void }) {
 
   return (
     <>
-      <h1 className="font-display text-3xl text-center mb-1">Create Account</h1>
-      <p className="text-sm text-muted-foreground text-center mb-8">Join the Lumina family</p>
+      <h1 className="font-display text-3xl text-center mb-1">{t("Create Account")}</h1>
+      <p className="text-sm text-muted-foreground text-center mb-8">{t("Join the Lumina family")}</p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="text-xs uppercase tracking-[0.15em] text-muted-foreground mb-1 block">Name</label>
+          <label className="text-xs uppercase tracking-[0.15em] text-muted-foreground mb-1 block">{t("Name")}</label>
           <input type="text" required autoComplete="off" value={name} onChange={(e) => setName(e.target.value)} className="w-full border border-input bg-transparent px-3 py-2 text-sm outline-none focus:border-primary" />
         </div>
         <div>
-          <label className="text-xs uppercase tracking-[0.15em] text-muted-foreground mb-1 block">Email</label>
+          <label className="text-xs uppercase tracking-[0.15em] text-muted-foreground mb-1 block">{t("Email")}</label>
           <input type="email" required autoComplete="off" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full border border-input bg-transparent px-3 py-2 text-sm outline-none focus:border-primary" />
         </div>
         <div>
-          <label className="text-xs uppercase tracking-[0.15em] text-muted-foreground mb-1 block">Password</label>
+          <label className="text-xs uppercase tracking-[0.15em] text-muted-foreground mb-1 block">{t("Password")}</label>
           <PwInput value={password} onChange={setPassword} required minLength={6} />
         </div>
         {error && <p className="text-sm text-red-500">{error}</p>}
         <button type="submit" disabled={loading} className="w-full bg-primary py-3 text-[11px] uppercase tracking-[0.2em] text-primary-foreground disabled:opacity-50">
-          {loading ? "Creating account..." : "Create Account"}
+          {loading ? t("Creating account...") : t("Create Account")}
         </button>
       </form>
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        Already have an account?{" "}
+        {t("Already have an account?")}{" "}
         <button onClick={onToggle} className="underline underline-offset-4 hover:text-primary cursor-pointer bg-transparent border-none p-0 text-sm">
-          Sign in
+          {t("Sign in")}
         </button>
       </p>
     </>

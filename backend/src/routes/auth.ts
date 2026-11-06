@@ -12,6 +12,7 @@ import {
   addresses,
   notifications,
   contacts,
+  payments,
 } from "../db/schema.js";
 import { hashPassword, verifyPassword, signToken } from "../lib/auth.js";
 import { authMiddleware } from "../middleware/auth.js";
@@ -116,6 +117,7 @@ router.delete("/account", authMiddleware, async (req, res) => {
     const orderIds = userOrders.map((o) => o.id);
     if (orderIds.length > 0) {
       await db.delete(orderItems).where(inArray(orderItems.orderId, orderIds));
+      await db.delete(payments).where(inArray(payments.orderId, orderIds));
     }
     await db.delete(orders).where(eq(orders.userId, user.id));
     await db.delete(cartItems).where(eq(cartItems.userId, user.id));
@@ -151,11 +153,10 @@ router.post("/register", async (req, res) => {
 
     const id = randomUUID();
     const passwordHash = await hashPassword(password);
-    const role = email === process.env.ADMIN_EMAIL ? "admin" : "user";
-    await db.insert(users).values({ id, name, email, username: email, passwordHash, role });
+    await db.insert(users).values({ id, name, email, username: email, passwordHash, role: "user" });
 
-    const token = signToken({ userId: id, email, role });
-    res.json({ user: { id, name, email, username: email, role, avatar: "" }, token });
+    const token = signToken({ userId: id, email, role: "user" });
+    res.json({ user: { id, name, email, username: email, role: "user", avatar: "" }, token });
   } catch (err) {
     if (err instanceof z.ZodError) {
       res.status(400).json({ error: err.errors[0].message });
@@ -172,8 +173,14 @@ router.post("/admin-login", async (req, res) => {
       .object({ login: z.string().min(1), password: z.string().min(1) })
       .parse(req.body);
 
-    const adminLogin = process.env.ADMIN_LOGIN || "admin";
-    const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
+    const adminLogin = process.env.ADMIN_LOGIN?.trim();
+    const adminPassword = process.env.ADMIN_PASSWORD;
+    if (!adminLogin || !adminPassword) {
+      res.status(503).json({
+        error: "Admin login is not configured. Set ADMIN_LOGIN and ADMIN_PASSWORD.",
+      });
+      return;
+    }
 
     if (login !== adminLogin || password !== adminPassword) {
       res.status(401).json({ error: "Invalid login or password" });
@@ -181,7 +188,7 @@ router.post("/admin-login", async (req, res) => {
     }
 
     const db = await getDb();
-    const adminEmail = process.env.ADMIN_EMAIL || "admin@lumina.uz";
+    const adminEmail = process.env.ADMIN_EMAIL?.trim() || "admin@lumina.uz";
     const [admin] = await db.select().from(users).where(eq(users.email, adminEmail)).limit(1);
 
     if (!admin) {
@@ -193,18 +200,26 @@ router.post("/admin-login", async (req, res) => {
       return;
     }
 
-    if (admin.role !== "admin") {
-      await db.update(users).set({ role: "admin" }).where(eq(users.id, admin.id));
-      admin.role = "admin";
+    const update: { role?: string; username?: string; passwordHash?: string } = {};
+    if (admin.role !== "admin") update.role = "admin";
+    if (admin.username !== login) update.username = login;
+    if (!(await verifyPassword(password, admin.passwordHash))) {
+      update.passwordHash = await hashPassword(adminPassword);
     }
-    if (admin.username !== login) {
-      await db.update(users).set({ username: login }).where(eq(users.id, admin.id));
-      admin.username = login;
+    if (Object.keys(update).length > 0) {
+      await db.update(users).set(update).where(eq(users.id, admin.id));
     }
 
     const token = signToken({ userId: admin.id, email: admin.email, role: "admin" });
     res.json({
-      user: { id: admin.id, name: admin.name, email: admin.email, username: admin.username, role: "admin", avatar: admin.avatar },
+      user: {
+        id: admin.id,
+        name: admin.name,
+        email: admin.email,
+        username: login,
+        role: "admin",
+        avatar: admin.avatar,
+      },
       token,
     });
   } catch (err) {
@@ -238,9 +253,9 @@ router.post("/login", async (req, res) => {
       return;
     }
 
-    if (user.role !== "admin" && user.email === process.env.ADMIN_EMAIL) {
-      await db.update(users).set({ role: "admin" }).where(eq(users.id, user.id));
-      user.role = "admin";
+    if (user.role === "admin") {
+      res.status(403).json({ error: "Admin accounts must use the admin login" });
+      return;
     }
 
     const token = signToken({ userId: user.id, email: user.email, role: user.role });
