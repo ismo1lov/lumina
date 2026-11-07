@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
 import { resolveAsset } from "@/lib/assets";
-import { LanguageSwitcher } from "@/components/site/LanguageSwitcher";
+import { AccountDrawer } from "@/components/site/AccountDrawer";
 import { useI18n } from "@/lib/i18n";
 
 const links = [
@@ -26,15 +26,31 @@ export function Navbar() {
   const [search, setSearch] = useState(false);
   const [query, setQuery] = useState("");
   const [menu, setMenu] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const isAboutPage = pathname === "/about";
+  const isContactPage = pathname === "/contact";
 
   const goAuth = (mode: "login" | "register") => {
     setProfileOpen(false);
+    setAccountOpen(false);
     setMenu(false);
     navigate({ to: "/login", search: { mode } });
+  };
+
+  const openAccount = () => {
+    setMenu(false);
+    setAccountOpen(true);
+  };
+
+  const handleProfileClick = () => {
+    if (user) {
+      openAccount();
+    } else {
+      setProfileOpen((value) => !value);
+    }
   };
 
   useEffect(() => {
@@ -52,7 +68,7 @@ export function Navbar() {
     <>
       <header
         className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
-          isAboutPage
+          isAboutPage || isContactPage
             ? "border-b bg-background"
             : scrolled
               ? "border-b bg-background/85 backdrop-blur-md"
@@ -82,7 +98,6 @@ export function Navbar() {
           </nav>
 
           <div className="flex items-center gap-5">
-            <LanguageSwitcher className="mr-3 hidden sm:flex" />
             <button
               type="button"
               aria-label={t("Search")}
@@ -118,55 +133,45 @@ export function Navbar() {
               )}
             </button>
             <span className="hidden h-5 w-px bg-border sm:block" aria-hidden />
-            {user && user.role !== "admin" ? (
-              <Link
-                to="/dashboard"
-                aria-label={t("My Account")}
-                className="hidden cursor-pointer sm:block"
+            <div className="relative">
+              <button
+                type="button"
+                aria-label={user ? t("Open account menu") : t("Account")}
+                className="relative grid size-9 cursor-pointer place-items-center rounded-full border border-transparent transition-colors hover:border-border hover:bg-cream"
+                onClick={handleProfileClick}
               >
                 <User size={17} />
-              </Link>
-            ) : (
-              <div className="relative hidden sm:block">
-                <button
-                  type="button"
-                  aria-label={t("Account")}
-                  className="cursor-pointer"
-                  onClick={() => setProfileOpen((v) => !v)}
-                >
-                  <User size={17} />
-                </button>
-                <AnimatePresence>
-                  {profileOpen && (
-                    <>
-                      <div className="fixed inset-0 z-40" onClick={() => setProfileOpen(false)} />
-                      <motion.div
-                        initial={{ opacity: 0, y: -6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -6 }}
-                        transition={{ duration: 0.18, ease: "easeOut" }}
-                        className="absolute right-0 top-full z-50 mt-3 min-w-[190px] border border-border bg-background shadow-xl"
+              </button>
+              <AnimatePresence>
+                {!user && profileOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setProfileOpen(false)} />
+                    <motion.div
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.18, ease: "easeOut" }}
+                      className="absolute right-0 top-full z-50 mt-3 min-w-[190px] border border-border bg-background shadow-xl"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => goAuth("login")}
+                        className="block w-full cursor-pointer px-5 py-3 text-left text-[11px] uppercase tracking-[0.2em] transition-colors hover:bg-cream hover:text-foreground"
                       >
-                        <button
-                          type="button"
-                          onClick={() => goAuth("login")}
-                          className="block w-full cursor-pointer px-5 py-3 text-left text-[11px] uppercase tracking-[0.2em] transition-colors hover:bg-cream hover:text-foreground"
-                        >
-                          {t("Sign In")}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => goAuth("register")}
-                          className="block w-full cursor-pointer border-t border-border px-5 py-3 text-left text-[11px] uppercase tracking-[0.2em] transition-colors hover:bg-cream hover:text-foreground"
-                        >
-                          {t("Create Account")}
-                        </button>
-                      </motion.div>
-                    </>
-                  )}
-                </AnimatePresence>
-              </div>
-            )}
+                        {t("Sign In")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => goAuth("register")}
+                        className="block w-full cursor-pointer border-t border-border px-5 py-3 text-left text-[11px] uppercase tracking-[0.2em] transition-colors hover:bg-cream hover:text-foreground"
+                      >
+                        {t("Create Account")}
+                      </button>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
             <button
               type="button"
               aria-label={t("Open menu")}
@@ -203,24 +208,24 @@ export function Navbar() {
                   {t(l.label)}
                 </Link>
               ))}
-              <LanguageSwitcher className="mt-2" />
               <div className="mt-4 border-t pt-6">
-                {user && user.role !== "admin" ? (
+                {user ? (
                   <>
-                    <Link
-                      to="/dashboard"
-                      onClick={() => setMenu(false)}
-                      className="block font-display text-xl"
-                    >
-                      {t("My Account")}
-                    </Link>
                     <button
+                      type="button"
+                      onClick={openAccount}
+                      className="block cursor-pointer text-left font-display text-xl"
+                    >
+                      {user.role === "admin" ? t("Admin Panel") : t("My Account")}
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => {
                         logout();
                         navigate({ to: "/" });
                         setMenu(false);
                       }}
-                      className="mt-4 flex items-center gap-3 font-display text-xl text-muted-foreground"
+                      className="mt-4 flex cursor-pointer items-center gap-3 font-display text-xl text-muted-foreground"
                     >
                       <LogOut size={18} /> {t("Sign Out")}
                     </button>
@@ -267,7 +272,11 @@ export function Navbar() {
                   placeholder={t("Search chairs, tables, beds…")}
                   className="w-full bg-transparent font-display text-2xl outline-none placeholder:text-muted-foreground/60"
                 />
-                <button type="button" aria-label={t("Close search")} onClick={() => setSearch(false)}>
+                <button
+                  type="button"
+                  aria-label={t("Close search")}
+                  onClick={() => setSearch(false)}
+                >
                   <X size={18} />
                 </button>
               </div>
@@ -304,6 +313,7 @@ export function Navbar() {
         )}
       </AnimatePresence>
 
+      <AccountDrawer open={accountOpen} onOpenChange={setAccountOpen} />
     </>
   );
 }

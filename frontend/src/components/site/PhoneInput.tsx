@@ -7,6 +7,7 @@ interface PhoneInputProps {
   onChange: (v: string) => void;
   required?: boolean;
   className?: string;
+  labelClassName?: string;
   showHint?: boolean;
   invalid?: boolean;
 }
@@ -16,6 +17,7 @@ export function PhoneInput({
   onChange,
   required,
   className,
+  labelClassName = "eyebrow",
   showHint = true,
   invalid = false,
 }: PhoneInputProps) {
@@ -35,7 +37,7 @@ export function PhoneInput({
 
   return (
     <label className="block">
-      <span className="eyebrow">{t("Phone")}</span>
+      <span className={labelClassName}>{t("Phone")}</span>
       <input
         type="tel"
         inputMode="numeric"
@@ -45,8 +47,8 @@ export function PhoneInput({
         autoComplete="tel"
         onChange={(e) => onChange(formatUzPhone(e.target.value))}
         onBlur={() => setTouched(true)}
-        className={`mt-2 w-full border-b bg-transparent py-2 text-sm outline-none focus:border-accent ${
-          showError ? "border-red-400" : ""
+        className={`mt-2 w-full border bg-background px-3 py-2.5 text-sm outline-none focus:border-accent ${
+          showError ? "border-red-400" : "border-input"
         } ${className ?? ""}`}
       />
       {showHint && (showError || showIncomplete) && (

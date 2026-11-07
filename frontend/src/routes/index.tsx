@@ -1,15 +1,7 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import {
-  ArrowDown,
-  ArrowRight,
-  ChevronLeft,
-  ChevronRight,
-  Truck,
-  ShieldCheck,
-  TreePine,
-  Ruler,
-} from "lucide-react";
+import { ArrowDown, ArrowRight, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 
 import heroChair from "@/assets/hero-chair.jpg";
 import { categoryImages, products, type Category } from "@/data/products";
@@ -38,15 +30,35 @@ export const Route = createFileRoute("/")({
 
 const categories: Category[] = ["Living Room", "Bedroom", "Dining Room", "Home Office"];
 
-const values = [
-  { icon: Truck, title: "Free Delivery", copy: "On every order across Uzbekistan." },
-  { icon: ShieldCheck, title: "2-Year Warranty", copy: "Joinery and finish fully covered." },
-  { icon: TreePine, title: "Sustainable Wood", copy: "FSC-certified walnut and oak." },
-  { icon: Ruler, title: "Custom Dimensions", copy: "Made to your room, assembled at home." },
+const faqs = [
+  {
+    question: "How long does delivery take?",
+    answer:
+      "Delivery and assembly across Uzbekistan take 7–14 days. Every order is fully covered by free delivery.",
+  },
+  {
+    question: "Are the dimensions really custom?",
+    answer:
+      "Yes — every dining table, desk or bed is made to your room measurements and assembled at home.",
+  },
+  {
+    question: "What wood do you use?",
+    answer: "Solid walnut and oak, FSC-certified, finished with hand-applied natural oils.",
+  },
+  {
+    question: "How long does the warranty last?",
+    answer: "Two years covering joinery and the hand-finished surfaces.",
+  },
+  {
+    question: "How do I care for my furniture?",
+    answer:
+      "Dust with a soft dry cloth, avoid harsh chemicals, and re-apply natural oil once a year.",
+  },
 ];
 
 function Home() {
   const { t } = useI18n();
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const bestSellers = [...products].sort((a, b) => b.popularity - a.popularity).slice(0, 6);
 
   return (
@@ -114,9 +126,9 @@ function Home() {
               alt="Nordic walnut lounge chair with cream bouclé cushions"
               width={600}
               height={700}
-              className="relative w-full rounded-2xl object-contain"
+              className="relative w-full object-contain"
             />
-            <div className="absolute bottom-4 left-4 hidden rounded-2xl bg-background/90 px-5 py-4 backdrop-blur sm:block">
+            <div className="absolute bottom-4 left-4 hidden bg-background/90 px-5 py-4 backdrop-blur sm:block">
               <p className="eyebrow">{t("Featured")}</p>
               <p className="mt-1 font-display text-base">{t("Nordic Walnut Chair")}</p>
               <Link
@@ -245,52 +257,50 @@ function Home() {
         </div>
       </section>
 
-      {/* Value props */}
-      <section className="bg-cream py-24 lg:py-32">
+      {/* FAQ */}
+      <section className="py-24 lg:py-32">
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
-          <Reveal className="text-center">
-            <p className="eyebrow">{t("Why Lumina Home")}</p>
+          <Reveal className="mx-auto max-w-2xl text-center">
+            <p className="eyebrow">{t("FAQ")}</p>
             <h2 className="mt-4 font-display text-4xl lg:text-5xl">
-              {t("Crafted with care, delivered with heart")}
+              {t("Questions, answered simply")}
             </h2>
             <p className="mx-auto mt-4 max-w-lg text-sm text-muted-foreground">
               {t(
-                "Every piece we make is built to last — from materials that matter, by hands that care, for homes that deserve the best.",
+                "Everything you might want to know before making your first piece part of the home.",
               )}
             </p>
           </Reveal>
-          <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:items-start lg:gap-6">
-            {values.map((v, i) => (
-              <Reveal
-                key={v.title}
-                delay={i * 0.07}
-                className={i % 2 === 1 ? "lg:mt-10" : undefined}
-              >
-                <article className="group relative flex h-full min-h-[250px] flex-col justify-start overflow-hidden rounded-xl border border-border/70 bg-[#F7F4EF] p-7 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-2 hover:border-accent/30 hover:bg-white hover:shadow-[0_30px_60px_-35px_rgba(61,42,31,0.45)]">
-                  <div
-                    aria-hidden
-                    className="pointer-events-none absolute -right-10 -top-10 size-36 rounded-full bg-accent/[0.05] blur-2xl transition-colors duration-500 group-hover:bg-accent/10"
-                  />
 
-                  <div className="relative flex items-center justify-between">
-                    <span className="grid size-12 place-items-center rounded-lg border border-accent bg-accent text-accent-foreground transition-all duration-500">
-                      <v.icon size={20} strokeWidth={1.4} />
+          <div className="mx-auto mt-14 max-w-3xl">
+            {faqs.map((faq, i) => {
+              const open = openFaq === i;
+              return (
+                <div key={faq.question} className="border-b border-border/70 last:border-b-0">
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaq(open ? null : i)}
+                    className="flex w-full items-center justify-between gap-6 py-6 text-left"
+                    aria-expanded={open}
+                  >
+                    <span className="font-display text-lg text-foreground lg:text-xl">
+                      {t(faq.question)}
                     </span>
-                    <span className="font-display text-sm tracking-[0.18em] text-muted-foreground/60">
-                      0{i + 1}
-                    </span>
-                  </div>
-
-                  <div className="relative mt-8">
-                    <h3 className="font-display text-xl text-foreground">{t(v.title)}</h3>
-                    <span className="mt-3 block h-px w-10 bg-accent/40 transition-all duration-500 group-hover:w-16 group-hover:bg-accent" />
-                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                      {t(v.copy)}
+                    <ChevronDown
+                      size={18}
+                      className={`shrink-0 text-muted-foreground transition-transform duration-300 ${
+                        open ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                  {open && (
+                    <p className="max-w-xl pb-6 text-sm leading-relaxed text-muted-foreground">
+                      {t(faq.answer)}
                     </p>
-                  </div>
-                </article>
-              </Reveal>
-            ))}
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

@@ -1,12 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Mail, MapPin, Phone } from "lucide-react";
 import { useState } from "react";
 import { Reveal } from "@/components/site/Reveal";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
-import { PhoneInput } from "@/components/site/PhoneInput";
-import { isValidUzPhone } from "@/lib/phone";
+import { formatUzPhone, isValidUzPhone } from "@/lib/phone";
 import { useI18n } from "@/lib/i18n";
+import contactImage from "@/assets/contact-image.jpg";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -30,9 +29,10 @@ export const Route = createFileRoute("/contact")({
 function Contact() {
   const { t } = useI18n();
   const { user } = useAuth();
-  const [name, setName] = useState(user?.name ?? "");
-  const [phone, setPhone] = useState("");
+  const [name, setName] = useState("");
+  const [phone2, setPhone2] = useState("");
   const [email, setEmail] = useState("");
+  const [company, setCompany] = useState("");
   const [message, setMessage] = useState("");
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -43,17 +43,24 @@ function Contact() {
     e.preventDefault();
     setError("");
     setPhoneInvalid(false);
-    if (!isValidUzPhone(phone)) {
+    if (!isValidUzPhone(phone2)) {
       setPhoneInvalid(true);
       setError(t("Please enter a complete and valid phone number (+998 ** *** ** **)"));
       return;
     }
     setBusy(true);
     try {
-      await api.post("/contact", { name, phone, ...(user ? {} : { email }), message });
-      setName(user?.name ?? "");
-      setPhone("");
+      await api.post("/contact", {
+        name,
+        email: user ? undefined : email,
+        phone: phone2,
+        subject: company || undefined,
+        message,
+      });
+      setName("");
+      setPhone2("");
       setEmail("");
+      setCompany("");
       setMessage("");
       setSent(true);
     } catch (err) {
@@ -64,75 +71,74 @@ function Contact() {
   };
 
   return (
-    <div className="mx-auto max-w-[1400px] px-6 pb-24 pt-32 lg:px-12 lg:pt-40">
-      <Reveal>
-        <p className="eyebrow">{t("Contact")}</p>
-        <h1 className="mt-4 max-w-2xl font-display text-5xl lg:text-6xl">{t("Come sit with the wood")}</h1>
-      </Reveal>
-
-      <div className="mt-16 grid gap-16 lg:grid-cols-[1fr_1.2fr]">
-        <Reveal className="space-y-8">
-          {[
-            {
-              icon: MapPin,
-              title: "Showroom",
-              copy: "24 Amir Temur Ave, Tashkent · Daily 10–20",
-            },
-            { icon: Phone, title: "Call", copy: "+998 71 200 44 10" },
-            { icon: Mail, title: "Email", copy: "hello@luminahome.uz" },
-          ].map((c) => (
-            <div key={c.title} className="flex gap-4">
-              <c.icon size={18} strokeWidth={1.5} className="mt-1 text-accent" />
-              <div>
-                <p className="font-display text-lg">{t(c.title)}</p>
-                <p className="text-sm text-muted-foreground">{t(c.copy)}</p>
-              </div>
+    <>
+      <div className="mx-auto max-w-[1400px] px-6 pb-24 pt-12 lg:px-12 lg:pt-24 lg:pb-32">
+        <section className="grid gap-12 lg:grid-cols-2 lg:gap-24 lg:items-start lg:pt-24">
+          {/* Left — image with small bottom-left overlay text */}
+          <div className="relative w-full h-[420px] lg:h-[520px] overflow-hidden bg-cream">
+            <img
+              src={contactImage}
+              alt="Handcrafted furniture in the Lumina Home workshop"
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            <div className="absolute bottom-6 left-6 z-10 text-white">
+              <h2 className="font-display text-3xl lg:text-4xl">{t("Contact")}</h2>
+              <p className="mt-1 text-sm font-medium">{t("Biz bilan bog‘laning")}</p>
             </div>
-          ))}
-          <div className="border-t pt-8">
-            <p className="eyebrow">{t("Custom work")}</p>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              {t(
-                "Send your room dimensions and we'll draft a piece scaled to the space, usually within five working days.",
-              )}
-            </p>
           </div>
-        </Reveal>
 
-        <Reveal delay={0.08}>
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div className="grid gap-6 sm:grid-cols-2">
-              <Field label="Name" name="name" value={name} onChange={setName} />
-              <PhoneInput value={phone} onChange={setPhone} invalid={phoneInvalid} />
-            </div>
-            {!user && (
-              <Field label="Email" name="email" type="email" value={email} onChange={setEmail} />
-            )}
-            <label className="block">
-              <span className="eyebrow">{t("Message")}</span>
-              <textarea
-                required
-                rows={5}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className="mt-2 w-full resize-none border-b bg-transparent py-2 text-sm outline-none focus:border-accent"
-              />
-            </label>
-            <button
-              type="submit"
-              disabled={busy}
-              className="cursor-pointer bg-primary px-9 py-4 text-[11px] uppercase tracking-[0.22em] text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
-            >
-              {busy ? t("Sending…") : t("Send message")}
-            </button>
-            {sent && (
-              <p className="text-sm text-accent">{t("Thank you — we'll reply within one working day.")}</p>
-            )}
-            {error && <p className="text-sm text-red-500">{error}</p>}
-          </form>
-        </Reveal>
+          {/* Right — form */}
+          <div className="h-full flex flex-col justify-between">
+            <h2 className="font-display text-4xl leading-tight lg:text-5xl">{t("Get in Touch")}</h2>
+            <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+              <div className="grid gap-6 sm:grid-cols-2">
+                <Field label="Full Name" name="name" value={name} onChange={setName} />
+                <Field
+                  label="Telefon raqam"
+                  name="phone2"
+                  type="tel"
+                  value={phone2}
+                  onChange={(v) => setPhone2(formatUzPhone(v))}
+                />
+              </div>
+              <div className="grid gap-6 sm:grid-cols-2">
+                <Field label="Company" name="company" value={company} onChange={setCompany} />
+                <Field
+                  label="Email address"
+                  name="email"
+                  type="email"
+                  value={email}
+                  onChange={setEmail}
+                />
+              </div>
+              <label className="block">
+                <span className="eyebrow">{t("Message")}</span>
+                <textarea
+                  required
+                  rows={2}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  className="mt-2 w-full resize-none border-b bg-transparent py-2 text-sm outline-none focus:border-accent"
+                />
+              </label>
+              <button
+                type="submit"
+                disabled={busy}
+                className="cursor-pointer w-full bg-primary px-9 py-4 text-[11px] uppercase tracking-[0.22em] text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+              >
+                {busy ? t("Sending…") : t("Send message")}
+              </button>
+              {sent && (
+                <p className="text-sm text-accent">
+                  {t("Thank you — we'll reply within one working day.")}
+                </p>
+              )}
+              {error && <p className="text-sm text-red-500">{error}</p>}
+            </form>
+          </div>
+        </section>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -142,19 +148,21 @@ function Field({
   type = "text",
   value,
   onChange,
+  required = true,
 }: {
   label: string;
   name: string;
   type?: string;
   value: string;
   onChange: (v: string) => void;
+  required?: boolean;
 }) {
   const { t } = useI18n();
   return (
     <label className="block">
       <span className="eyebrow">{t(label)}</span>
       <input
-        required
+        required={required}
         name={name}
         type={type}
         value={value}

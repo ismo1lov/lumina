@@ -388,13 +388,18 @@ router.get("/google/callback", async (req, res) => {
     const profileRes = await fetch(GOOGLE_USERINFO_ENDPOINT, {
       headers: { Authorization: `Bearer ${tokenData.access_token}` },
     });
-    const profile = (await profileRes.json().catch(() => null)) as { email?: string; name?: string } | null;
+    const profile = (await profileRes.json().catch(() => null)) as {
+      email?: string;
+      name?: string;
+      picture?: string;
+    } | null;
     const email = profile?.email;
     if (!email) {
       failRedirect();
       return;
     }
     const name = profile?.name || email.split("@")[0];
+    const picture = typeof profile?.picture === "string" ? profile.picture : "";
 
     const db = await getDb();
     const [existing] = await db.select().from(users).where(eq(users.email, email)).limit(1);
@@ -405,7 +410,9 @@ router.get("/google/callback", async (req, res) => {
     if (!existing) {
       await db
         .insert(users)
-        .values({ id, name, email, username: email, passwordHash, role });
+        .values({ id, name, email, username: email, passwordHash, role, avatar: picture });
+    } else if (!existing.avatar && picture) {
+      await db.update(users).set({ avatar: picture }).where(eq(users.id, id));
     }
 
     const token = signToken({ userId: id, email, role });

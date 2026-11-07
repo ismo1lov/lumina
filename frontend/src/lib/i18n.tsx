@@ -49,9 +49,9 @@ const translations: Record<string, Entry> = {
     uz: "Kreslo, stol, karavot qidirish…",
     ru: "Искать кресла, столы, кровати…",
   },
-  "Language": { uz: "Til", ru: "Язык" },
-  "Uzbek": { uz: "O‘zbekcha", ru: "Узбекский" },
-  "Russian": { uz: "Ruscha", ru: "Русский" },
+  Language: { uz: "Til", ru: "Язык" },
+  Uzbek: { uz: "O‘zbekcha", ru: "Узбекский" },
+  Russian: { uz: "Ruscha", ru: "Русский" },
 
   // ── Footer ─────────────────────────────────────────────────────────────
   "Hand-crafted furniture for modern sanctuaries. Made slowly, in small batches, from responsibly sourced hardwood.":
@@ -66,11 +66,10 @@ const translations: Record<string, Entry> = {
   "About us": { uz: "Biz haqimizda", ru: "О нас" },
   "Delivery & returns": { uz: "Yetkazib berish va qaytarish", ru: "Доставка и возврат" },
   Newsletter: { uz: "Yangiliklar", ru: "Рассылка" },
-  "Notes on craft, new pieces, and studio openings. Once a month.":
-    {
-      uz: "Hunarmandchilik, yangi kolleksiyalar va studiya yangiliklari. Oyiga bir marta.",
-      ru: "О ремесле, новинках и событиях студии. Раз в месяц.",
-    },
+  "Notes on craft, new pieces, and studio openings. Once a month.": {
+    uz: "Hunarmandchilik, yangi kolleksiyalar va studiya yangiliklari. Oyiga bir marta.",
+    ru: "О ремесле, новинках и событиях студии. Раз в месяц.",
+  },
   "Your email": { uz: "Email manzilingiz", ru: "Ваш email" },
   "Thank you — you're on the list.": {
     uz: "Rahmat — ro‘yxatga qo‘shildingiz.",
@@ -108,11 +107,10 @@ const translations: Record<string, Entry> = {
     ru: "В избранном пока пусто.",
   },
   "Registration required": { uz: "Ro‘yxatdan o‘tish kerak", ru: "Требуется регистрация" },
-  "You are not signed in yet. Please create an account to continue shopping.":
-    {
-      uz: "Siz hali tizimga kirmagansiz. Xaridni davom ettirish uchun avval ro‘yxatdan o‘ting.",
-      ru: "Вы ещё не вошли. Чтобы продолжить покупки, создайте аккаунт.",
-    },
+  "You are not signed in yet. Please create an account to continue shopping.": {
+    uz: "Siz hali tizimga kirmagansiz. Xaridni davom ettirish uchun avval ro‘yxatdan o‘ting.",
+    ru: "Вы ещё не вошли. Чтобы продолжить покупки, создайте аккаунт.",
+  },
   "Create an account": { uz: "Ro‘yxatdan o‘tish", ru: "Создать аккаунт" },
 
   // ── Home ───────────────────────────────────────────────────────────────
@@ -173,6 +171,58 @@ const translations: Record<string, Entry> = {
   "Made to your room, assembled at home.": {
     uz: "Xonangizga moslab tayyorlanadi, uyda yig‘iladi.",
     ru: "Изготавливается под вашу комнату, собирается на дому.",
+  },
+  // ── FAQ ─────────────────────────────────────────────────────────────────
+  FAQ: { uz: "Savollar", ru: "Вопросы" },
+  "Questions, answered simply": {
+    uz: "Savollar, sodda javoblar",
+    ru: "Вопросы и простые ответы",
+  },
+  "Everything you might want to know before making your first piece part of the home.": {
+    uz: "Birinchi buyuningiz haqida oldin boshqa savollaringizni ham qoldirmoqchimisiz.",
+    ru: "Если вы хотите узнать что-то ещё до того, как ваше первое изделие станет частью дома.",
+  },
+  "How long does delivery take?": {
+    uz: "Yetkazib berish qanchida davom etadi?",
+    ru: "Сколько занимает доставка?",
+  },
+  "Delivery and assembly across Uzbekistan take 7–14 days. Every order is fully covered by free delivery.":
+    {
+      uz: "O‘zbekiston bo‘ylab yetkazib berish va yig‘ilish 7–14 kun gacha davom etadi. Har bir buyurtma bepul yetkazib berish xizmatiga kafolatlangan.",
+      ru: "Доставка и сборка по всему Узбекистану занимают 7–14 дней. Все заказы полностью покрываются бесплатной доставкой.",
+    },
+  "Are the dimensions really custom?": {
+    uz: "Olchamlar haqiqiy holda individualmi?",
+    ru: "Размеры действительно индивидуальны?",
+  },
+  "Yes — every dining table, desk or bed is made to your room measurements and assembled at home.":
+    {
+      uz: "Ha — har bir usxanalar, stol yoki karavot sizning xonangizga mos buyumlar holda tayyorlanadi va uyda yig‘iladi.",
+      ru: "Да — каждая обеденная столешница, стол или кровать изготавливается под размеры вашей комнаты и собирается дома.",
+    },
+  "What wood do you use?": {
+    uz: "Qanday yog‘och ishlatamiz?",
+    ru: "Какой деревянный материал вы используете?",
+  },
+  "Solid walnut and oak, FSC-certified, finished with hand-applied natural oils.": {
+    uz: "Qattiq yong‘oq va eman, FSC sertifikatli, qo‘lda tabiiy moylar bilan ustalangan.",
+    ru: "Массивный орех и дуб с сертификатом FSC, обработанный вручную натуральными маслами.",
+  },
+  "How long does the warranty last?": {
+    uz: "Kafolat qanchida ishlatiladi?",
+    ru: "Как долго действует гарантия?",
+  },
+  "Two years covering joinery and the hand-finished surfaces.": {
+    uz: "Birlashmalar va qo‘lda ishlangan yuzliklar uchun 2 yil kafolat.",
+    ru: "Гарантия 2 года покрывает соединения и ручную отделку.",
+  },
+  "How do I care for my furniture?": {
+    uz: "Mebelga qanday parvarish qilamiz?",
+    ru: "Как ухаживать за мебелью?",
+  },
+  "Dust with a soft dry cloth, avoid harsh chemicals, and re-apply natural oil once a year.": {
+    uz: "Yumshoq namliqcha yuyib, qo‘qband bo‘lmagan moylarni ishlatib, yiliga bir marta tabiiy moyni qayta qo‘shish kerak.",
+    ru: "Протирайте мягкой сухой тканью, избегайте агрессивных химикатов и раз в год наносите натуральное масло.",
   },
 
   // ── Categories / catalog ───────────────────────────────────────────────
@@ -282,7 +332,10 @@ const translations: Record<string, Entry> = {
     },
   Reviews: { uz: "Sharhlar", ru: "Отзывы" },
   "{rating} out of 5": { uz: "5 dan {rating}", ru: "{rating} из 5" },
-  "{count} verified buyers": { uz: "{count} ta tasdiqlangan xaridor", ru: "{count} проверенных покупателей" },
+  "{count} verified buyers": {
+    uz: "{count} ta tasdiqlangan xaridor",
+    ru: "{count} проверенных покупателей",
+  },
   "View image {index}": { uz: "{index}-rasmni ko‘rish", ru: "Посмотреть изображение {index}" },
   "Add to wishlist": { uz: "Sevimlilarga qo‘shish", ru: "Добавить в избранное" },
   "Remove from wishlist": { uz: "Sevimlilardan olib tashlash", ru: "Удалить из избранного" },
@@ -298,13 +351,22 @@ const translations: Record<string, Entry> = {
   "Your account email": { uz: "Hisobingiz emaili", ru: "Email вашего аккаунта" },
   Address: { uz: "Manzil", ru: "Адрес" },
   City: { uz: "Shahar", ru: "Город" },
-  "Pin your location on map": { uz: "Joylashuvingizni xaritada belgilang", ru: "Отметьте местоположение на карте" },
-  "Click or drag the marker": { uz: "Xaritani bosing yoki markerni torting", ru: "Нажмите на карту или перетащите маркер" },
+  "Pin your location on map": {
+    uz: "Joylashuvingizni xaritada belgilang",
+    ru: "Отметьте местоположение на карте",
+  },
+  "Click or drag the marker": {
+    uz: "Xaritani bosing yoki markerni torting",
+    ru: "Нажмите на карту или перетащите маркер",
+  },
   "Delivery method": { uz: "Yetkazib berish usuli", ru: "Способ доставки" },
   "Standard delivery": { uz: "Standart yetkazib berish", ru: "Стандартная доставка" },
   "3–5 working days": { uz: "3–5 ish kuni", ru: "3–5 рабочих дней" },
   "Express + assembly": { uz: "Tezkor + yig‘ish", ru: "Экспресс + сборка" },
-  "Next day, assembled in home": { uz: "Ertasi kuni, uyda yig‘iladi", ru: "На следующий день, со сборкой на дому" },
+  "Next day, assembled in home": {
+    uz: "Ertasi kuni, uyda yig‘iladi",
+    ru: "На следующий день, со сборкой на дому",
+  },
   Free: { uz: "Bepul", ru: "Бесплатно" },
   "Place order · {total}": { uz: "Buyurtma berish · {total}", ru: "Оформить заказ · {total}" },
   "Placing order…": { uz: "Buyurtma yaratilmoqda…", ru: "Оформляем заказ…" },
@@ -319,11 +381,10 @@ const translations: Record<string, Entry> = {
   "Card payment": { uz: "Karta orqali to‘lov", ru: "Оплата картой" },
   "Pay online": { uz: "Onlayn to‘lash", ru: "Оплатить онлайн" },
   "Order placed": { uz: "Buyurtma qabul qilindi", ru: "Заказ оформлен" },
-  "Thank you. Our workshop will call you within a few hours to confirm delivery and assembly.":
-    {
-      uz: "Rahmat. Ustaxonamiz yetkazib berish va yig‘ishni tasdiqlash uchun bir necha soat ichida siz bilan bog‘lanadi.",
-      ru: "Спасибо. Наша мастерская свяжется с вами в течение нескольких часов, чтобы подтвердить доставку и сборку.",
-    },
+  "Thank you. Our workshop will call you within a few hours to confirm delivery and assembly.": {
+    uz: "Rahmat. Ustaxonamiz yetkazib berish va yig‘ishni tasdiqlash uchun bir necha soat ichida siz bilan bog‘lanadi.",
+    ru: "Спасибо. Наша мастерская свяжется с вами в течение нескольких часов, чтобы подтвердить доставку и сборку.",
+  },
   "Continue shopping": { uz: "Xaridni davom ettirish", ru: "Продолжить покупки" },
   "Failed to place order": { uz: "Buyurtma yaratilmadi", ru: "Не удалось оформить заказ" },
   "Online payment is not configured yet.": {
@@ -356,7 +417,7 @@ const translations: Record<string, Entry> = {
     ru: "Оплата не завершена. Вы можете повторить попытку из личного кабинета.",
   },
   "Order number": { uz: "Buyurtma raqami", ru: "Номер заказа" },
-  "Amount": { uz: "Summa", ru: "Сумма" },
+  Amount: { uz: "Summa", ru: "Сумма" },
   "Back to account": { uz: "Hisobga qaytish", ru: "Вернуться в аккаунт" },
   "Back to catalog": { uz: "Katalogga qaytish", ru: "Вернуться в каталог" },
   "Pay with Click": { uz: "Click orqali to‘lash", ru: "Оплатить через Click" },
@@ -378,7 +439,10 @@ const translations: Record<string, Entry> = {
   "Signing in...": { uz: "Kirilmoqda…", ru: "Входим…" },
   "Don't have an account?": { uz: "Hisobingiz yo‘qmi?", ru: "Нет аккаунта?" },
   "Create one": { uz: "Ro‘yxatdan o‘ting", ru: "Создайте его" },
-  "Join the Lumina family": { uz: "Lumina oilasiga qo‘shiling", ru: "Присоединяйтесь к семье Lumina" },
+  "Join the Lumina family": {
+    uz: "Lumina oilasiga qo‘shiling",
+    ru: "Присоединяйтесь к семье Lumina",
+  },
   Name: { uz: "Ism", ru: "Имя" },
   "Creating account...": { uz: "Hisob yaratilmoqda…", ru: "Создаём аккаунт…" },
   "Already have an account?": { uz: "Hisobingiz bormi?", ru: "Уже есть аккаунт?" },
@@ -393,10 +457,19 @@ const translations: Record<string, Entry> = {
   },
   "Login failed": { uz: "Kirish amalga oshmadi", ru: "Не удалось войти" },
   "Sign in with Google": { uz: "Google orqali kirish", ru: "Войти через Google" },
-  "Sign up with Google": { uz: "Google orqali hisob yarating", ru: "Зарегистрироваться через Google" },
-  "Or": { uz: "Yoki", ru: "Ile" },
-  "Google sign-in failed": { uz: "Google orqali kirish amalga oshmadi", ru: "Не удалось войти через Google" },
-  "Registration failed": { uz: "Ro‘yxatdan o‘tish amalga oshmadi", ru: "Не удалось зарегистрироваться" },
+  "Sign up with Google": {
+    uz: "Google orqali hisob yarating",
+    ru: "Зарегистрироваться через Google",
+  },
+  Or: { uz: "Yoki", ru: "Ile" },
+  "Google sign-in failed": {
+    uz: "Google orqali kirish amalga oshmadi",
+    ru: "Не удалось войти через Google",
+  },
+  "Registration failed": {
+    uz: "Ro‘yxatdan o‘tish amalga oshmadi",
+    ru: "Не удалось зарегистрироваться",
+  },
   "Invalid login or password": {
     uz: "Login yoki parol noto‘g‘ri",
     ru: "Неверный логин или пароль",
@@ -460,19 +533,24 @@ const translations: Record<string, Entry> = {
     uz: "Har bir uyga iliqlik olib kelamiz",
     ru: "Приносим тепло в каждый дом",
   },
-  "Handcrafted hardwood furniture for modern sanctuaries — sofas, beds, dining tables and more.":
-    {
-      uz: "Zamonaviy uylar uchun qo‘lda ishlangan qattiq yog‘och mebel — divanlar, karavotlar, ovqat stollari va boshqalar.",
-      ru: "Мебель ручной работы из массива для современных интерьеров — диваны, кровати, обеденные столы и другое.",
-    },
-  "Join the Lumina Family": { uz: "Lumina oilasiga qo‘shiling", ru: "Присоединяйтесь к семье Lumina" },
+  "Handcrafted hardwood furniture for modern sanctuaries — sofas, beds, dining tables and more.": {
+    uz: "Zamonaviy uylar uchun qo‘lda ishlangan qattiq yog‘och mebel — divanlar, karavotlar, ovqat stollari va boshqalar.",
+    ru: "Мебель ручной работы из массива для современных интерьеров — диваны, кровати, обеденные столы и другое.",
+  },
+  "Join the Lumina Family": {
+    uz: "Lumina oilasiga qo‘shiling",
+    ru: "Присоединяйтесь к семье Lumina",
+  },
   "Create your account and explore our handcrafted collection.": {
     uz: "Hisob yarating va qo‘lda ishlangan kolleksiyamizni kashf eting.",
     ru: "Создайте аккаунт и откройте нашу коллекцию ручной работы.",
   },
 
   // ── Contact ────────────────────────────────────────────────────────────
-  "Come sit with the wood": { uz: "Yog‘och bilan birga dam oling", ru: "Проведите время с деревом" },
+  "Come sit with the wood": {
+    uz: "Yog‘och bilan birga dam oling",
+    ru: "Проведите время с деревом",
+  },
   Showroom: { uz: "Showroom", ru: "Шоурум" },
   Call: { uz: "Qo‘ng‘iroq", ru: "Звонок" },
   "Custom work": { uz: "Individual buyurtma", ru: "Индивидуальный заказ" },
@@ -493,15 +571,21 @@ const translations: Record<string, Entry> = {
     ru: "Пожалуйста, введите полный и правильный номер телефона (+998 ** *** ** **)",
   },
   "Failed to send": { uz: "Yuborib bo‘lmadi", ru: "Не удалось отправить" },
+  "Get in Touch": { uz: "Biz bilan bog‘lashish", ru: "Связаться с нами" },
+  "Biz bilan bog‘laning": { uz: "Biz bilan bog‘laning", ru: "Свяжитесь с нами" },
+  "Office Location": { uz: "Ofis joyi", ru: "Офис" },
+  "Visit the showroom in Tashkent or write to us — custom furniture made to order.": {
+    uz: "Toshkentdagi showroomni ziyorat eting yoki bizga yozing — qattiq yog‘och va eman dan tayyorlangan buyumlar.",
+    ru: "Посетите шоурум в Ташкенте или напишите нам — индивидуальная мебель из массива дуба и ореха.",
+  },
 
   // ── About ──────────────────────────────────────────────────────────────
   "Since 2011": { uz: "2011 yildan beri", ru: "С 2011 года" },
   "Our Story": { uz: "Bizning tariximiz", ru: "Наша история" },
-  "A small workshop in Tashkent making slow, warm furniture from responsibly sourced hardwood.":
-    {
-      uz: "Toshkentdagi kichik ustaxona: mas’uliyatli manbalardan olingan qattiq yog‘ochdan shoshilmasdan, issiq mebel yaratamiz.",
-      ru: "Небольшая мастерская в Ташкенте: создаём тёплую мебель без спешки из ответственно заготовленной древесины.",
-    },
+  "A small workshop in Tashkent making slow, warm furniture from responsibly sourced hardwood.": {
+    uz: "Toshkentdagi kichik ustaxona: mas’uliyatli manbalardan olingan qattiq yog‘ochdan shoshilmasdan, issiq mebel yaratamiz.",
+    ru: "Небольшая мастерская в Ташкенте: создаём тёплую мебель без спешки из ответственно заготовленной древесины.",
+  },
   "The beginning": { uz: "Boshlanish", ru: "Начало" },
   "One table at a time": { uz: "Bir vaqtda bitta stol", ru: "Один стол за раз" },
   "Lumina Home began in a two-bench workshop with a single commission: a walnut dining table for a family of six. Fourteen years later we still build in small batches, sanding through four grits, dry-fitting every joint, and finishing with a plant-based oil that lets the grain breathe.":
@@ -517,17 +601,16 @@ const translations: Record<string, Entry> = {
   "Lumina in numbers": { uz: "Lumina raqamlarda", ru: "Lumina в цифрах" },
   "Numbers that tell": { uz: "Hikoyamizni", ru: "Цифры, которые" },
   "our story": { uz: "aytadigan raqamlar", ru: "говорят о нас" },
-  "Fourteen years, nine pairs of hands, and one standard: furniture worth keeping.":
-    {
-      uz: "O‘n to‘rt yil, to‘qqiz juft qo‘l va bitta mezon: avlodlarga qoladigan mebel.",
-      ru: "Четырнадцать лет, девять пар рук и один стандарт: мебель, которую стоит сохранить.",
-    },
+  "Fourteen years, nine pairs of hands, and one standard: furniture worth keeping.": {
+    uz: "O‘n to‘rt yil, to‘qqiz juft qo‘l va bitta mezon: avlodlarga qoladigan mebel.",
+    ru: "Четырнадцать лет, девять пар рук и один стандарт: мебель, которую стоит сохранить.",
+  },
   "Years of making": { uz: "Yillik tajriba", ru: "Лет работы" },
   "Since 2011, one bench at a time.": {
     uz: "2011 yildan beri — bir vaqtda bitta buyum.",
     ru: "С 2011 года — одно изделие за раз.",
   },
-  "Craftspeople": { uz: "Hunarmandlar", ru: "Мастера" },
+  Craftspeople: { uz: "Hunarmandlar", ru: "Мастера" },
   "Hands that shape every joint.": {
     uz: "Har bir birikmaga shakl beradigan qo‘llar.",
     ru: "Руки, которые формируют каждое соединение.",
@@ -592,7 +675,10 @@ const translations: Record<string, Entry> = {
     ru: "Вы уверены, что хотите отменить этот заказ? Это действие нельзя отменить.",
   },
   "Order cancelled": { uz: "Buyurtma bekor qilindi", ru: "Заказ отменён" },
-  "Failed to cancel order": { uz: "Buyurtmani bekor qilib bo‘lmadi", ru: "Не удалось отменить заказ" },
+  "Failed to cancel order": {
+    uz: "Buyurtmani bekor qilib bo‘lmadi",
+    ru: "Не удалось отменить заказ",
+  },
   "No address saved yet": { uz: "Hozircha manzil saqlanmagan", ru: "Адрес пока не сохранён" },
   DEFAULT: { uz: "ASOSIY", ru: "ОСНОВНОЙ" },
   Edit: { uz: "Tahrirlash", ru: "Изменить" },
@@ -641,7 +727,10 @@ const translations: Record<string, Entry> = {
   "Account deleted": { uz: "Hisob o‘chirildi", ru: "Аккаунт удалён" },
   "Failed to save": { uz: "Saqlab bo‘lmadi", ru: "Не удалось сохранить" },
   "Failed to update name": { uz: "Ismni yangilab bo‘lmadi", ru: "Не удалось обновить имя" },
-  "Failed to update password": { uz: "Parolni yangilab bo‘lmadi", ru: "Не удалось обновить пароль" },
+  "Failed to update password": {
+    uz: "Parolni yangilab bo‘lmadi",
+    ru: "Не удалось обновить пароль",
+  },
   "Failed to delete account": { uz: "Hisobni o‘chirib bo‘lmadi", ru: "Не удалось удалить аккаунт" },
   "Delete account?": { uz: "Hisob o‘chirilsinmi?", ru: "Удалить аккаунт?" },
   "Are you sure you want to permanently delete your account? Your orders, addresses and chat history will be removed. This cannot be undone.":
@@ -656,6 +745,122 @@ const translations: Record<string, Entry> = {
   delivered: { uz: "Yetkazilgan", ru: "Доставлен" },
   cancelled: { uz: "Bekor qilingan", ru: "Отменён" },
   assembly: { uz: "yig‘ish", ru: "сборка" },
+
+  // ── Account drawer / settings ──────────────────────────────────────────
+  "Open account menu": { uz: "Hisob menyusini ochish", ru: "Открыть меню аккаунта" },
+  "Close account menu": { uz: "Hisob menyusini yopish", ru: "Закрыть меню аккаунта" },
+  "Lumina member": { uz: "Lumina a’zosi", ru: "Участник Lumina" },
+  Orders: { uz: "Buyurtmalar", ru: "Заказы" },
+  "Wishlist / Wishes": { uz: "Sevimlilar / Istaklar", ru: "Избранное / Желания" },
+  Unread: { uz: "O‘qilmagan", ru: "Непрочитанные" },
+  "Quick links": { uz: "Tezkor bo‘limlar", ru: "Быстрый доступ" },
+  "Manage the store": { uz: "Do‘konni boshqarish", ru: "Управление магазином" },
+  Support: { uz: "Qo‘llab-quvvatlash", ru: "Поддержка" },
+  Notifications: { uz: "Bildirishnomalar", ru: "Уведомления" },
+  "Settings & Profile": { uz: "Sozlamalar va Profil", ru: "Настройки и профиль" },
+  "Order history and delivery": {
+    uz: "Buyurtmalar tarixi va yetkazib berish",
+    ru: "История заказов и доставка",
+  },
+  "Pieces you have saved": { uz: "Saqlangan buyumlaringiz", ru: "Сохранённые товары" },
+  "Order updates and messages": {
+    uz: "Buyurtma yangiliklari va xabarlar",
+    ru: "Обновления по заказам и сообщения",
+  },
+  "Profile, addresses and language": {
+    uz: "Profil, manzillar va til",
+    ru: "Профиль, адреса и язык",
+  },
+  "We are here to help": { uz: "Biz yordam berishga tayyormiz", ru: "Мы готовы помочь" },
+  "Your account, all in one place": {
+    uz: "Hisobingiz — bitta joyda",
+    ru: "Ваш аккаунт — в одном месте",
+  },
+  "Sign in to view your orders, wishlist and notifications.": {
+    uz: "Buyurtmalar, sevimlilar va bildirishnomalarni ko‘rish uchun tizimga kiring.",
+    ru: "Войдите, чтобы видеть заказы, избранное и уведомления.",
+  },
+  "Save your wishlist, follow orders and manage your details.": {
+    uz: "Sevimlilarni saqlang, buyurtmalarni kuzatib boring va ma’lumotlaringizni boshqaring.",
+    ru: "Сохраняйте избранное, следите за заказами и управляйте данными.",
+  },
+  "Welcome back, {name}": { uz: "Xush kelibsiz, {name}", ru: "С возвращением, {name}" },
+  "Manage your orders, wishlist and preferences in one place.": {
+    uz: "Buyurtmalar, sevimlilar va sozlamalarni bir joyda boshqaring.",
+    ru: "Управляйте заказами, избранным и настройками в одном месте.",
+  },
+  "Order history and delivery status": {
+    uz: "Buyurtmalar tarixi va yetkazib berish holati",
+    ru: "История заказов и статус доставки",
+  },
+  "Your order history will appear here.": {
+    uz: "Buyurtmalar tarixi shu yerda ko‘rinadi.",
+    ru: "История заказов появится здесь.",
+  },
+  "{count} orders": { uz: "{count} ta buyurtma", ru: "{count} заказов" },
+  "{count} active": { uz: "{count} ta faol", ru: "{count} активных" },
+  "{count} items": { uz: "{count} ta buyum", ru: "{count} товаров" },
+  "Mark all as read": {
+    uz: "Barchasini o‘qilgan qilish",
+    ru: "Отметить всё прочитанным",
+  },
+  "Mark as read": { uz: "O‘qilgan deb belgilash", ru: "Отметить прочитанным" },
+  Read: { uz: "O‘qilgan", ru: "Прочитано" },
+  "Order updates and replies from Lumina will appear here.": {
+    uz: "Buyurtma yangiliklari va Lumina javoblari shu yerda ko‘rinadi.",
+    ru: "Обновления по заказам и ответы Lumina появятся здесь.",
+  },
+  "Manage your profile, addresses and store preferences.": {
+    uz: "Profilingiz, manzillaringiz va sayt sozlamalarini boshqaring.",
+    ru: "Управляйте профилем, адресами и настройками магазина.",
+  },
+  "Profile details": { uz: "Profil ma’lumotlari", ru: "Данные профиля" },
+  "Update the name shown on your orders and account.": {
+    uz: "Buyurtmalar va hisobingizda ko‘rinadigan ismni yangilang.",
+    ru: "Обновите имя, отображаемое в заказах и аккаунте.",
+  },
+  "Email address": { uz: "Email manzil", ru: "Адрес email" },
+  "Email cannot be changed.": {
+    uz: "Emailni o‘zgartirib bo‘lmaydi.",
+    ru: "Email нельзя изменить.",
+  },
+  "Address book": { uz: "Manzillar kitobi", ru: "Адресная книга" },
+  "Add or update delivery addresses used at checkout.": {
+    uz: "To‘lovda ishlatiladigan yetkazib berish manzillarini qo‘shing yoki yangilang.",
+    ru: "Добавляйте или обновляйте адреса доставки для оформления заказа.",
+  },
+  "Add your first delivery address below.": {
+    uz: "Birinchi yetkazib berish manzilingizni quyida qo‘shing.",
+    ru: "Добавьте первый адрес доставки ниже.",
+  },
+  Default: { uz: "Asosiy", ru: "Основной" },
+  "Add new address": { uz: "Yangi manzil qo‘shish", ru: "Добавить новый адрес" },
+  "Address saved": { uz: "Manzil saqlandi", ru: "Адрес сохранён" },
+  "Address deleted": { uz: "Manzil o‘chirildi", ru: "Адрес удалён" },
+  "Delete address?": { uz: "Manzil o‘chirilsinmi?", ru: "Удалить адрес?" },
+  "Are you sure you want to delete this address?": {
+    uz: "Bu manzilni o‘chirishga ishonchingiz komilmi?",
+    ru: "Вы уверены, что хотите удалить этот адрес?",
+  },
+  "Failed to delete address": {
+    uz: "Manzilni o‘chirib bo‘lmadi",
+    ru: "Не удалось удалить адрес",
+  },
+  "Language & region": { uz: "Til va hudud", ru: "Язык и регион" },
+  "Choose the language you want to browse Lumina in.": {
+    uz: "Lumina’ni qaysi tilda ko‘rishni xohlasangiz, tanlang.",
+    ru: "Выберите язык, на котором хотите просматривать Lumina.",
+  },
+  "Changes apply immediately across the store.": {
+    uz: "O‘zgarishlar do‘kon bo‘ylab darhol qo‘llaniladi.",
+    ru: "Изменения сразу применяются во всём магазине.",
+  },
+  "Language updated": { uz: "Til yangilandi", ru: "Язык обновлён" },
+  Security: { uz: "Xavfsizlik", ru: "Безопасность" },
+  "Change your password to keep your account safe.": {
+    uz: "Hisobingiz xavfsizligi uchun parolni o‘zgartiring.",
+    ru: "Смените пароль, чтобы защитить аккаунт.",
+  },
 
   // ── Errors / empty states ──────────────────────────────────────────────
   "Page not found": { uz: "Sahifa topilmadi", ru: "Страница не найдена" },
@@ -715,11 +920,10 @@ const translations: Record<string, Entry> = {
       uz: "Uch oyoqli asosdagi qirrali yong‘oq stolcha — shahar kvartirasi uchun kichik, avloddan-avlodga o‘tadigan darajada mustahkam.",
       ru: "Столешница-поднос из ореха с бортиком на трёхногом основании — достаточно компактная для городской квартиры и достаточно прочная, чтобы передать по наследству.",
     },
-  "A slim writing desk with a hidden cable channel and one full-width drawer in dovetailed oak.":
-    {
-      uz: "Yashirin kabel kanali va to‘liq kenglikdagi bitta tortmasi bo‘lgan ingichka yozuv stoli, eman detallari qaldiroq birikmada.",
-      ru: "Тонкий письменный стол со скрытым кабельным каналом и одним выдвижным ящиком во всю ширину из дуба с соединением «ласточкин хвост».",
-    },
+  "A slim writing desk with a hidden cable channel and one full-width drawer in dovetailed oak.": {
+    uz: "Yashirin kabel kanali va to‘liq kenglikdagi bitta tortmasi bo‘lgan ingichka yozuv stoli, eman detallari qaldiroq birikmada.",
+    ru: "Тонкий письменный стол со скрытым кабельным каналом и одним выдвижным ящиком во всю ширину из дуба с соединением «ласточкин хвост».",
+  },
 
   // ── Product names, materials and colour options ──────────────────────
   "Halden Bouclé Sofa": { uz: "Halden bukle divani", ru: "Диван Halden из букле" },
@@ -812,7 +1016,7 @@ const translations: Record<string, Entry> = {
   unpaid: { uz: "To‘lanmagan", ru: "Не оплачено" },
   failed: { uz: "Muvaffaqiyatsiz", ru: "Ошибка" },
   refunded: { uz: "Qaytarilgan", ru: "Возвращено" },
-  "Subscribe": { uz: "Obuna bo‘lish", ru: "Подписаться" },
+  Subscribe: { uz: "Obuna bo‘lish", ru: "Подписаться" },
   "Newsletter subscription failed. Please try again.": {
     uz: "Yangiliklarga obuna bo‘lish amalga oshmadi. Qayta urinib ko‘ring.",
     ru: "Не удалось подписаться на рассылку. Попробуйте ещё раз.",

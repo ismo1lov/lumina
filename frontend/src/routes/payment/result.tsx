@@ -155,7 +155,7 @@ function PaymentResultPage() {
             {t("Try again")}
           </button>
           <Link
-            to="/dashboard"
+            to="/account/orders"
             className="border border-border px-7 py-3.5 text-[11px] uppercase tracking-[0.2em]"
           >
             {t("Back to account")}
@@ -237,7 +237,7 @@ function PaymentResultPage() {
           </button>
         )}
         <Link
-          to="/dashboard"
+          to="/account/orders"
           className="border border-border px-7 py-3.5 text-[11px] uppercase tracking-[0.2em]"
         >
           {t("Back to account")}
