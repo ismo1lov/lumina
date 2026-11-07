@@ -5,8 +5,7 @@ import { formatUZS } from "@/data/products";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
-import { PhoneInput } from "@/components/site/PhoneInput";
-import { isValidUzPhone } from "@/lib/phone";
+import { formatUzPhone, isValidUzPhone } from "@/lib/phone";
 import { reverseGeocode, geocodeAddress } from "@/lib/geocode";
 import { AuthRequiredDialog } from "@/components/site/AuthRequiredDialog";
 import { resolveAsset } from "@/lib/assets";
@@ -306,7 +305,6 @@ function Checkout() {
         {/* Left */}
         <form className="space-y-12" onSubmit={handleSubmit}>
           <section>
-            <h2 className="font-display text-2xl">{t("Shipping details")}</h2>
             <div className="mt-6 grid gap-6 sm:grid-cols-2">
               <Field
                 label="First name"
@@ -318,10 +316,13 @@ function Checkout() {
                 value={form.last}
                 onChange={(v) => setForm({ ...form, last: v })}
               />
-              <PhoneInput
+              <Field
+                label="Phone"
+                type="tel"
                 value={form.phone}
-                onChange={(v) => setForm({ ...form, phone: v })}
-                invalid={phoneInvalid}
+                onChange={(v) =>
+                  setForm({ ...form, phone: formatUzPhone(v) })
+                }
               />
               <div>
                 <label className="block">
