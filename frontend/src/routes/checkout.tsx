@@ -43,6 +43,22 @@ interface PaymentConfig {
   mock: boolean;
 }
 
+interface SavedAddress {
+  id: string;
+  address: string;
+  city: string;
+  lat: string | null;
+  lng: string | null;
+  isDefault: boolean;
+}
+
+function randomTashkentCoord() {
+  return {
+    lat: 41.2995 + (Math.random() - 0.5) * 0.06,
+    lng: 69.2401 + (Math.random() - 0.5) * 0.08,
+  };
+}
+
 function Checkout() {
   const { t } = useI18n();
   const { items, subtotal, clear } = useCart();
@@ -64,8 +80,7 @@ function Checkout() {
     email: "",
     address: "",
     city: "",
-    lat: 41.2995,
-    lng: 69.2401,
+    ...randomTashkentCoord(),
   });
 
   const total = subtotal;
@@ -81,6 +96,33 @@ function Checkout() {
       last: prev.last || user!.name.split(" ").slice(1).join(" "),
       email: user!.email,
     }));
+  }, [isCustomer]);
+
+  // Restore the user's saved address so the map opens on the right place.
+  useEffect(() => {
+    if (!isCustomer) return;
+    let active = true;
+    api
+      .get<SavedAddress[]>("/addresses")
+      .then((rows) => {
+        if (!active) return;
+        const saved = rows.find((a) => a.isDefault) ?? rows[0];
+        if (saved && saved.lat && saved.lng && !form.address && !form.city) {
+          setForm((prev) => ({
+            ...prev,
+            address: saved.address || "",
+            city: saved.city || "",
+            lat: Number(saved.lat),
+            lng: Number(saved.lng),
+          }));
+        }
+      })
+      .catch(() => {
+        /* ignore */
+      });
+    return () => {
+      active = false;
+    };
   }, [isCustomer]);
 
   useEffect(() => {
@@ -336,99 +378,96 @@ function Checkout() {
         </form>
 
         {/* Right */}
-        <aside className="h-fit bg-cream p-7 lg:sticky lg:top-28">
-          <h2 className="font-display text-2xl">{t("Order summary")}</h2>
+        <aside className="h-fit lg:sticky lg:top-28">
+          <div className="rounded-xl border border-border bg-white p-6 shadow-sm">
+            <h2 className="font-display text-xl mb-4">{t("Order summary")}</h2>
 
-          {items.length === 0 ? (
-            <p className="mt-6 text-sm text-muted-foreground">
-              {t("Your cart is empty.")}{" "}
-              <Link to="/catalog" className="link-underline">
-                {t("Browse the collection")}
-              </Link>
-              .
-            </p>
-          ) : (
-            <>
-              <ul className="mt-6 divide-y">
-                {items.map((i) => (
-                  <li key={i.key} className="flex gap-4 py-4">
-                    <img
-                      src={resolveAsset(i.image)}
-                      alt={i.name}
-                      loading="lazy"
-                      width={64}
-                      height={64}
-                      className="size-16 bg-background object-cover"
-                    />
-                    <div className="flex-1 text-sm">
-                      <p className="font-display text-base">{i.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {t(i.finish)} · {t(i.color)} · ×{i.qty}
-                      </p>
-                      {i.assembly && (
-                        <p className="text-xs text-accent">{t("Home assembly included")}</p>
-                      )}
-                    </div>
-                    <span className="text-sm">{formatUZS(i.unitPrice * i.qty)}</span>
-                  </li>
-                ))}
-              </ul>
+            {items.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                {t("Your cart is empty.")}{" "}
+                <Link to="/catalog" className="link-underline underline-offset-4">
+                  {t("Browse the collection")}
+                </Link>
+                .
+              </p>
+            ) : (
+              <>
+                <ul className="mt-0 divide-y divide-border/50">
+                  {items.map((i) => (
+                    <li key={i.key} className="flex gap-3 py-4">
+                      <img
+                        src={resolveAsset(i.image)}
+                        alt={i.name}
+                        loading="lazy"
+                        width={56}
+                        height={56}
+                        className="size-14 rounded-md bg-background object-cover"
+                      />
+                      <div className="flex-1 text-sm">
+                        <p className="font-medium text-foreground leading-tight">{i.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {t(i.finish)} · {t(i.color)} · ×{i.qty}
+                        </p>
+                        {i.assembly && (
+                          <p className="text-xs text-accent">{t("Home assembly included")}</p>
+                        )}
+                      </div>
+                      <span className="text-sm font-medium text-foreground">
+                        {formatUZS(i.unitPrice * i.qty)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
 
-              <div className="mt-6 space-y-2 border-t pt-6 text-sm">
-                <Row label="Subtotal" value={formatUZS(subtotal)} />
-                <div className="flex justify-between border-t pt-3">
-                  <span className="eyebrow">{t("Total")}</span>
-                  <span className="font-semibold tabular-nums text-2xl">{formatUZS(total)}</span>
-                </div>
-              </div>
-
-              <div className="mt-8">
-                <p className="eyebrow">{t("Payment")}</p>
-                <div className="mt-3 grid grid-cols-1 gap-2">
-                  {payments
-                    .filter((p) => {
-                      if (p.id === "cod") return true;
-                      if (p.id === "click") return !!paymentConfig?.click;
-                      if (p.id === "payme") return !!paymentConfig?.payme;
-                      return false;
-                    })
-                    .map((p) => (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => setPayment(p.id)}
-                        className={`flex cursor-pointer items-center justify-between gap-3 border px-3 py-2.5 text-left text-[11px] uppercase tracking-[0.14em] transition-colors ${
-                          payment === p.id ? "border-foreground bg-background" : "border-border"
-                        }`}
-                      >
-                        <span>{t(p.label)}</span>
-                        {p.id === "click" && <PaymentBrandLogo brand="click" className="h-6 w-16" />}
-                        {p.id === "payme" && <PaymentBrandLogo brand="payme" className="h-6 w-16" />}
-                      </button>
-                    ))}
+                <div className="mt-6 space-y-2 border-t border-border pt-4">
+                  <div className="flex justify-between">
+                    <span className="eyebrow text-xs uppercase tracking-wider">
+                      {t("Total")}
+                    </span>
+                    <span className="font-semibold tabular-nums text-lg text-foreground">
+                      {formatUZS(total)}
+                    </span>
+                  </div>
                 </div>
 
-                {paymentConfig && !paymentConfig.click && !paymentConfig.payme && (
-                  <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
-                    {t("Online payment is temporarily unavailable")}.{" "}
-                    {t("Please choose cash on delivery or contact us.")}
-                  </p>
-                )}
-              </div>
-            </>
-          )}
+                <div className="mt-8">
+                  <p className="eyebrow">{t("Payment")}</p>
+                  <div className="mt-3 grid grid-cols-1 gap-2">
+                    {payments
+                      .filter((p) => {
+                        if (p.id === "cod") return true;
+                        if (p.id === "click") return !!paymentConfig?.click;
+                        if (p.id === "payme") return !!paymentConfig?.payme;
+                        return false;
+                      })
+                      .map((p) => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => setPayment(p.id)}
+                          className={`flex cursor-pointer items-center justify-between gap-3 border px-3 py-2.5 text-left text-[11px] uppercase tracking-[0.14em] transition-colors ${
+                            payment === p.id ? "border-foreground bg-background" : "border-border"
+                          }`}
+                        >
+                          <span>{t(p.label)}</span>
+                          {p.id === "click" && <PaymentBrandLogo brand="click" className="h-6 w-16" />}
+                          {p.id === "payme" && <PaymentBrandLogo brand="payme" className="h-6 w-16" />}
+                        </button>
+                      ))}
+                  </div>
+
+                  {paymentConfig && !paymentConfig.click && !paymentConfig.payme && (
+                    <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
+                      {t("Online payment is temporarily unavailable")}.{" "}
+                      {t("Please choose cash on delivery or contact us.")}
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
         </aside>
       </div>
-    </div>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  const { t } = useI18n();
-  return (
-    <div className="flex justify-between text-muted-foreground">
-      <span>{t(label)}</span>
-      <span className="text-foreground">{value}</span>
     </div>
   );
 }
