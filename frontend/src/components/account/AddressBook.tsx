@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { Briefcase, ChevronDown, Home, MapPin, Pencil, Trash2, X } from "lucide-react";
-import type { LeafletMouseEvent, Map as LeafletMap, Marker as LeafletMarker } from "leaflet";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
@@ -8,6 +7,7 @@ import { useI18n } from "@/lib/i18n";
 import { useConfirm } from "@/lib/use-confirm";
 import { PhoneInput } from "@/components/site/PhoneInput";
 import { AddressMapPreview } from "@/components/account/AddressMapPreview";
+import { YandexMap } from "@/components/site/YandexMap";
 import { isValidUzPhone } from "@/lib/phone";
 import { geocodeAddress, reverseGeocode } from "@/lib/geocode";
 
@@ -63,14 +63,8 @@ export function AddressBook() {
   const [phoneInvalid, setPhoneInvalid] = useState(false);
 
   const formRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstance = useRef<LeafletMap | null>(null);
-  const markerRef = useRef<LeafletMarker | null>(null);
-  const coordsRef = useRef({ lat: form.lat, lng: form.lng });
-
-  useEffect(() => {
-    coordsRef.current = { lat: form.lat, lng: form.lng };
-  }, [form.lat, form.lng]);
+  const skipGeocodeRef = useRef(false);
+  const reverseRequestRef = useRef(0);
 
   useEffect(() => {
     if (!user) return;
@@ -104,90 +98,38 @@ export function AddressBook() {
     });
   }, [addresses]);
 
-  // Initialise the Leaflet map whenever the address form opens or changes target.
+  const handleMapChange = (lat: number, lng: number) => {
+    setForm((prev) => ({ ...prev, lat, lng }));
+    const requestId = ++reverseRequestRef.current;
+
+    void reverseGeocode(lat, lng).then((place) => {
+      if (!place || requestId !== reverseRequestRef.current) return;
+      setForm((prev) => {
+        const address = place.address || prev.address;
+        const city = place.city || prev.city;
+        if (!address && !city) return prev;
+        if (address === prev.address && city === prev.city) return prev;
+
+        skipGeocodeRef.current = true;
+        return { ...prev, address, city };
+      });
+    });
+  };
+
+  // Keep the map centred on the address the user types.
   useEffect(() => {
     if (!formOpen) return;
-    const container = mapRef.current;
-    if (!container) return;
-
-    let active = true;
-    let map: LeafletMap | null = null;
-
-    (async () => {
-      const L = await import("leaflet");
-      await import("leaflet/dist/leaflet.css");
-      if (!active) return;
-
-      delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-      });
-
-      map = L.map(container, {
-        center: [coordsRef.current.lat, coordsRef.current.lng],
-        zoom: 13,
-      });
-
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap",
-        maxZoom: 19,
-      }).addTo(map);
-
-      const marker = L.marker([coordsRef.current.lat, coordsRef.current.lng], {
-        draggable: true,
-      }).addTo(map);
-
-      const applyCoords = async (lat: number, lng: number) => {
-        setForm((prev) => ({ ...prev, lat, lng }));
-        const place = await reverseGeocode(lat, lng);
-        if (place) {
-          setForm((prev) => ({
-            ...prev,
-            address: place.address || prev.address,
-            city: place.city || prev.city,
-          }));
-        }
-      };
-
-      marker.on("dragend", () => {
-        const pos = marker.getLatLng();
-        applyCoords(pos.lat, pos.lng);
-      });
-
-      map.on("click", (event: LeafletMouseEvent) => {
-        marker.setLatLng(event.latlng);
-        applyCoords(event.latlng.lat, event.latlng.lng);
-      });
-
-      mapInstance.current = map;
-      markerRef.current = marker;
-    })();
-
-    return () => {
-      active = false;
-      if (map) {
-        map.remove();
-        mapInstance.current = null;
-        markerRef.current = null;
-      }
-    };
-  }, [formOpen, editingId]);
-
-  // Keep the marker in sync when the user types a different address.
-  useEffect(() => {
-    if (!formOpen) return;
+    if (skipGeocodeRef.current) {
+      skipGeocodeRef.current = false;
+      return;
+    }
     const query = `${form.address} ${form.city}`.trim();
     if (!query) return;
 
     const timer = setTimeout(async () => {
-      if (!mapInstance.current || markerRef.current === null) return;
       const results = await geocodeAddress(query);
       if (results.length === 0) return;
       const place = results[0];
-      markerRef.current.setLatLng([place.lat, place.lng]);
-      mapInstance.current.setView([place.lat, place.lng], 13);
       setForm((prev) =>
         prev.lat !== place.lat || prev.lng !== place.lng
           ? { ...prev, lat: place.lat, lng: place.lng }
@@ -482,14 +424,18 @@ export function AddressBook() {
             </label>
 
             <div className="sm:col-span-2">
-              <span className={fieldLabelClass}>{t("Pin your location on map")}</span>
-              <div
-                ref={mapRef}
+              <span className={fieldLabelClass}>{t("Location on map")}</span>
+              <YandexMap
+                lat={form.lat}
+                lng={form.lng}
+                zoom={13}
+                interactive
+                onChange={handleMapChange}
+                title={t("Location on map")}
                 className="mt-2 h-52 w-full border border-border"
-                style={{ zIndex: 1 }}
               />
               <p className="mt-1.5 text-[11px] text-muted-foreground">
-                {t("Click or drag the marker")}
+                {t("Click on the map or drag the marker to set your exact location.")}
               </p>
             </div>
           </div>

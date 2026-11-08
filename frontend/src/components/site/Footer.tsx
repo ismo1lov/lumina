@@ -1,35 +1,31 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
-import { useState } from "react";
+import { Mail, MapPin, Phone } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { api } from "@/lib/api";
+
+const contactLinks = [
+  {
+    href: "tel:+998977318666",
+    label: "Call us",
+    title: "+998 97 731 86 66",
+    Icon: Phone,
+  },
+  {
+    href: "mailto:ismoilovabdulloh2009@gmail.com",
+    label: "Email us",
+    title: "ismoilovabdulloh2009@gmail.com",
+    Icon: Mail,
+  },
+  {
+    href: "https://www.google.com/maps/search/?api=1&query=Tashkent%2C+Uzbekistan",
+    label: "Find us on Google Maps",
+    title: "Tashkent, Uzbekistan",
+    Icon: MapPin,
+    external: true,
+  },
+];
 
 export function Footer() {
   const { t } = useI18n();
-  const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-
-  const subscribe = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setBusy(true);
-    setError("");
-    try {
-      await api.post("/newsletter", { email });
-      setSent(true);
-      setEmail("");
-    } catch (err) {
-      setSent(false);
-      setError(
-        err instanceof Error
-          ? t(err.message)
-          : t("Newsletter subscription failed. Please try again."),
-      );
-    } finally {
-      setBusy(false);
-    }
-  };
 
   return (
     <footer className="bg-primary text-primary-foreground">
@@ -89,36 +85,24 @@ export function Footer() {
           </div>
 
           <div>
-            <p className="eyebrow text-primary-foreground/50">{t("Newsletter")}</p>
+            <p className="eyebrow text-primary-foreground/50">{t("Contact")}</p>
             <p className="mt-5 text-sm text-primary-foreground/70">
-              {t("Notes on craft, new pieces, and studio openings. Once a month.")}
+              {t("Questions about a piece? Call us, write, or visit our showroom in Tashkent.")}
             </p>
-            <form
-              className="mt-5 flex items-center border-b border-primary-foreground/30"
-              onSubmit={subscribe}
-            >
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t("Your email")}
-                disabled={busy}
-                className="w-full bg-transparent py-3 text-sm outline-none placeholder:text-primary-foreground/40 disabled:opacity-60"
-              />
-              <button
-                type="submit"
-                aria-label={t("Subscribe")}
-                disabled={busy}
-                className="p-2 hover:text-accent disabled:opacity-50"
-              >
-                <ArrowRight size={16} className={busy ? "animate-pulse" : ""} />
-              </button>
-            </form>
-            {sent && (
-              <p className="mt-2 text-xs text-accent">{t("Thank you — you're on the list.")}</p>
-            )}
-            {error && <p className="mt-2 text-xs text-red-300">{error}</p>}
+            <div className="mt-5 flex items-center gap-3">
+              {contactLinks.map(({ href, label, title, Icon, external }) => (
+                <a
+                  key={href}
+                  href={href}
+                  aria-label={t(label)}
+                  title={title}
+                  {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
+                  className="grid size-11 place-items-center text-primary-foreground/80 transition-colors hover:text-accent"
+                >
+                  <Icon size={18} />
+                </a>
+              ))}
+            </div>
           </div>
         </div>
 

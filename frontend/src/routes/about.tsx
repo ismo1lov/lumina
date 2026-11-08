@@ -107,7 +107,7 @@ function About() {
   const { t } = useI18n();
 
   return (
-    <div className="bg-[#FAFAFA]">
+    <div className="bg-background">
       {/* Hero — split screen with story intro */}
       <section className="grid lg:min-h-screen lg:grid-cols-2">
         <div className="h-[50vh] overflow-hidden lg:h-auto">

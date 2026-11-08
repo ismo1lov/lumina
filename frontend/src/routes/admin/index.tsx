@@ -5,6 +5,7 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { AdminShell, avatarUrl } from "@/components/admin/AdminShell";
 import { useConfirm } from "@/lib/use-confirm";
+import { YandexMap } from "@/components/site/YandexMap";
 import { toast } from "sonner";
 import {
   Users,
@@ -983,45 +984,15 @@ function AdminPage() {
 }
 
 function OrderMap({ lat, lng }: { lat: number; lng: number }) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!ref.current) return;
-    let active = true;
-
-    const init = async () => {
-      const L = await import("leaflet");
-      await import("leaflet/dist/leaflet.css");
-
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-      });
-
-      if (!active) return;
-
-      const map = L.map(ref.current!, { center: [lat, lng], zoom: 15 });
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap",
-        maxZoom: 19,
-      }).addTo(map);
-      L.marker([lat, lng]).addTo(map);
-
-      return () => {
-        active = false;
-        map.remove();
-      };
-    };
-
-    init();
-    return () => {
-      active = false;
-    };
-  }, [lat, lng]);
-
-  return <div ref={ref} className="mt-5 h-64 w-full rounded-2xl border border-border" />;
+  return (
+    <YandexMap
+      lat={lat}
+      lng={lng}
+      zoom={15}
+      title="Order location"
+      className="mt-5 h-64 w-full rounded-2xl border border-border"
+    />
+  );
 }
 
 function StatusBadge({ status }: { status: string }) {

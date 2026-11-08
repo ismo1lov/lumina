@@ -75,6 +75,13 @@ const translations: Record<string, Entry> = {
     uz: "Rahmat — ro‘yxatga qo‘shildingiz.",
     ru: "Спасибо — вы в списке.",
   },
+  "Questions about a piece? Call us, write, or visit our showroom in Tashkent.": {
+    uz: "Buyum haqida savolingiz bormi? Qo‘ng‘iroq qiling, yozing yoki Toshkentdagi showroomimizga tashrif buyuring.",
+    ru: "Есть вопросы о мебели? Позвоните, напишите или загляните в наш шоурум в Ташкенте.",
+  },
+  "Call us": { uz: "Qo‘ng‘iroq qilish", ru: "Позвонить" },
+  "Email us": { uz: "Email yozish", ru: "Написать email" },
+  "Find us on Google Maps": { uz: "Google Maps’da topish", ru: "Найти в Google Maps" },
   "Payment methods": { uz: "To‘lov usullari", ru: "Способы оплаты" },
   "We accept": { uz: "Biz qabul qilamiz", ru: "Мы принимаем" },
   "© {year} Lumina Home. Tashkent, Uzbekistan.": {
@@ -351,13 +358,13 @@ const translations: Record<string, Entry> = {
   "Your account email": { uz: "Hisobingiz emaili", ru: "Email вашего аккаунта" },
   Address: { uz: "Manzil", ru: "Адрес" },
   City: { uz: "Shahar", ru: "Город" },
-  "Pin your location on map": {
-    uz: "Joylashuvingizni xaritada belgilang",
-    ru: "Отметьте местоположение на карте",
+  "Location on map": {
+    uz: "Manzilni xaritada belgilang",
+    ru: "Укажите адрес на карте",
   },
-  "Click or drag the marker": {
-    uz: "Xaritani bosing yoki markerni torting",
-    ru: "Нажмите на карту или перетащите маркер",
+  "Click on the map or drag the marker to set your exact location.": {
+    uz: "Aniq manzilni belgilash uchun xaritani bosing yoki markerni sudrang.",
+    ru: "Нажмите на карту или перетащите маркер, чтобы указать точное местоположение.",
   },
   "Delivery method": { uz: "Yetkazib berish usuli", ru: "Способ доставки" },
   "Standard delivery": { uz: "Standart yetkazib berish", ru: "Стандартная доставка" },

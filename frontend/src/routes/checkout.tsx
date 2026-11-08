@@ -6,11 +6,12 @@ import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
 import { formatUzPhone, isValidUzPhone } from "@/lib/phone";
-import { reverseGeocode, geocodeAddress } from "@/lib/geocode";
+import { geocodeAddress, reverseGeocode } from "@/lib/geocode";
 import { AuthRequiredDialog } from "@/components/site/AuthRequiredDialog";
 import { resolveAsset } from "@/lib/assets";
 import { useI18n } from "@/lib/i18n";
 import { PaymentBrandLogo, PaymentLogos } from "@/components/site/PaymentLogos";
+import { YandexMap } from "@/components/site/YandexMap";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -58,9 +59,6 @@ function Checkout() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const isCustomer = !!user && user.role !== "admin";
-  const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstance = useRef<any>(null);
-  const markerRef = useRef<any>(null);
 
   const [delivery, setDelivery] = useState(deliveryOptions[0]);
   const [payment, setPayment] = useState("cod");
@@ -82,6 +80,8 @@ function Checkout() {
   });
 
   const total = subtotal + delivery.price;
+  const skipGeocodeRef = useRef(false);
+  const reverseRequestRef = useRef(0);
 
   useEffect(() => {
     if (!isCustomer) return;
@@ -111,83 +111,36 @@ function Checkout() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!mapRef.current || mapInstance.current) return;
-    let active = true;
+  const handleMapChange = (lat: number, lng: number) => {
+    setForm((prev) => ({ ...prev, lat, lng }));
+    const requestId = ++reverseRequestRef.current;
 
-    const initMap = async () => {
-      const L = await import("leaflet");
-      await import("leaflet/dist/leaflet.css");
+    void reverseGeocode(lat, lng).then((place) => {
+      if (!place || requestId !== reverseRequestRef.current) return;
+      setForm((prev) => {
+        const address = place.address || prev.address;
+        const city = place.city || prev.city;
+        if (!address && !city) return prev;
+        if (address === prev.address && city === prev.city) return prev;
 
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+        skipGeocodeRef.current = true;
+        return { ...prev, address, city };
       });
-
-      if (!active) return;
-
-      const map = L.map(mapRef.current!, {
-        center: [form.lat, form.lng],
-        zoom: 13,
-      });
-
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap",
-        maxZoom: 19,
-      }).addTo(map);
-
-      const marker = L.marker([form.lat, form.lng], { draggable: true }).addTo(map);
-
-      const applyCoords = async (lat: number, lng: number) => {
-        setForm((prev) => ({ ...prev, lat, lng }));
-        const place = await reverseGeocode(lat, lng);
-        if (place) {
-          setForm((prev) => ({
-            ...prev,
-            address: place.address || prev.address,
-            city: place.city || prev.city,
-          }));
-        }
-      };
-
-      marker.on("dragend", () => {
-        const pos = marker.getLatLng();
-        applyCoords(pos.lat, pos.lng);
-      });
-
-      map.on("click", (e: any) => {
-        marker.setLatLng(e.latlng);
-        applyCoords(e.latlng.lat, e.latlng.lng);
-      });
-
-      mapInstance.current = map;
-      markerRef.current = marker;
-    };
-
-    initMap();
-
-    return () => {
-      active = false;
-      if (mapInstance.current) {
-        mapInstance.current.remove();
-        mapInstance.current = null;
-      }
-    };
-  }, []);
+    });
+  };
 
   useEffect(() => {
     if (placed) return;
+    if (skipGeocodeRef.current) {
+      skipGeocodeRef.current = false;
+      return;
+    }
     const query = `${form.address} ${form.city}`.trim();
     if (!query) return;
     const timer = setTimeout(async () => {
-      if (!mapInstance.current || markerRef.current === null) return;
       const results = await geocodeAddress(query);
       if (results.length === 0) return;
       const place = results[0];
-      markerRef.current.setLatLng([place.lat, place.lng]);
-      mapInstance.current.setView([place.lat, place.lng], 13);
       setForm((prev) =>
         prev.lat !== place.lat || prev.lng !== place.lng
           ? { ...prev, lat: place.lat, lng: place.lng }
@@ -280,8 +233,7 @@ function Checkout() {
           /* ignore */
         }
         window.location.assign(
-          result.redirectUrl ||
-            `/payment/result?orderId=${encodeURIComponent(result.orderId)}`,
+          result.redirectUrl || `/payment/result?orderId=${encodeURIComponent(result.orderId)}`,
         );
         return;
       }
@@ -320,9 +272,7 @@ function Checkout() {
                 label="Phone"
                 type="tel"
                 value={form.phone}
-                onChange={(v) =>
-                  setForm({ ...form, phone: formatUzPhone(v) })
-                }
+                onChange={(v) => setForm({ ...form, phone: formatUzPhone(v) })}
               />
               <div>
                 <label className="block">
@@ -352,10 +302,18 @@ function Checkout() {
               />
               <div className="sm:col-span-2">
                 <label className="block">
-                  <span className="eyebrow">{t("Pin your location on map")}</span>
-                  <div ref={mapRef} className="mt-2 h-56 w-full border" style={{ zIndex: 1 }} />
+                  <span className="eyebrow">{t("Location on map")}</span>
+                  <YandexMap
+                    lat={form.lat}
+                    lng={form.lng}
+                    zoom={13}
+                    interactive
+                    onChange={handleMapChange}
+                    title={t("Location on map")}
+                    className="mt-2 h-56 w-full border"
+                  />
                   <span className="mt-1 block text-[11px] text-muted-foreground">
-                    {t("Click or drag the marker")}
+                    {t("Click on the map or drag the marker to set your exact location.")}
                   </span>
                 </label>
               </div>
@@ -449,10 +407,7 @@ function Checkout() {
 
           <div className="mt-6 space-y-2 border-t pt-6 text-sm">
             <Row label="Subtotal" value={formatUZS(subtotal)} />
-            <Row
-              label="Delivery"
-              value={delivery.price ? formatUZS(delivery.price) : t("Free")}
-            />
+            <Row label="Delivery" value={delivery.price ? formatUZS(delivery.price) : t("Free")} />
             <div className="flex justify-between border-t pt-3">
               <span className="eyebrow">{t("Total")}</span>
               <span className="font-semibold tabular-nums text-2xl">{formatUZS(total)}</span>
@@ -498,9 +453,7 @@ function Checkout() {
               </p>
               <PaymentLogos className="mt-2" imageClassName="h-6 w-16" />
               <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
-                {t(
-                  "Visa, UZCARD and HUMO cards are accepted through our payment partners.",
-                )}
+                {t("Visa, UZCARD and HUMO cards are accepted through our payment partners.")}
               </p>
             </div>
           </div>

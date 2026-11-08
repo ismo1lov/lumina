@@ -152,7 +152,6 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
-    
   }
 
   h1,
@@ -230,4 +229,10 @@
   50% {
     transform: translateY(-14px);
   }
+}
+
+/* Keep the Yandex map footer clean: hide the terms link and Yandex logo. */
+.lumina-yandex-map [class*="copyright__agreement"],
+.lumina-yandex-map [class*="copyright__logo-cell"] {
+  display: none !important;
 }

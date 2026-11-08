@@ -40,7 +40,7 @@ function MenuItem({ icon: Icon, title, badge, onClick }: MenuItemProps) {
       onClick={onClick}
       className="group flex w-full items-center gap-3 border border-transparent px-3 py-3 text-left transition-colors hover:border-border/60 hover:bg-cream/60"
     >
-      <span className="grid size-10 shrink-0 place-items-center border border-border/70 bg-cream text-accent transition-colors group-hover:border-accent/30 group-hover:bg-accent/5">
+      <span className="grid size-10 shrink-0 place-items-center bg-cream text-accent transition-colors group-hover:bg-accent/5">
         <Icon size={17} strokeWidth={1.6} />
       </span>
       <span className="min-w-0 flex-1 text-sm font-medium text-foreground">{title}</span>
@@ -155,7 +155,7 @@ export function AccountDrawer({ open, onOpenChange }: AccountDrawerProps) {
                 type="button"
                 onClick={close}
                 aria-label={t("Close account menu")}
-                className="grid size-9 shrink-0 place-items-center border border-border/70 text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground"
+                className="grid size-9 shrink-0 place-items-center text-muted-foreground transition-colors hover:text-foreground"
               >
                 <X size={17} />
               </button>
@@ -219,7 +219,7 @@ export function AccountDrawer({ open, onOpenChange }: AccountDrawerProps) {
                 </div>
               ) : (
                 <div className="flex min-h-full flex-col items-center justify-center px-8 py-14 text-center">
-                  <div className="grid size-16 place-items-center rounded-full border border-border/70 bg-cream text-accent">
+                  <div className="grid size-16 place-items-center rounded-full bg-cream text-accent">
                     <LogIn size={26} strokeWidth={1.5} />
                   </div>
                   <h3 className="mt-6 max-w-[260px] font-display text-3xl leading-tight">
