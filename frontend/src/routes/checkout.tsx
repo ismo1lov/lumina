@@ -378,8 +378,8 @@ function Checkout() {
         </form>
 
         {/* Right */}
-        <aside className="h-fit lg:sticky lg:top-28">
-          <div className="rounded-xl border border-border bg-white p-6 shadow-sm">
+        <aside className="h-fit">
+          <div className="rounded-xl border border-border p-6">
             <h2 className="font-display text-xl mb-4">{t("Order summary")}</h2>
 
             {items.length === 0 ? (
