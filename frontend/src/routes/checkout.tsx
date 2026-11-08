@@ -379,8 +379,8 @@ function Checkout() {
         </form>
 
         {/* Right */}
-        <aside className="h-fit">
-          <div className="rounded-xl border border-border p-6">
+        <aside className="h-fit lg:sticky lg:top-28">
+          <div className="rounded-xl p-6">
             <h2 className="font-display text-xl mb-4">{t("Order summary")}</h2>
 
             {items.length === 0 ? (
@@ -433,36 +433,41 @@ function Checkout() {
 
                 <div className="mt-8">
                   <p className="eyebrow">{t("Payment")}</p>
-                  <div className="mt-3 grid grid-cols-1 gap-2">
-                    {payments
-                      .filter((p) => {
-                        if (p.id === "cod") return true;
-                        if (p.id === "click") return !!paymentConfig?.click;
-                        if (p.id === "payme") return !!paymentConfig?.payme;
-                        return false;
-                      })
-                      .map((p) => (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() => setPayment(p.id)}
-                          className={`flex cursor-pointer items-center justify-between gap-3 border px-3 py-2.5 text-left text-[11px] uppercase tracking-[0.14em] transition-colors ${
-                            payment === p.id ? "border-foreground bg-background" : "border-border"
-                          }`}
-                        >
-                          <span>{t(p.label)}</span>
-                          {p.id === "click" && <PaymentBrandLogo brand="click" className="h-6 w-16" />}
-                          {p.id === "payme" && <PaymentBrandLogo brand="payme" className="h-6 w-16" />}
-                        </button>
-                      ))}
-                  </div>
-
-                  {paymentConfig && !paymentConfig.click && !paymentConfig.payme && (
-                    <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
+                  <div className="mt-3 space-y-2">
+                    {["visa", "payme", "click"].map((brand) => (
+                      <button
+                        key={brand}
+                        type="button"
+                        disabled
+                        aria-disabled={true}
+                        className="flex items-center justify-between gap-3 border border-border/40 bg-muted/30 px-3 py-2.5 rounded-lg text-left text-[11px] uppercase tracking-[0.14em] text-muted-foreground opacity-60 cursor-not-allowed"
+                      >
+                        <span>{brand === "visa" ? "Visa" : brand === "payme" ? "Payme" : "Click"}</span>
+                        <PaymentBrandLogo brand={brand as "visa" | "payme" | "click"} className="h-5 w-10 opacity-60" />
+                      </button>
+                    ))}
+                    <p className="mt-2 text-[10px] leading-relaxed text-muted-foreground">
                       {t("Online payment is temporarily unavailable")}.{" "}
                       {t("Please choose cash on delivery or contact us.")}
                     </p>
-                  )}
+                  </div>
+
+                  <div className="mt-6">
+                    <button
+                      type="button"
+                      onClick={() => setPayment("cod")}
+                      className={`flex items-center justify-between gap-3 border rounded-lg px-3 py-3 text-left text-sm transition-colors ${
+                        payment === "cod"
+                          ? "border-foreground bg-accent text-accent-foreground"
+                          : "border-border bg-background text-foreground hover:bg-muted"
+                      }`}
+                    >
+                      <span className="flex items-center gap-2">{t("Cash on delivery")}</span>
+                      <span className="text-xs uppercase tracking-wider text-muted-foreground">
+                        {t("Pay when you receive")}
+                      </span>
+                    </button>
+                  </div>
                 </div>
               </>
             )}
