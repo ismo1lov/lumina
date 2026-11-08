@@ -169,6 +169,7 @@ function Checkout() {
       skipGeocodeRef.current = false;
       return;
     }
+    if (manualEditRef.current) return;
     const query = `${form.address} ${form.city}`.trim();
     if (!query) return;
     const timer = setTimeout(async () => {

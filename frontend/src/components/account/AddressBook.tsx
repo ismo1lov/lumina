@@ -126,6 +126,7 @@ export function AddressBook() {
       skipGeocodeRef.current = false;
       return;
     }
+    if (manualEditRef.current) return;
     const query = `${form.address} ${form.city}`.trim();
     if (!query) return;
 
