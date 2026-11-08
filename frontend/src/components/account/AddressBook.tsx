@@ -65,6 +65,7 @@ export function AddressBook() {
   const formRef = useRef<HTMLDivElement>(null);
   const skipGeocodeRef = useRef(false);
   const reverseRequestRef = useRef(0);
+  const manualEditRef = useRef(false);
 
   useEffect(() => {
     if (!user) return;
@@ -99,11 +100,13 @@ export function AddressBook() {
   }, [addresses]);
 
   const handleMapChange = (lat: number, lng: number) => {
+    manualEditRef.current = false;
     setForm((prev) => ({ ...prev, lat, lng }));
     const requestId = ++reverseRequestRef.current;
 
     void reverseGeocode(lat, lng).then((place) => {
       if (!place || requestId !== reverseRequestRef.current) return;
+      if (manualEditRef.current) return;
       setForm((prev) => {
         const address = place.address || prev.address;
         const city = place.city || prev.city;
@@ -408,7 +411,10 @@ export function AddressBook() {
               <span className={fieldLabelClass}>{t("City")}</span>
               <input
                 value={form.city}
-                onChange={(event) => setForm({ ...form, city: event.target.value })}
+                onChange={(event) => {
+                  manualEditRef.current = true;
+                  setForm({ ...form, city: event.target.value });
+                }}
                 className="mt-2 w-full border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-accent"
               />
             </label>
@@ -417,7 +423,10 @@ export function AddressBook() {
               <span className={fieldLabelClass}>{t("Address")}</span>
               <textarea
                 value={form.address}
-                onChange={(event) => setForm({ ...form, address: event.target.value })}
+                onChange={(event) => {
+                  manualEditRef.current = true;
+                  setForm({ ...form, address: event.target.value });
+                }}
                 rows={2}
                 className="mt-2 w-full resize-none border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-accent"
               />

@@ -10,7 +10,7 @@ import { geocodeAddress, reverseGeocode } from "@/lib/geocode";
 import { AuthRequiredDialog } from "@/components/site/AuthRequiredDialog";
 import { resolveAsset } from "@/lib/assets";
 import { useI18n } from "@/lib/i18n";
-import { PaymentBrandLogo, PaymentLogos } from "@/components/site/PaymentLogos";
+import { PaymentBrandLogo } from "@/components/site/PaymentLogos";
 import { YandexMap } from "@/components/site/YandexMap";
 
 export const Route = createFileRoute("/checkout")({
@@ -29,16 +29,6 @@ export const Route = createFileRoute("/checkout")({
   }),
   component: Checkout,
 });
-
-const deliveryOptions = [
-  { id: "standard", label: "Standard delivery", copy: "3–5 working days", price: 0 },
-  {
-    id: "express",
-    label: "Express + assembly",
-    copy: "Next day, assembled in home",
-    price: 250000,
-  },
-];
 
 const payments = [
   { id: "click", label: "Click" },
@@ -60,7 +50,6 @@ function Checkout() {
   const navigate = useNavigate();
   const isCustomer = !!user && user.role !== "admin";
 
-  const [delivery, setDelivery] = useState(deliveryOptions[0]);
   const [payment, setPayment] = useState("cod");
   const [paymentConfig, setPaymentConfig] = useState<PaymentConfig | null>(null);
   const [placed, setPlaced] = useState(false);
@@ -79,9 +68,10 @@ function Checkout() {
     lng: 69.2401,
   });
 
-  const total = subtotal + delivery.price;
+  const total = subtotal;
   const skipGeocodeRef = useRef(false);
   const reverseRequestRef = useRef(0);
+  const manualEditRef = useRef(false);
 
   useEffect(() => {
     if (!isCustomer) return;
@@ -112,11 +102,13 @@ function Checkout() {
   }, []);
 
   const handleMapChange = (lat: number, lng: number) => {
+    manualEditRef.current = false;
     setForm((prev) => ({ ...prev, lat, lng }));
     const requestId = ++reverseRequestRef.current;
 
     void reverseGeocode(lat, lng).then((place) => {
       if (!place || requestId !== reverseRequestRef.current) return;
+      if (manualEditRef.current) return;
       setForm((prev) => {
         const address = place.address || prev.address;
         const city = place.city || prev.city;
@@ -215,7 +207,7 @@ function Checkout() {
           lng: String(form.lng),
         },
         payment,
-        delivery: delivery.id,
+        delivery: "standard",
         items: items.map((i) => ({
           productId: i.id,
           finish: i.finish,
@@ -292,13 +284,19 @@ function Checkout() {
                 <Field
                   label="Address"
                   value={form.address}
-                  onChange={(v) => setForm({ ...form, address: v })}
+                  onChange={(v) => {
+                    manualEditRef.current = true;
+                    setForm({ ...form, address: v });
+                  }}
                 />
               </div>
               <Field
                 label="City"
                 value={form.city}
-                onChange={(v) => setForm({ ...form, city: v })}
+                onChange={(v) => {
+                  manualEditRef.current = true;
+                  setForm({ ...form, city: v });
+                }}
               />
               <div className="sm:col-span-2">
                 <label className="block">
@@ -317,35 +315,6 @@ function Checkout() {
                   </span>
                 </label>
               </div>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="font-display text-2xl">{t("Delivery method")}</h2>
-            <div className="mt-6 space-y-3">
-              {deliveryOptions.map((d) => (
-                <label
-                  key={d.id}
-                  className={`flex cursor-pointer items-center justify-between border px-5 py-4 transition-colors ${
-                    delivery.id === d.id ? "border-foreground bg-cream" : "border-border"
-                  }`}
-                >
-                  <span className="flex items-center gap-3">
-                    <input
-                      type="radio"
-                      name="delivery"
-                      checked={delivery.id === d.id}
-                      onChange={() => setDelivery(d)}
-                      className="accent-[var(--terracotta)]"
-                    />
-                    <span>
-                      <span className="block text-sm">{t(d.label)}</span>
-                      <span className="block text-xs text-muted-foreground">{t(d.copy)}</span>
-                    </span>
-                  </span>
-                  <span className="text-sm">{d.price ? formatUZS(d.price) : t("Free")}</span>
-                </label>
-              ))}
             </div>
           </section>
 
@@ -379,84 +348,75 @@ function Checkout() {
               .
             </p>
           ) : (
-            <ul className="mt-6 divide-y">
-              {items.map((i) => (
-                <li key={i.key} className="flex gap-4 py-4">
-                  <img
-                    src={resolveAsset(i.image)}
-                    alt={i.name}
-                    loading="lazy"
-                    width={64}
-                    height={64}
-                    className="size-16 bg-background object-cover"
-                  />
-                  <div className="flex-1 text-sm">
-                    <p className="font-display text-base">{i.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {t(i.finish)} · {t(i.color)} · ×{i.qty}
-                    </p>
-                    {i.assembly && (
-                      <p className="text-xs text-accent">{t("Home assembly included")}</p>
-                    )}
-                  </div>
-                  <span className="text-sm">{formatUZS(i.unitPrice * i.qty)}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          <div className="mt-6 space-y-2 border-t pt-6 text-sm">
-            <Row label="Subtotal" value={formatUZS(subtotal)} />
-            <Row label="Delivery" value={delivery.price ? formatUZS(delivery.price) : t("Free")} />
-            <div className="flex justify-between border-t pt-3">
-              <span className="eyebrow">{t("Total")}</span>
-              <span className="font-semibold tabular-nums text-2xl">{formatUZS(total)}</span>
-            </div>
-          </div>
-
-          <div className="mt-7">
-            <p className="eyebrow">{t("Payment")}</p>
-            <div className="mt-3 grid grid-cols-1 gap-2">
-              {payments
-                .filter((p) => {
-                  if (p.id === "cod") return true;
-                  if (p.id === "click") return !!paymentConfig?.click;
-                  if (p.id === "payme") return !!paymentConfig?.payme;
-                  return false;
-                })
-                .map((p) => (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => setPayment(p.id)}
-                    className={`flex cursor-pointer items-center justify-between gap-3 border px-3 py-2.5 text-left text-[11px] uppercase tracking-[0.14em] transition-colors ${
-                      payment === p.id ? "border-foreground bg-background" : "border-border"
-                    }`}
-                  >
-                    <span>{t(p.label)}</span>
-                    {p.id === "click" && <PaymentBrandLogo brand="click" className="h-6 w-16" />}
-                    {p.id === "payme" && <PaymentBrandLogo brand="payme" className="h-6 w-16" />}
-                  </button>
+            <>
+              <ul className="mt-6 divide-y">
+                {items.map((i) => (
+                  <li key={i.key} className="flex gap-4 py-4">
+                    <img
+                      src={resolveAsset(i.image)}
+                      alt={i.name}
+                      loading="lazy"
+                      width={64}
+                      height={64}
+                      className="size-16 bg-background object-cover"
+                    />
+                    <div className="flex-1 text-sm">
+                      <p className="font-display text-base">{i.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t(i.finish)} · {t(i.color)} · ×{i.qty}
+                      </p>
+                      {i.assembly && (
+                        <p className="text-xs text-accent">{t("Home assembly included")}</p>
+                      )}
+                    </div>
+                    <span className="text-sm">{formatUZS(i.unitPrice * i.qty)}</span>
+                  </li>
                 ))}
-            </div>
+              </ul>
 
-            {paymentConfig && !paymentConfig.click && !paymentConfig.payme && (
-              <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
-                {t("Online payment is temporarily unavailable")}.{" "}
-                {t("Please choose cash on delivery or contact us.")}
-              </p>
-            )}
+              <div className="mt-6 space-y-2 border-t pt-6 text-sm">
+                <Row label="Subtotal" value={formatUZS(subtotal)} />
+                <div className="flex justify-between border-t pt-3">
+                  <span className="eyebrow">{t("Total")}</span>
+                  <span className="font-semibold tabular-nums text-2xl">{formatUZS(total)}</span>
+                </div>
+              </div>
 
-            <div className="mt-5 border-t pt-4">
-              <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                {t("Accepted cards")}
-              </p>
-              <PaymentLogos className="mt-2" imageClassName="h-6 w-16" />
-              <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
-                {t("Visa, UZCARD and HUMO cards are accepted through our payment partners.")}
-              </p>
-            </div>
-          </div>
+              <div className="mt-8">
+                <p className="eyebrow">{t("Payment")}</p>
+                <div className="mt-3 grid grid-cols-1 gap-2">
+                  {payments
+                    .filter((p) => {
+                      if (p.id === "cod") return true;
+                      if (p.id === "click") return !!paymentConfig?.click;
+                      if (p.id === "payme") return !!paymentConfig?.payme;
+                      return false;
+                    })
+                    .map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => setPayment(p.id)}
+                        className={`flex cursor-pointer items-center justify-between gap-3 border px-3 py-2.5 text-left text-[11px] uppercase tracking-[0.14em] transition-colors ${
+                          payment === p.id ? "border-foreground bg-background" : "border-border"
+                        }`}
+                      >
+                        <span>{t(p.label)}</span>
+                        {p.id === "click" && <PaymentBrandLogo brand="click" className="h-6 w-16" />}
+                        {p.id === "payme" && <PaymentBrandLogo brand="payme" className="h-6 w-16" />}
+                      </button>
+                    ))}
+                </div>
+
+                {paymentConfig && !paymentConfig.click && !paymentConfig.payme && (
+                  <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
+                    {t("Online payment is temporarily unavailable")}.{" "}
+                    {t("Please choose cash on delivery or contact us.")}
+                  </p>
+                )}
+              </div>
+            </>
+          )}
         </aside>
       </div>
     </div>
