@@ -1,12 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Check, Loader } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { formatUZS } from "@/data/products";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
 import { formatUzPhone, isValidUzPhone } from "@/lib/phone";
-import { geocodeAddress, reverseGeocode } from "@/lib/geocode";
 import { AuthRequiredDialog } from "@/components/site/AuthRequiredDialog";
 import { resolveAsset } from "@/lib/assets";
 import { useI18n } from "@/lib/i18n";
@@ -43,15 +42,6 @@ interface PaymentConfig {
   mock: boolean;
 }
 
-interface SavedAddress {
-  id: string;
-  address: string;
-  city: string;
-  lat: string | null;
-  lng: string | null;
-  isDefault: boolean;
-}
-
 function randomTashkentCoord() {
   return {
     lat: 41.2995 + (Math.random() - 0.5) * 0.06,
@@ -84,9 +74,6 @@ function Checkout() {
   });
 
   const total = subtotal;
-  const skipGeocodeRef = useRef(false);
-  const reverseRequestRef = useRef(0);
-  const manualEditRef = useRef(false);
 
   useEffect(() => {
     if (!isCustomer) return;
@@ -96,33 +83,6 @@ function Checkout() {
       last: prev.last || user!.name.split(" ").slice(1).join(" "),
       email: user!.email,
     }));
-  }, [isCustomer]);
-
-  // Restore the user's saved address so the map opens on the right place.
-  useEffect(() => {
-    if (!isCustomer) return;
-    let active = true;
-    api
-      .get<SavedAddress[]>("/addresses")
-      .then((rows) => {
-        if (!active) return;
-        const saved = rows.find((a) => a.isDefault) ?? rows[0];
-        if (saved && saved.lat && saved.lng && !form.address && !form.city) {
-          setForm((prev) => ({
-            ...prev,
-            address: saved.address || "",
-            city: saved.city || "",
-            lat: Number(saved.lat),
-            lng: Number(saved.lng),
-          }));
-        }
-      })
-      .catch(() => {
-        /* ignore */
-      });
-    return () => {
-      active = false;
-    };
   }, [isCustomer]);
 
   useEffect(() => {
@@ -144,46 +104,8 @@ function Checkout() {
   }, []);
 
   const handleMapChange = (lat: number, lng: number) => {
-    manualEditRef.current = false;
     setForm((prev) => ({ ...prev, lat, lng }));
-    const requestId = ++reverseRequestRef.current;
-
-    void reverseGeocode(lat, lng).then((place) => {
-      if (!place || requestId !== reverseRequestRef.current) return;
-      if (manualEditRef.current) return;
-      setForm((prev) => {
-        const address = place.address || prev.address;
-        const city = place.city || prev.city;
-        if (!address && !city) return prev;
-        if (address === prev.address && city === prev.city) return prev;
-
-        skipGeocodeRef.current = true;
-        return { ...prev, address, city };
-      });
-    });
   };
-
-  useEffect(() => {
-    if (placed) return;
-    if (skipGeocodeRef.current) {
-      skipGeocodeRef.current = false;
-      return;
-    }
-    if (manualEditRef.current) return;
-    const query = `${form.address} ${form.city}`.trim();
-    if (!query) return;
-    const timer = setTimeout(async () => {
-      const results = await geocodeAddress(query);
-      if (results.length === 0) return;
-      const place = results[0];
-      setForm((prev) =>
-        prev.lat !== place.lat || prev.lng !== place.lng
-          ? { ...prev, lat: place.lat, lng: place.lng }
-          : prev,
-      );
-    }, 900);
-    return () => clearTimeout(timer);
-  }, [form.address, form.city, placed]);
 
   if (placed) {
     return (
@@ -327,19 +249,13 @@ function Checkout() {
                 <Field
                   label="Address"
                   value={form.address}
-                  onChange={(v) => {
-                    manualEditRef.current = true;
-                    setForm({ ...form, address: v });
-                  }}
+                  onChange={(v) => setForm({ ...form, address: v })}
                 />
               </div>
               <Field
                 label="City"
                 value={form.city}
-                onChange={(v) => {
-                  manualEditRef.current = true;
-                  setForm({ ...form, city: v });
-                }}
+                onChange={(v) => setForm({ ...form, city: v })}
               />
               <div className="sm:col-span-2">
                 <label className="block">
@@ -433,41 +349,38 @@ function Checkout() {
 
                 <div className="mt-8">
                   <p className="eyebrow">{t("Payment")}</p>
-                  <div className="mt-3 space-y-2">
-                    {["visa", "payme", "click"].map((brand) => (
+                  <div className="mt-3 grid grid-cols-2 gap-3">
+                    {[
+                      { id: "visa", label: "Visa", disabled: true },
+                      { id: "payme", label: "Payme", disabled: true },
+                      { id: "click", label: "Click", disabled: true },
+                      { id: "cod", label: t("Cash on delivery"), disabled: false },
+                    ].map((p) => (
                       <button
-                        key={brand}
+                        key={p.id}
                         type="button"
-                        disabled
-                        aria-disabled={true}
-                        className="flex items-center justify-between gap-3 border border-border/40 bg-muted/30 px-3 py-2.5 rounded-lg text-left text-[11px] uppercase tracking-[0.14em] text-muted-foreground opacity-60 cursor-not-allowed"
+                        disabled={p.disabled}
+                        aria-disabled={p.disabled}
+                        onClick={() => setPayment("cod")}
+                        className={`flex items-center justify-between gap-3 border rounded-lg px-3 py-3 text-left text-sm transition-colors ${
+                          p.disabled
+                            ? "border-border/40 bg-muted/30 text-muted-foreground opacity-60 cursor-not-allowed"
+                            : payment === "cod"
+                              ? "border-foreground bg-accent text-accent-foreground"
+                              : "border-border bg-background text-foreground hover:bg-muted"
+                        }`}
                       >
-                        <span>{brand === "visa" ? "Visa" : brand === "payme" ? "Payme" : "Click"}</span>
-                        <PaymentBrandLogo brand={brand as "visa" | "payme" | "click"} className="h-5 w-10 opacity-60" />
+                        <span>{p.label}</span>
+                        {p.id !== "cod" && (
+                          <PaymentBrandLogo brand={p.id as "visa" | "payme" | "click"} className="h-5 w-10 opacity-60" />
+                        )}
                       </button>
                     ))}
-                    <p className="mt-2 text-[10px] leading-relaxed text-muted-foreground">
-                      {t("Online payment is temporarily unavailable")}.{" "}
-                      {t("Please choose cash on delivery or contact us.")}
-                    </p>
                   </div>
-
-                  <div className="mt-6">
-                    <button
-                      type="button"
-                      onClick={() => setPayment("cod")}
-                      className={`flex items-center justify-between gap-3 border rounded-lg px-3 py-3 text-left text-sm transition-colors ${
-                        payment === "cod"
-                          ? "border-foreground bg-accent text-accent-foreground"
-                          : "border-border bg-background text-foreground hover:bg-muted"
-                      }`}
-                    >
-                      <span className="flex items-center gap-2">{t("Cash on delivery")}</span>
-                      <span className="text-xs uppercase tracking-wider text-muted-foreground">
-                        {t("Pay when you receive")}
-                      </span>
-                    </button>
-                  </div>
+                  <p className="mt-2 text-[10px] leading-relaxed text-muted-foreground">
+                    {t("Online payment is temporarily unavailable")}.{" "}
+                    {t("Please choose cash on delivery or contact us.")}
+                  </p>
                 </div>
               </>
             )}

@@ -9,7 +9,6 @@ import { PhoneInput } from "@/components/site/PhoneInput";
 import { AddressMapPreview } from "@/components/account/AddressMapPreview";
 import { YandexMap } from "@/components/site/YandexMap";
 import { isValidUzPhone } from "@/lib/phone";
-import { geocodeAddress, reverseGeocode } from "@/lib/geocode";
 
 interface Address {
   id: string;
@@ -63,9 +62,6 @@ export function AddressBook() {
   const [phoneInvalid, setPhoneInvalid] = useState(false);
 
   const formRef = useRef<HTMLDivElement>(null);
-  const skipGeocodeRef = useRef(false);
-  const reverseRequestRef = useRef(0);
-  const manualEditRef = useRef(false);
 
   useEffect(() => {
     if (!user) return;
@@ -100,49 +96,8 @@ export function AddressBook() {
   }, [addresses]);
 
   const handleMapChange = (lat: number, lng: number) => {
-    manualEditRef.current = false;
     setForm((prev) => ({ ...prev, lat, lng }));
-    const requestId = ++reverseRequestRef.current;
-
-    void reverseGeocode(lat, lng).then((place) => {
-      if (!place || requestId !== reverseRequestRef.current) return;
-      if (manualEditRef.current) return;
-      setForm((prev) => {
-        const address = place.address || prev.address;
-        const city = place.city || prev.city;
-        if (!address && !city) return prev;
-        if (address === prev.address && city === prev.city) return prev;
-
-        skipGeocodeRef.current = true;
-        return { ...prev, address, city };
-      });
-    });
   };
-
-  // Keep the map centred on the address the user types.
-  useEffect(() => {
-    if (!formOpen) return;
-    if (skipGeocodeRef.current) {
-      skipGeocodeRef.current = false;
-      return;
-    }
-    if (manualEditRef.current) return;
-    const query = `${form.address} ${form.city}`.trim();
-    if (!query) return;
-
-    const timer = setTimeout(async () => {
-      const results = await geocodeAddress(query);
-      if (results.length === 0) return;
-      const place = results[0];
-      setForm((prev) =>
-        prev.lat !== place.lat || prev.lng !== place.lng
-          ? { ...prev, lat: place.lat, lng: place.lng }
-          : prev,
-      );
-    }, 900);
-
-    return () => clearTimeout(timer);
-  }, [form.address, form.city, formOpen]);
 
   const editAddress = (address: Address) => {
     setForm({
@@ -412,10 +367,7 @@ export function AddressBook() {
               <span className={fieldLabelClass}>{t("City")}</span>
               <input
                 value={form.city}
-                onChange={(event) => {
-                  manualEditRef.current = true;
-                  setForm({ ...form, city: event.target.value });
-                }}
+                onChange={(event) => setForm({ ...form, city: event.target.value })}
                 className="mt-2 w-full border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-accent"
               />
             </label>
@@ -424,10 +376,7 @@ export function AddressBook() {
               <span className={fieldLabelClass}>{t("Address")}</span>
               <textarea
                 value={form.address}
-                onChange={(event) => {
-                  manualEditRef.current = true;
-                  setForm({ ...form, address: event.target.value });
-                }}
+                onChange={(event) => setForm({ ...form, address: event.target.value })}
                 rows={2}
                 className="mt-2 w-full resize-none border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-accent"
               />
