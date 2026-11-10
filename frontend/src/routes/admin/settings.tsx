@@ -3,11 +3,29 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import { useI18n } from "@/lib/i18n";
 import { AdminShell, avatarUrl } from "@/components/admin/AdminShell";
-import { Camera, Eye, EyeOff, KeyRound, Save, CheckCircle2, AlertCircle } from "lucide-react";
+import { LanguageSwitcher } from "@/components/site/LanguageSwitcher";
+import {
+  Camera,
+  Eye,
+  EyeOff,
+  KeyRound,
+  Save,
+  CheckCircle2,
+  AlertCircle,
+  Languages,
+} from "lucide-react";
 
 interface ProfileResponse {
-  user: { id: string; name: string; email: string; username?: string; role: string; avatar: string };
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    username?: string;
+    role: string;
+    avatar: string;
+  };
 }
 
 function PwField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
@@ -33,15 +51,13 @@ function PwField({ value, onChange }: { value: string; onChange: (v: string) => 
 
 export const Route = createFileRoute("/admin/settings")({
   head: () => ({
-    meta: [
-      { title: "Settings — Lumina Admin" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Settings — Lumina Admin" }, { name: "robots", content: "noindex" }],
   }),
   component: SettingsPage,
 });
 
 function SettingsPage() {
+  const { t } = useI18n();
   const { user, loading, setAuth } = useAuth();
   const [name, setName] = useState(user?.name ?? "");
   const [username, setUsername] = useState(user?.username ?? "");
@@ -62,7 +78,7 @@ function SettingsPage() {
     const f = e.target.files?.[0];
     if (!f) return;
     if (f.size > 2 * 1024 * 1024) {
-      setMsg({ type: "err", text: "Image too large (max 2MB)" });
+      setMsg({ type: "err", text: t("Image too large (max 2MB)") });
       return;
     }
     const reader = new FileReader();
@@ -79,9 +95,9 @@ function SettingsPage() {
       const res = await api.patch<ProfileResponse>("/admin/profile", body);
       const token = localStorage.getItem("lumina-token");
       if (token) setAuth(res.user, token);
-      setMsg({ type: "ok", text: "Profile updated successfully" });
+      setMsg({ type: "ok", text: t("Profile updated successfully") });
     } catch (err) {
-      setMsg({ type: "err", text: err instanceof Error ? err.message : "Failed to save" });
+      setMsg({ type: "err", text: err instanceof Error ? err.message : t("Failed to save") });
     } finally {
       setSaving(false);
     }
@@ -90,7 +106,7 @@ function SettingsPage() {
   const savePassword = async () => {
     setMsg(null);
     if (next !== conf) {
-      setMsg({ type: "err", text: "New passwords do not match" });
+      setMsg({ type: "err", text: t("New passwords do not match") });
       return;
     }
     setPwBusy(true);
@@ -99,9 +115,12 @@ function SettingsPage() {
       setCur("");
       setNext("");
       setConf("");
-      setMsg({ type: "ok", text: "Password changed successfully" });
+      setMsg({ type: "ok", text: t("Password changed successfully") });
     } catch (err) {
-      setMsg({ type: "err", text: err instanceof Error ? err.message : "Failed to change password" });
+      setMsg({
+        type: "err",
+        text: err instanceof Error ? err.message : t("Failed to change password"),
+      });
     } finally {
       setPwBusy(false);
     }
@@ -114,9 +133,9 @@ function SettingsPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       >
-        <h1 className="font-display text-3xl">Settings</h1>
+        <h1 className="font-display text-3xl">{t("Settings")}</h1>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          Manage your admin profile — all changes are saved to the database.
+          {t("Manage your admin profile — all changes are saved to the database.")}
         </p>
       </motion.div>
 
@@ -128,9 +147,7 @@ function SettingsPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             className={`mt-6 flex items-center gap-2.5 rounded-2xl px-5 py-3.5 text-sm ${
-              msg.type === "ok"
-                ? "bg-emerald-50 text-emerald-700"
-                : "bg-red-50 text-red-600"
+              msg.type === "ok" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"
             }`}
           >
             {msg.type === "ok" ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
@@ -139,16 +156,32 @@ function SettingsPage() {
         )}
       </AnimatePresence>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+      <div className="mt-8 grid items-start gap-6 lg:grid-cols-2">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          whileHover={{ y: -3 }}
           className="rounded-3xl border border-border bg-white/80 p-7 shadow-[0_10px_28px_-24px_rgba(38,27,20,0.3)]"
         >
-          <h2 className="font-display text-lg">Profile</h2>
-          <p className="mt-1 text-xs text-muted-foreground">Name, login and profile photo</p>
+          <h2 className="flex items-center gap-2.5 font-display text-lg">
+            <Languages size={18} className="text-walnut" />
+            {t("Language / Til")}
+          </h2>
+          <p className="mt-1 text-xs text-muted-foreground">{t("Interface language")}</p>
+
+          <div className="mt-6">
+            <LanguageSwitcher variant="full" />
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="rounded-3xl border border-border bg-white/80 p-7 shadow-[0_10px_28px_-24px_rgba(38,27,20,0.3)]"
+        >
+          <h2 className="font-display text-lg">{t("Profile")}</h2>
+          <p className="mt-1 text-xs text-muted-foreground">{t("Name, login and profile photo")}</p>
 
           <div className="mt-6 flex items-center gap-5">
             <div className="relative">
@@ -165,19 +198,26 @@ function SettingsPage() {
               )}
               <label className="absolute -bottom-2 -right-2 grid size-9 cursor-pointer place-items-center rounded-full bg-walnut text-cream shadow-lg transition-transform hover:scale-110">
                 <Camera size={14} />
-                <input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={onFile} />
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  className="hidden"
+                  onChange={onFile}
+                />
               </label>
             </div>
             <div>
               <p className="font-display">{user.name}</p>
-              <p className="mt-1 text-[10px] uppercase tracking-[0.15em] text-muted-foreground">Admin account</p>
+              <p className="mt-1 text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                {t("Admin account")}
+              </p>
             </div>
           </div>
 
           <div className="mt-7 space-y-4">
             <div>
               <label className="mb-1.5 block text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                Full name
+                {t("Full name")}
               </label>
               <input
                 value={name}
@@ -187,7 +227,7 @@ function SettingsPage() {
             </div>
             <div>
               <label className="mb-1.5 block text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                Login
+                {t("Login")}
               </label>
               <input
                 value={username}
@@ -195,7 +235,7 @@ function SettingsPage() {
                 className="w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm outline-none transition-all duration-300 focus:border-walnut focus:bg-white focus:ring-4 focus:ring-walnut/10"
               />
               <p className="mt-1 text-[11px] text-muted-foreground/70">
-                Letters, numbers, dots, dashes and underscores
+                {t("Letters, numbers, dots, dashes and underscores")}
               </p>
             </div>
           </div>
@@ -212,7 +252,7 @@ function SettingsPage() {
             ) : (
               <>
                 <Save size={14} />
-                Save profile
+                {t("Save profile")}
               </>
             )}
           </motion.button>
@@ -222,30 +262,29 @@ function SettingsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.16, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          whileHover={{ y: -3 }}
-          className="rounded-3xl border border-border bg-white/80 p-7 shadow-[0_10px_28px_-24px_rgba(38,27,20,0.3)]"
+          className="rounded-3xl border border-border bg-white/80 p-7 shadow-[0_10px_28px_-24px_rgba(38,27,20,0.3)] lg:col-span-2"
         >
-          <h2 className="font-display text-lg">Password</h2>
+          <h2 className="font-display text-lg">{t("Password")}</h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            Change your admin password. Saved to the database — you stay signed in.
+            {t("Change your admin password. Saved to the database — you stay signed in.")}
           </p>
 
-          <div className="mt-6 space-y-4">
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
             <div>
               <label className="mb-1.5 block text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                Current password
+                {t("Current password")}
               </label>
               <PwField value={cur} onChange={setCur} />
             </div>
             <div>
               <label className="mb-1.5 block text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                New password
+                {t("New password")}
               </label>
               <PwField value={next} onChange={setNext} />
             </div>
             <div>
               <label className="mb-1.5 block text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                Confirm new password
+                {t("Confirm new password")}
               </label>
               <PwField value={conf} onChange={setConf} />
             </div>
@@ -263,7 +302,7 @@ function SettingsPage() {
             ) : (
               <>
                 <KeyRound size={14} />
-                Change password
+                {t("Change password")}
               </>
             )}
           </motion.button>

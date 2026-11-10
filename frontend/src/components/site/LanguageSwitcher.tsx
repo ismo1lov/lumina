@@ -5,8 +5,37 @@ const options: { lang: Lang; label: string; full: string }[] = [
   { lang: "ru", label: "RU", full: "Русский" },
 ];
 
-export function LanguageSwitcher({ className = "" }: { className?: string }) {
+export function LanguageSwitcher({
+  className = "",
+  variant = "compact",
+}: {
+  className?: string;
+  /** "compact" — small UZ / RU toggle, "full" — two labelled buttons. */
+  variant?: "compact" | "full";
+}) {
   const { lang, setLang, t } = useI18n();
+
+  if (variant === "full") {
+    return (
+      <div className={`grid gap-2 sm:grid-cols-2 ${className}`} role="group" aria-label={t("Language")}>
+        {options.map((option) => (
+          <button
+            key={option.lang}
+            type="button"
+            onClick={() => setLang(option.lang)}
+            aria-pressed={lang === option.lang}
+            className={`cursor-pointer rounded-xl border px-4 py-3 text-left text-sm transition-colors ${
+              lang === option.lang
+                ? "border-walnut bg-walnut text-cream"
+                : "border-border bg-background/50 text-muted-foreground hover:border-walnut/40 hover:text-walnut"
+            }`}
+          >
+            {option.full}
+          </button>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div

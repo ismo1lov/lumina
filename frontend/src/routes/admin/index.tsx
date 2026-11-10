@@ -1,13 +1,16 @@
-import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, animate, motion, useInView } from "motion/react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import { useI18n } from "@/lib/i18n";
 import { AdminShell, avatarUrl } from "@/components/admin/AdminShell";
 import { useConfirm } from "@/lib/use-confirm";
 import { YandexMap } from "@/components/site/YandexMap";
 import { toast } from "sonner";
 import {
+  BadgePercent,
+  BarChart3,
   Users,
   ShoppingBag,
   Wallet,
@@ -143,16 +146,25 @@ const paymentBadge: Record<string, string> = {
 const fmt = (n: number | string) => new Intl.NumberFormat("en-US").format(Number(n));
 
 export const Route = createFileRoute("/admin/")({
+  validateSearch: (search: Record<string, unknown>): { tab?: string } => ({
+    tab: typeof search.tab === "string" ? search.tab : undefined,
+  }),
   head: () => ({
-    meta: [{ title: "Admin Dashboard — Lumina" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "Boshqaruv paneli — Lumina" }, { name: "robots", content: "noindex" }],
   }),
   component: AdminPage,
 });
 
+type TabId = "overview" | "orders" | "products" | "users" | "messages" | "analytics" | "discount";
+
 function AdminPage() {
+  const { t } = useI18n();
   const { user, loading } = useAuth();
   const { confirm, dialog } = useConfirm();
-  const [tab, setTab] = useState("overview");
+  const { tab: urlTab } = Route.useSearch();
+  const navigate = useNavigate();
+  const tab = (urlTab ?? "overview") as TabId;
+  const setTab = (next: TabId) => navigate({ to: "/admin", search: { tab: next }, replace: true });
   const [stats, setStats] = useState<Stats | null>(null);
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -221,9 +233,9 @@ function AdminPage() {
       await api.delete(`/admin/orders/${orderId}`);
       setOrders((prev) => prev.filter((o) => o.id !== orderId));
       setStats((prev) => (prev ? { ...prev, orders: Math.max(0, prev.orders - 1) } : prev));
-      toast.success("Order deleted");
+      toast.success(t("Order deleted"));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete order");
+      toast.error(err instanceof Error ? err.message : t("Failed to delete order"));
     }
   };
 
@@ -234,7 +246,7 @@ function AdminPage() {
       const data = await api.get<UserDetail>(`/admin/users/${id}`);
       setDetail(data);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to load user");
+      toast.error(err instanceof Error ? err.message : t("Failed to load user"));
     } finally {
       setDetailLoading(false);
     }
@@ -252,21 +264,28 @@ function AdminPage() {
         ),
       );
       setReplyDrafts((prev) => ({ ...prev, [c.id]: "" }));
-      toast.success("Reply sent");
+      toast.success(t("Reply sent"));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to send reply");
+      toast.error(err instanceof Error ? err.message : t("Failed to send reply"));
     } finally {
       setSendingReply(null);
     }
   };
 
-  const tabs = [
-    { id: "overview", label: "Overview", icon: LayoutDashboard },
-    { id: "orders", label: `Orders (${orders.length})`, icon: Package },
-    { id: "users", label: `Users (${users.length})`, icon: Users },
-    { id: "messages", label: `Messages (${contacts.length})`, icon: Mail },
-  ];
-
+  const tabTitle =
+    tab === "overview"
+      ? t("Admin Dashboard")
+      : tab === "orders"
+        ? t("Orders")
+        : tab === "products"
+          ? t("Products")
+          : tab === "users"
+            ? t("Customers")
+            : tab === "messages"
+              ? t("Messages")
+              : tab === "analytics"
+                ? t("Analytics")
+                : t("Discount");
   const changeStatus = async (orderId: string, status: string) => {
     try {
       await api.patch(`/admin/orders/${orderId}`, { status });
@@ -282,12 +301,19 @@ function AdminPage() {
       );
       toast.success(`Status updated to ${status}`);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to update status");
+      toast.error(err instanceof Error ? err.message : t("Failed to update status"));
     }
   };
 
   return (
-    <AdminShell active="dashboard">
+    <AdminShell
+      active={tab}
+      counts={{
+        orders: orders.length,
+        users: users.length,
+        messages: contacts.length,
+      }}
+    >
       <motion.div
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
@@ -295,9 +321,9 @@ function AdminPage() {
       >
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="font-display text-3xl">Admin Dashboard</h1>
+            <h1 className="font-display text-3xl">{tabTitle}</h1>
             <p className="mt-1.5 text-sm text-muted-foreground">
-              Your store at a glance — orders, customers and messages.
+              {t("Your store at a glance — orders, customers and messages.")}
             </p>
           </div>
           <button
@@ -307,38 +333,9 @@ function AdminPage() {
             className="flex items-center gap-2 rounded-full border border-border bg-white/70 px-4 py-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:border-walnut/30 hover:text-walnut disabled:opacity-60"
           >
             <RefreshCw size={13} className={refreshing ? "animate-spin" : ""} />
-            {refreshing ? "Refreshing…" : "Refresh"}
+            {refreshing ? t("Refreshing…") : t("Refresh")}
           </button>
         </div>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.12, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        className="mt-8 flex w-fit max-w-full gap-1 overflow-x-auto rounded-full border border-border bg-white/70 p-1.5"
-      >
-        {tabs.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`relative whitespace-nowrap rounded-full px-5 py-2.5 text-[11px] uppercase tracking-[0.15em] transition-colors duration-300 ${
-              tab === t.id ? "text-cream" : "text-muted-foreground hover:text-walnut"
-            }`}
-          >
-            {tab === t.id && (
-              <motion.span
-                layoutId="adminTabPill"
-                className="absolute inset-0 rounded-full bg-walnut shadow-[0_10px_24px_-10px_rgba(38,27,20,0.5)]"
-                transition={{ type: "spring", bounce: 0.22, duration: 0.55 }}
-              />
-            )}
-            <span className="relative z-10 flex items-center gap-2">
-              <t.icon size={14} />
-              {t.label}
-            </span>
-          </button>
-        ))}
       </motion.div>
 
       <div className="mt-8">
@@ -356,38 +353,38 @@ function AdminPage() {
                   <StatCard
                     delay={0.05}
                     icon={Users}
-                    label="Total users"
+                    label={t("Total users")}
                     value={Number(stats?.users ?? 0)}
                   />
                   <StatCard
                     delay={0.12}
                     icon={ShoppingBag}
-                    label="Orders"
+                    label={t("Orders")}
                     value={Number(stats?.orders ?? 0)}
                   />
                   <StatCard
                     delay={0.19}
                     icon={Wallet}
-                    label="Revenue (excl. cancelled)"
+                    label={t("Revenue (excl. cancelled)")}
                     value={Number(stats?.revenue ?? 0)}
                     suffix=" UZS"
                   />
                   <StatCard
                     delay={0.26}
                     icon={Clock}
-                    label="Pending"
+                    label={t("Pending")}
                     value={Number(stats?.pendingOrders ?? 0)}
                   />
                   <StatCard
                     delay={0.33}
                     icon={Mail}
-                    label="Messages"
+                    label={t("Messages")}
                     value={Number(stats?.contacts ?? 0)}
                   />
                 </div>
 
                 <div className="mt-10 flex items-center justify-between">
-                  <h2 className="font-display text-xl">Recent orders</h2>
+                  <h2 className="font-display text-xl">{t("Recent orders")}</h2>
                   <button
                     onClick={loadOrders}
                     className="rounded-full border border-border bg-white/70 px-4 py-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:border-walnut/30 hover:text-walnut"
@@ -399,7 +396,7 @@ function AdminPage() {
                 {!stats ? (
                   <p className="mt-4 text-sm text-muted-foreground">Loading…</p>
                 ) : stats.recentOrders.length === 0 ? (
-                  <p className="mt-4 text-sm text-muted-foreground">No orders yet</p>
+                  <p className="mt-4 text-sm text-muted-foreground">{t("No orders yet")}</p>
                 ) : (
                   <div className="mt-4 space-y-2.5">
                     {stats.recentOrders.map((o, i) => (
@@ -432,7 +429,7 @@ function AdminPage() {
             {tab === "orders" && (
               <div className="space-y-3">
                 {orders.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No orders yet</p>
+                  <p className="text-sm text-muted-foreground">{t("No orders yet")}</p>
                 ) : (
                   orders.map((o, i) => (
                     <motion.div
@@ -518,7 +515,7 @@ function AdminPage() {
                           <p className="mt-1 text-sm capitalize">
                             {o.payment
                               ? o.payment === "cod"
-                                ? "Cash on delivery"
+                                ? t("Cash on delivery")
                                 : o.payment
                               : "—"}
                           </p>
@@ -533,8 +530,8 @@ function AdminPage() {
                           <p className="mt-1 text-sm">
                             {o.delivery
                               ? o.delivery === "express"
-                                ? "Express + assembly"
-                                : "Standard"
+                                ? t("Express + assembly")
+                                : t("Standard")
                               : "—"}
                           </p>
                         </div>
@@ -581,15 +578,15 @@ function AdminPage() {
                           </div>
                           <div className="mt-3 space-y-1 border-t border-border pt-3 text-sm">
                             <div className="flex justify-between text-muted-foreground">
-                              <span>Subtotal</span>
+                              <span>{t("Subtotal")}</span>
                               <span>{fmt(o.subtotal)} UZS</span>
                             </div>
                             <div className="flex justify-between text-muted-foreground">
-                              <span>Delivery</span>
+                              <span>{t("Delivery")}</span>
                               <span>{o.delivery === "express" ? "250 000 UZS" : "Free"}</span>
                             </div>
                             <div className="flex justify-between font-semibold tabular-nums text-base">
-                              <span>Total</span>
+                              <span>{t("Total")}</span>
                               <span>{fmt(o.total)} UZS</span>
                             </div>
                           </div>
@@ -604,16 +601,16 @@ function AdminPage() {
             {tab === "users" && (
               <div className="overflow-hidden rounded-2xl border border-border bg-white/80 shadow-[0_10px_28px_-24px_rgba(38,27,20,0.3)]">
                 {users.length === 0 ? (
-                  <p className="p-6 text-sm text-muted-foreground">No users yet</p>
+                  <p className="p-6 text-sm text-muted-foreground">{t("No users yet")}</p>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
                       <thead>
                         <tr className="border-b border-border text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                          <th className="px-5 py-4">User</th>
-                          <th className="px-5 py-4">Email</th>
-                          <th className="px-5 py-4">Orders</th>
-                          <th className="px-5 py-4">Joined</th>
+                          <th className="px-5 py-4">{t("User")}</th>
+                          <th className="px-5 py-4">{t("Email")}</th>
+                          <th className="px-5 py-4">{t("Orders")}</th>
+                          <th className="px-5 py-4">{t("Joined")}</th>
                           <th className="px-5 py-4" />
                         </tr>
                       </thead>
@@ -672,10 +669,16 @@ function AdminPage() {
               </div>
             )}
 
+            {tab === "products" && <ProductsPanel />}
+
+            {tab === "analytics" && <AnalyticsPanel stats={stats} orders={orders} />}
+
+            {tab === "discount" && <DiscountPanel />}
+
             {tab === "messages" && (
               <div className="space-y-3">
                 {contacts.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No messages yet</p>
+                  <p className="text-sm text-muted-foreground">{t("No messages yet")}</p>
                 ) : (
                   contacts.map((c, i) => (
                     <motion.div
@@ -707,18 +710,21 @@ function AdminPage() {
                           </div>
                           <div className="mt-2.5 space-y-1 text-xs text-muted-foreground">
                             <p>
-                              <span className="text-muted-foreground/50">Name:</span> {c.name}
+                              <span className="text-muted-foreground/50">{t("Name:")}</span>{" "}
+                              {c.name}
                             </p>
                             {c.phone && (
                               <p>
-                                <span className="text-muted-foreground/50">Phone:</span> {c.phone}
+                                <span className="text-muted-foreground/50">{t("Phone:")}</span>{" "}
+                                {c.phone}
                               </p>
                             )}
                             <p>
-                              <span className="text-muted-foreground/50">Email:</span> {c.email}
+                              <span className="text-muted-foreground/50">{t("Email:")}</span>{" "}
+                              {c.email}
                             </p>
                             <p>
-                              <span className="text-muted-foreground/50">Sent:</span>{" "}
+                              <span className="text-muted-foreground/50">{t("Sent:")}</span>{" "}
                               {new Date(c.createdAt).toLocaleString()}
                             </p>
                           </div>
@@ -728,7 +734,7 @@ function AdminPage() {
                             const ok = await confirm({
                               title: "Delete message?",
                               description: "Delete this message? This cannot be undone.",
-                              confirmLabel: "Delete message",
+                              confirmLabel: t("Delete message"),
                               destructive: true,
                             });
                             if (!ok) return;
@@ -736,13 +742,13 @@ function AdminPage() {
                               .delete(`/admin/contacts/${c.id}`)
                               .then(() => {
                                 setContacts((prev) => prev.filter((x) => x.id !== c.id));
-                                toast.success("Message deleted");
+                                toast.success(t("Message deleted"));
                               })
-                              .catch(() => toast.error("Failed to delete"));
+                              .catch(() => toast.error(t("Failed to delete")));
                           }}
                           whileTap={{ scale: 0.9 }}
-                          aria-label="Delete message"
-                          title="Delete message"
+                          aria-label={t("Delete message")}
+                          title={t("Delete message")}
                           className="cursor-pointer rounded-full p-2 text-muted-foreground/50 transition-all hover:bg-red-50 hover:text-red-500 sm:opacity-0 sm:group-hover:opacity-100"
                         >
                           <Trash2 size={15} />
@@ -857,7 +863,9 @@ function AdminPage() {
                       Addresses ({detail.addresses.length})
                     </h3>
                     {detail.addresses.length === 0 ? (
-                      <p className="mt-3 text-sm text-muted-foreground">No addresses saved</p>
+                      <p className="mt-3 text-sm text-muted-foreground">
+                        {t("No addresses saved")}
+                      </p>
                     ) : (
                       <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
                         {detail.addresses.map((a) => (
@@ -892,7 +900,7 @@ function AdminPage() {
                       Orders ({detail.orders.length})
                     </h3>
                     {detail.orders.length === 0 ? (
-                      <p className="mt-3 text-sm text-muted-foreground">No orders yet</p>
+                      <p className="mt-3 text-sm text-muted-foreground">{t("No orders yet")}</p>
                     ) : (
                       <div className="mt-3 space-y-2.5">
                         {detail.orders.map((o) => (
@@ -965,7 +973,7 @@ function AdminPage() {
                   type="button"
                   onClick={() => setMapOrder(null)}
                   className="cursor-pointer rounded-full p-2 text-muted-foreground/60 transition-colors hover:bg-cream hover:text-walnut"
-                  aria-label="Close map"
+                  aria-label={t("Close map")}
                 >
                   <X size={16} />
                 </button>
@@ -995,6 +1003,166 @@ function OrderMap({ lat, lng }: { lat: number; lng: number }) {
   );
 }
 
+type ProductRow = {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  inStock: boolean;
+  rating: string | number;
+  reviews: number;
+};
+
+/** Products of the store — read from the public catalogue endpoint. */
+function ProductsPanel() {
+  const { t } = useI18n();
+  const [items, setItems] = useState<ProductRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api
+      .get<ProductRow[]>("/products")
+      .then((rows) => setItems(rows ?? []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <div className="rounded-3xl border border-border bg-white/80 p-6 shadow-[0_10px_28px_-24px_rgba(38,27,20,0.3)]">
+      <h2 className="font-display text-xl">{t("Products")}</h2>
+      <p className="mt-1 text-xs text-muted-foreground">{t("Everything in the catalogue")}</p>
+
+      {loading ? (
+        <p className="mt-6 text-sm text-muted-foreground">{t("Loading…")}</p>
+      ) : items.length === 0 ? (
+        <p className="mt-6 text-sm text-muted-foreground">{t("No products yet")}</p>
+      ) : (
+        <div className="mt-6 overflow-x-auto">
+          <table className="w-full min-w-[620px] text-left text-sm">
+            <thead>
+              <tr className="border-b border-border text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                <th className="pb-3 pr-4 font-medium">{t("Product")}</th>
+                <th className="pb-3 pr-4 font-medium">{t("Category")}</th>
+                <th className="pb-3 pr-4 font-medium">{t("Price")}</th>
+                <th className="pb-3 pr-4 font-medium">{t("Stock")}</th>
+                <th className="pb-3 font-medium">{t("Rating")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((p) => (
+                <tr key={p.id} className="border-b border-border/60 last:border-0">
+                  <td className="py-3.5 pr-4 font-medium">{p.name}</td>
+                  <td className="py-3.5 pr-4 text-muted-foreground">{p.category}</td>
+                  <td className="py-3.5 pr-4 tabular-nums">{fmt(p.price)} UZS</td>
+                  <td className="py-3.5 pr-4">
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-[10px] uppercase tracking-wider ${
+                        p.inStock ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+                      }`}
+                    >
+                      {p.inStock ? t("In stock") : t("Pre-order")}
+                    </span>
+                  </td>
+                  <td className="py-3.5 tabular-nums text-muted-foreground">
+                    {Number(p.rating).toFixed(1)} · {p.reviews}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Simple, clear numbers derived from the stats we already load. */
+function AnalyticsPanel({ stats, orders }: { stats: Stats | null; orders: AdminOrder[] }) {
+  const { t } = useI18n();
+
+  const paid = orders.filter((o) => o.paymentStatus === "paid");
+  const revenue = paid.reduce((sum, o) => sum + Number(o.total || 0), 0);
+  const average = paid.length ? Math.round(revenue / paid.length) : 0;
+  const delivered = orders.filter((o) => o.status === "delivered").length;
+  const pending = orders.filter((o) => o.status === "pending").length;
+
+  const byStatus = [
+    { label: t("Pending"), value: pending },
+    { label: t("Delivered"), value: delivered },
+    { label: t("Cancelled"), value: orders.filter((o) => o.status === "cancelled").length },
+  ];
+  const max = Math.max(1, ...byStatus.map((b) => b.value));
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          delay={0.05}
+          icon={Wallet}
+          label={t("Paid revenue")}
+          value={revenue}
+          suffix=" UZS"
+        />
+        <StatCard
+          delay={0.12}
+          icon={ShoppingBag}
+          label={t("Average order")}
+          value={average}
+          suffix=" UZS"
+        />
+        <StatCard
+          delay={0.19}
+          icon={Users}
+          label={t("Customers")}
+          value={Number(stats?.users ?? 0)}
+        />
+        <StatCard
+          delay={0.26}
+          icon={Mail}
+          label={t("Messages")}
+          value={Number(stats?.contacts ?? 0)}
+        />
+      </div>
+
+      <div className="rounded-3xl border border-border bg-white/80 p-6 shadow-[0_10px_28px_-24px_rgba(38,27,20,0.3)]">
+        <h2 className="font-display text-xl">{t("Orders by status")}</h2>
+        <div className="mt-6 space-y-4">
+          {byStatus.map((b) => (
+            <div key={b.label}>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{b.label}</span>
+                <span className="tabular-nums">{b.value}</span>
+              </div>
+              <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-cream">
+                <div
+                  className="h-full rounded-full bg-walnut transition-[width] duration-700"
+                  style={{ width: `${Math.round((b.value / max) * 100)}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Discount codes — nothing is configured yet, so the list is simply empty. */
+function DiscountPanel() {
+  const { t } = useI18n();
+  return (
+    <div className="rounded-3xl border border-border bg-white/80 p-8 text-center shadow-[0_10px_28px_-24px_rgba(38,27,20,0.3)]">
+      <span className="mx-auto grid size-14 place-items-center rounded-full bg-cream text-walnut">
+        <BadgePercent size={22} strokeWidth={1.5} />
+      </span>
+      <h2 className="mt-5 font-display text-xl">{t("Discount codes")}</h2>
+      <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+        {t("Discount codes will appear here. None are configured yet.")}
+      </p>
+    </div>
+  );
+}
+
 function StatusBadge({ status }: { status: string }) {
   return (
     <span
@@ -1018,9 +1186,7 @@ function PaymentBadge({ status }: { status?: string }) {
         paymentBadge[value] ?? "bg-cream text-muted-foreground ring-border"
       }`}
     >
-      {value === "pending" && (
-        <span className="size-1.5 animate-pulse rounded-full bg-amber-500" />
-      )}
+      {value === "pending" && <span className="size-1.5 animate-pulse rounded-full bg-amber-500" />}
       {value}
     </span>
   );
