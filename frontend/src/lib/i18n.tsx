@@ -385,6 +385,7 @@ const translations: Record<string, Entry> = {
   Click: { uz: "Click", ru: "Click" },
   Payme: { uz: "Payme", ru: "Payme" },
   "Cash on delivery": { uz: "Yetkazib berishda naqd pul", ru: "Наличными при доставке" },
+  Cash: { uz: "Naqd pul", ru: "Наличные" },
   "Card payment": { uz: "Karta orqali to‘lov", ru: "Оплата картой" },
   "Pay online": { uz: "Onlayn to‘lash", ru: "Оплатить онлайн" },
   "Order placed": { uz: "Buyurtma qabul qilindi", ru: "Заказ оформлен" },

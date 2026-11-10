@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Check, Loader } from "lucide-react";
+import { Banknote, Check, Loader } from "lucide-react";
 import { useEffect, useState } from "react";
 import { formatUZS } from "@/data/products";
 import { useCart } from "@/lib/cart";
@@ -40,6 +40,18 @@ interface PaymentConfig {
   click: boolean;
   visa: boolean;
   mock: boolean;
+}
+
+interface SavedAddress {
+  id: string;
+  label: string;
+  fullName: string;
+  phone: string;
+  address: string;
+  city: string;
+  lat: string | null;
+  lng: string | null;
+  isDefault: boolean;
 }
 
 function randomTashkentCoord() {
@@ -83,6 +95,33 @@ function Checkout() {
       last: prev.last || user!.name.split(" ").slice(1).join(" "),
       email: user!.email,
     }));
+  }, [isCustomer]);
+
+  useEffect(() => {
+    if (!isCustomer) return;
+    let active = true;
+
+    api
+      .get<SavedAddress[]>("/addresses")
+      .then((rows) => {
+        if (!active || rows.length === 0) return;
+        const saved = rows.find((address) => address.isDefault) ?? rows[0];
+        const lat = Number(saved.lat);
+        const lng = Number(saved.lng);
+        setForm((prev) => ({
+          ...prev,
+          address: prev.address || saved.address,
+          city: prev.city || saved.city,
+          phone: prev.phone || (saved.phone ? formatUzPhone(saved.phone) : ""),
+          lat: Number.isFinite(lat) && lat !== 0 ? lat : prev.lat,
+          lng: Number.isFinite(lng) && lng !== 0 ? lng : prev.lng,
+        }));
+      })
+      .catch(() => {});
+
+    return () => {
+      active = false;
+    };
   }, [isCustomer]);
 
   useEffect(() => {
@@ -338,9 +377,7 @@ function Checkout() {
 
                 <div className="mt-6 space-y-2 border-t border-border pt-4">
                   <div className="flex justify-between">
-                    <span className="eyebrow text-xs uppercase tracking-wider">
-                      {t("Total")}
-                    </span>
+                    <span className="eyebrow text-xs uppercase tracking-wider">{t("Total")}</span>
                     <span className="font-semibold tabular-nums text-lg text-foreground">
                       {formatUZS(total)}
                     </span>
@@ -354,7 +391,7 @@ function Checkout() {
                       { id: "visa", label: "Visa", disabled: true },
                       { id: "payme", label: "Payme", disabled: true },
                       { id: "click", label: "Click", disabled: true },
-                      { id: "cod", label: t("Cash on delivery"), disabled: false },
+                      { id: "cod", label: t("Cash"), disabled: false },
                     ].map((p) => (
                       <button
                         key={p.id}
@@ -362,17 +399,26 @@ function Checkout() {
                         disabled={p.disabled}
                         aria-disabled={p.disabled}
                         onClick={() => setPayment("cod")}
-                        className={`flex items-center justify-between gap-3 border rounded-lg px-3 py-3 text-left text-sm transition-colors ${
+                        className={`flex items-center justify-between gap-3 border rounded-lg px-3 py-3 text-left text-sm transition-all duration-200 ${
                           p.disabled
                             ? "border-border/40 bg-muted/30 text-muted-foreground opacity-60 cursor-not-allowed"
                             : payment === "cod"
-                              ? "border-foreground bg-accent text-accent-foreground"
+                              ? "relative z-10 scale-[1.03] border-foreground bg-background text-foreground shadow-[0_10px_30px_-12px_rgba(0,0,0,0.35)]"
                               : "border-border bg-background text-foreground hover:bg-muted"
                         }`}
                       >
                         <span>{p.label}</span>
-                        {p.id !== "cod" && (
-                          <PaymentBrandLogo brand={p.id as "visa" | "payme" | "click"} className="h-5 w-10 opacity-60" />
+                        {p.id !== "cod" ? (
+                          <PaymentBrandLogo
+                            brand={p.id as "visa" | "payme" | "click"}
+                            className="h-5 w-10 opacity-60"
+                          />
+                        ) : (
+                          <span className="inline-flex overflow-hidden rounded-[4px] bg-white p-1 shadow-sm ring-1 ring-black/5">
+                            <span className="flex h-5 w-10 items-center justify-center">
+                              <Banknote size={18} className="text-emerald-600" />
+                            </span>
+                          </span>
                         )}
                       </button>
                     ))}
