@@ -77,7 +77,7 @@ export function AccountPage({ tab }: { tab: AccountTab }) {
 
   if (user.role === "admin") {
     return (
-      <div className="flex min-h-[75vh] items-center justify-center px-6 pt-28">
+      <div className="flex min-h-[calc(75vh/var(--ui-scale))] items-center justify-center px-6 pt-28">
         <div className="w-full max-w-lg border border-border/80 bg-card p-8 text-center shadow-soft sm:p-10">
           <div className="mx-auto grid size-14 place-items-center rounded-full border border-border/70 bg-cream text-accent">
             <LayoutDashboard size={24} strokeWidth={1.5} />
@@ -162,7 +162,7 @@ export function AccountPage({ tab }: { tab: AccountTab }) {
         className="pointer-events-none absolute inset-x-0 top-0 h-[460px] bg-gradient-to-b from-cream/80 via-cream/30 to-transparent"
       />
 
-      <div className="relative mx-auto max-w-5xl px-5 pb-24 pt-32 sm:px-6 lg:px-10 lg:pt-40">
+      <div className="relative mx-auto max-w-5xl px-5 pb-24 pt-32 sm:px-6 md:px-8 md:pt-36 lg:px-10 lg:pt-40">
         {tab === "orders" && (
           <OrdersPanel
             orders={orders}

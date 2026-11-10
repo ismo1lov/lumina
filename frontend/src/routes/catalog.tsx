@@ -85,10 +85,12 @@ function Catalog() {
   const quick = products.find((p) => p.id === quickView);
 
   return (
-    <div className="mx-auto max-w-[1400px] px-6 pb-24 pt-32 lg:px-12 lg:pt-40">
+    <div className="mx-auto max-w-[1400px] px-6 pb-24 pt-32 md:px-8 md:pt-36 lg:px-12 lg:pt-40">
       <Reveal>
         <p className="eyebrow">{t("The collection")}</p>
-        <h1 className="mt-4 font-display text-5xl lg:text-6xl">{t("Every piece, one place")}</h1>
+        <h1 className="mt-4 font-display text-5xl md:text-[3.4rem] lg:text-6xl">
+          {t("Every piece, one place")}
+        </h1>
         <p className="mt-4 max-w-lg text-sm text-muted-foreground">
           {t("{count} pieces, hand-finished in our Tashkent workshop.", {
             count: filtered.length,
@@ -96,10 +98,10 @@ function Catalog() {
         </p>
       </Reveal>
 
-      <div className="mt-14 grid gap-12 lg:grid-cols-[260px_1fr]">
+      <div className="mt-12 grid gap-10 md:mt-14 lg:grid-cols-[260px_1fr] lg:gap-12">
         {/* Sidebar */}
-        <aside className="space-y-9 lg:sticky lg:top-28 lg:self-start">
-          <Filter title="Category">
+        <aside className="space-y-8 md:grid md:grid-cols-2 md:gap-x-12 md:gap-y-2 md:space-y-0 lg:sticky lg:top-28 lg:block lg:space-y-9 lg:self-start">
+          <Filter title="Category" className="md:order-1">
             {allCategories.map((c) => (
               <Check
                 key={c}
@@ -110,7 +112,7 @@ function Catalog() {
             ))}
           </Filter>
 
-          <Filter title="Price">
+          <Filter title="Price" className="md:order-3">
             <input
               type="range"
               min={2000000}
@@ -126,7 +128,7 @@ function Catalog() {
             </p>
           </Filter>
 
-          <Filter title="Material">
+          <Filter title="Material" className="md:order-2">
             {allMaterials.map((m) => (
               <Check
                 key={m}
@@ -137,7 +139,7 @@ function Catalog() {
             ))}
           </Filter>
 
-          <Filter title="Availability">
+          <Filter title="Availability" className="md:order-4">
             <Check label="In stock" checked={inStock} onChange={() => setInStock(!inStock)} />
             <Check label="Pre-order" checked={preOrder} onChange={() => setPreOrder(!preOrder)} />
           </Filter>
@@ -151,7 +153,7 @@ function Catalog() {
             </span>
           </div>
 
-          <div className="mt-10 grid gap-x-8 gap-y-14 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-8 grid gap-x-7 gap-y-12 sm:grid-cols-2 md:mt-10 md:gap-x-6 md:gap-y-12 lg:gap-x-8 lg:gap-y-14 xl:grid-cols-3">
             {filtered.map((p, i) => (
               <Reveal key={p.id} delay={(i % 3) * 0.06}>
                 <div className="relative">
@@ -159,7 +161,7 @@ function Catalog() {
                   <button
                     type="button"
                     onClick={() => setQuickView(p.id)}
-                    className="absolute left-1/2 top-[42%] -translate-x-1/2 bg-background/90 px-5 py-2.5 text-[10px] uppercase tracking-[0.2em] opacity-0 backdrop-blur transition-opacity duration-300 hover:bg-background focus:opacity-100 group-hover:opacity-100"
+                    className="absolute left-1/2 top-[42%] hidden -translate-x-1/2 bg-background/90 px-5 py-2.5 text-[10px] uppercase tracking-[0.2em] opacity-0 backdrop-blur transition-opacity duration-300 hover:bg-background focus:opacity-100 group-hover:opacity-100 lg:block"
                   >
                     {t("Quick view")}
                   </button>
@@ -221,10 +223,18 @@ function Catalog() {
   );
 }
 
-function Filter({ title, children }: { title: string; children: React.ReactNode }) {
+function Filter({
+  title,
+  children,
+  className = "",
+}: {
+  title: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
   const { t } = useI18n();
   return (
-    <div className="space-y-3 border-b pb-7">
+    <div className={`space-y-3 border-b pb-7 ${className}`}>
       <p className="eyebrow">{t(title)}</p>
       <div className="space-y-2.5">{children}</div>
     </div>
@@ -242,12 +252,12 @@ function Check({
 }) {
   const { t } = useI18n();
   return (
-    <label className="flex cursor-pointer items-center gap-3 text-sm">
+    <label className="flex cursor-pointer items-center gap-3 py-0.5 text-sm">
       <input
         type="checkbox"
         checked={checked}
         onChange={onChange}
-        className="size-3.5 accent-[var(--terracotta)]"
+        className="size-4 accent-[var(--terracotta)] md:size-[18px]"
       />
       {t(label)}
     </label>

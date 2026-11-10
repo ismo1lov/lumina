@@ -249,7 +249,7 @@ function PaymentResultPage() {
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mx-auto flex min-h-[70vh] max-w-xl flex-col items-center justify-center px-6 py-32 text-center">
+    <div className="mx-auto flex min-h-[calc(70vh/var(--ui-scale))] max-w-xl flex-col items-center justify-center px-6 py-32 text-center">
       {children}
     </div>
   );

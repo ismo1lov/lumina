@@ -58,7 +58,7 @@ export function ProductCard({ product }: { product: Product }) {
             e.stopPropagation();
             toggle({ id: product.id, name: product.name, image: productImage!, price: product.price });
           }}
-          className="absolute right-4 bottom-4 grid size-9 place-items-center rounded-full bg-background/85 text-foreground opacity-0 backdrop-blur transition-opacity duration-300 group-hover:opacity-100 hover:text-accent"
+          className="absolute right-4 bottom-4 grid size-9 place-items-center rounded-full bg-background/85 text-foreground opacity-100 backdrop-blur transition-opacity duration-300 hover:text-accent lg:opacity-0 lg:group-hover:opacity-100"
         >
           <Heart size={15} className={wished ? "fill-accent text-accent" : ""} />
         </button>

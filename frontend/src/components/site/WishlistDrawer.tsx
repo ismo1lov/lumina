@@ -24,7 +24,7 @@ export function WishlistDrawer() {
             onClick={() => setOpen(false)}
           />
           <motion.aside
-            className="absolute right-0 top-0 flex h-full w-full max-w-[440px] flex-col bg-background"
+            className="absolute right-0 top-0 flex h-full w-full max-w-[440px] flex-col bg-background md:max-w-[480px]"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}

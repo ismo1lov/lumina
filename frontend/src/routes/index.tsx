@@ -64,15 +64,15 @@ function Home() {
   return (
     <div>
       {/* Hero */}
-      <section className="relative flex h-screen max-h-screen items-center overflow-hidden bg-cream pt-20">
-        <div className="mx-auto grid w-full max-w-[1400px] items-center gap-12 px-6 lg:grid-cols-[1fr_1.05fr] lg:px-12">
+      <section className="relative flex min-h-screen items-center overflow-hidden bg-cream pt-24 md:pt-20">
+        <div className="mx-auto grid w-full max-w-[1400px] items-center gap-12 px-6 md:grid-cols-[1fr_0.92fr] md:gap-8 md:px-8 lg:grid-cols-[1fr_1.05fr] lg:gap-12 lg:px-12">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
           >
             <motion.h1
-              className="mt-6 font-display text-[2.75rem] leading-[1.05] sm:text-6xl lg:text-[4.2rem]"
+              className="mt-6 font-display text-[2.75rem] leading-[1.05] sm:text-5xl md:text-[2.7rem] lg:text-[4.2rem]"
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
@@ -90,14 +90,14 @@ function Home() {
               )}
             </motion.p>
             <motion.div
-              className="mt-10 flex flex-wrap items-center gap-4"
+              className="mt-10 flex max-w-[420px] flex-col items-stretch gap-3 min-[451px]:max-w-none md:max-w-[260px] lg:mt-10 lg:max-w-none lg:flex-row lg:flex-wrap lg:items-center lg:gap-4"
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.3 }}
             >
               <Link
                 to="/catalog"
-                className="group inline-flex items-center gap-3 bg-primary px-8 py-4 text-[11px] uppercase tracking-[0.22em] text-primary-foreground transition-opacity hover:opacity-90"
+                className="group inline-flex items-center justify-center gap-3 bg-primary px-8 py-4 text-[11px] uppercase tracking-[0.22em] text-primary-foreground transition-opacity hover:opacity-90 md:px-6 md:py-3.5 md:text-[10px] md:tracking-[0.18em] lg:px-8 lg:py-4 lg:text-[11px] lg:tracking-[0.22em]"
               >
                 {t("Explore Collection")}
                 <ArrowRight
@@ -107,7 +107,7 @@ function Home() {
               </Link>
               <Link
                 to="/contact"
-                className="inline-flex items-center gap-3 border border-foreground/25 px-8 py-4 text-[11px] uppercase tracking-[0.22em] transition-colors hover:border-foreground"
+                className="inline-flex items-center justify-center gap-3 border border-foreground/25 px-8 py-4 text-[11px] uppercase tracking-[0.22em] transition-colors hover:border-foreground md:px-6 md:py-3.5 md:text-[10px] md:tracking-[0.18em] lg:px-8 lg:py-4 lg:text-[11px] lg:tracking-[0.22em]"
               >
                 {t("Contact Us")}
               </Link>
@@ -115,7 +115,7 @@ function Home() {
           </motion.div>
 
           <motion.div
-            className="relative mx-auto max-w-[420px] float-slow"
+            className="relative mx-auto max-w-[300px] float-slow min-[451px]:max-w-[440px] md:max-w-[340px] lg:max-w-[420px]"
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
@@ -143,7 +143,7 @@ function Home() {
         </div>
 
         <motion.div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+          className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 md:bottom-6 md:block lg:bottom-8"
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
         >
@@ -155,11 +155,11 @@ function Home() {
       </section>
 
       {/* Categories */}
-      <section className="mx-auto max-w-[1400px] px-6 py-24 lg:px-12 lg:py-32">
+      <section className="mx-auto max-w-[1400px] px-6 py-20 md:px-8 md:py-24 lg:px-12 lg:py-32">
         <Reveal className="flex flex-wrap items-end justify-between gap-6">
           <div>
             <p className="eyebrow">{t("Browse by room")}</p>
-            <h2 className="mt-4 max-w-lg font-display text-4xl lg:text-5xl">
+            <h2 className="mt-4 max-w-lg font-display text-4xl md:text-[2.6rem] lg:text-5xl">
               {t("Rooms that breathe, pieces that stay")}
             </h2>
           </div>
@@ -171,7 +171,7 @@ function Home() {
           </Link>
         </Reveal>
 
-        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 md:mt-14 md:gap-6 lg:grid-cols-4">
           {categories.map((cat, i) => (
             <Reveal key={cat} delay={i * 0.08}>
               <Link
@@ -204,19 +204,21 @@ function Home() {
       </section>
 
       {/* Best sellers */}
-      <section className="bg-cream py-24 lg:py-32">
-        <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
+      <section className="bg-cream py-20 md:py-24 lg:py-32">
+        <div className="mx-auto max-w-[1400px] px-6 md:px-8 lg:px-12">
           <Reveal className="flex flex-wrap items-end justify-between gap-6">
             <div>
               <p className="eyebrow">{t("Best sellers")}</p>
-              <h2 className="mt-4 font-display text-4xl lg:text-5xl">{t("Loved in many homes")}</h2>
+              <h2 className="mt-4 font-display text-4xl md:text-[2.6rem] lg:text-5xl">
+                {t("Loved in many homes")}
+              </h2>
             </div>
             <Link to="/catalog" className="text-[11px] uppercase tracking-[0.2em] link-underline">
               {t("Shop all")}
             </Link>
           </Reveal>
 
-          <div className="relative mt-14">
+          <div className="relative mt-12 md:mt-14">
             <button
               type="button"
               aria-label={t("Scroll left")}
@@ -224,7 +226,7 @@ function Home() {
                 const el = document.getElementById("bestsellers-scroll")!;
                 el.scrollBy({ left: -372, behavior: "smooth" });
               }}
-              className="absolute -left-4 top-1/2 z-10 hidden -translate-y-1/2 cursor-pointer rounded-full border bg-background/90 p-2.5 shadow-sm backdrop-blur transition-colors hover:bg-background lg:block"
+              className="absolute -left-4 top-1/2 z-10 hidden -translate-y-1/2 cursor-pointer rounded-full border bg-background/90 p-2.5 shadow-sm backdrop-blur transition-colors hover:bg-background md:block"
             >
               <ChevronLeft size={18} />
             </button>
@@ -235,7 +237,7 @@ function Home() {
                 const el = document.getElementById("bestsellers-scroll")!;
                 el.scrollBy({ left: 372, behavior: "smooth" });
               }}
-              className="absolute -right-4 top-1/2 z-10 hidden -translate-y-1/2 cursor-pointer rounded-full border bg-background/90 p-2.5 shadow-sm backdrop-blur transition-colors hover:bg-background lg:block"
+              className="absolute -right-4 top-1/2 z-10 hidden -translate-y-1/2 cursor-pointer rounded-full border bg-background/90 p-2.5 shadow-sm backdrop-blur transition-colors hover:bg-background md:block"
             >
               <ChevronRight size={18} />
             </button>
@@ -247,7 +249,7 @@ function Home() {
                 <Reveal
                   key={p.id}
                   delay={i * 0.05}
-                  className="w-[78vw] shrink-0 sm:w-[340px]"
+                  className="w-[78vw] shrink-0 sm:w-[340px] md:w-[320px] lg:w-[340px]"
                 >
                   <ProductCard product={p} />
                 </Reveal>
@@ -258,11 +260,11 @@ function Home() {
       </section>
 
       {/* FAQ */}
-      <section className="py-24 lg:py-32">
-        <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
+      <section className="py-20 md:py-24 lg:py-32">
+        <div className="mx-auto max-w-[1400px] px-6 md:px-8 lg:px-12">
           <Reveal className="mx-auto max-w-2xl text-center">
             <p className="eyebrow">{t("FAQ")}</p>
-            <h2 className="mt-4 font-display text-4xl lg:text-5xl">
+            <h2 className="mt-4 font-display text-4xl md:text-[2.6rem] lg:text-5xl">
               {t("Questions, answered simply")}
             </h2>
             <p className="mx-auto mt-4 max-w-lg text-sm text-muted-foreground">

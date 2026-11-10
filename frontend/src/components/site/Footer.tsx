@@ -29,8 +29,8 @@ export function Footer() {
 
   return (
     <footer className="bg-primary text-primary-foreground">
-      <div className="mx-auto max-w-[1400px] px-6 py-20 lg:px-12">
-        <div className="grid gap-14 lg:grid-cols-[1.4fr_1fr_1fr_1.4fr]">
+      <div className="mx-auto max-w-[1400px] px-6 py-16 md:px-8 md:py-20 lg:px-12">
+        <div className="grid gap-12 md:grid-cols-2 md:gap-x-10 md:gap-y-12 lg:grid-cols-[1.4fr_1fr_1fr_1.4fr] lg:gap-14">
           <div>
             <p className="font-display text-3xl">
               Lumina<span className="text-accent">.</span>

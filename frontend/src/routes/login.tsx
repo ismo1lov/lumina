@@ -106,7 +106,7 @@ function AuthPage() {
       </div>
       <div className="flex w-full lg:flex-row flex-col">
         {/* Image panel */}
-        <div className="relative lg:w-1/2 h-[40vh] lg:h-screen overflow-hidden bg-[#f5f0eb]">
+        <div className="relative h-[calc(40vh/var(--ui-scale))] w-full overflow-hidden bg-[#f5f0eb] md:h-[calc(46vh/var(--ui-scale))] lg:h-screen lg:w-1/2">
           <motion.img
             animate={{ x: isRegister ? "-25%" : "0%" }}
             transition={{ duration: 0.45, ease: [0.25, 0.1, 0.25, 1] }}
@@ -139,7 +139,7 @@ function AuthPage() {
               animate={{ opacity: isRegister ? 0 : 1 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
             >
-              <p className="font-display text-[44px] font-[500] tracking-[0.02em] leading-tight">
+              <p className="font-display text-[38px] font-[500] leading-tight tracking-[0.02em] md:text-[40px] lg:text-[44px]">
                 {t("Bringing Warmth to Every Home")}
               </p>
               <p className="text-base opacity-90 mt-3 leading-relaxed">
@@ -153,7 +153,7 @@ function AuthPage() {
               transition={{ duration: 0.3, ease: "easeInOut" }}
               style={{ position: "absolute", inset: 0 }}
             >
-              <p className="font-display text-[44px] font-[500] tracking-[0.02em] leading-tight">
+              <p className="font-display text-[38px] font-[500] leading-tight tracking-[0.02em] md:text-[40px] lg:text-[44px]">
                 {t("Join the Lumina Family")}
               </p>
               <p className="text-base opacity-90 mt-3 leading-relaxed">
@@ -164,7 +164,7 @@ function AuthPage() {
         </div>
 
         {/* Form panel */}
-        <div className="flex-1 flex items-center justify-center px-6 py-12">
+        <div className="flex-1 flex items-center justify-center px-6 py-12 md:px-10 md:py-16 lg:px-6 lg:py-12">
           <div className="w-full max-w-md">
             {error && <p className="text-sm text-red-500 text-center mb-4">{error}</p>}
             <AnimatePresence mode="wait">

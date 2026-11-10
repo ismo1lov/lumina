@@ -148,7 +148,7 @@ function Checkout() {
 
   if (placed) {
     return (
-      <div className="mx-auto flex min-h-[70vh] max-w-xl flex-col items-center justify-center px-6 text-center">
+      <div className="mx-auto flex min-h-[calc(70vh/var(--ui-scale))] max-w-xl flex-col items-center justify-center px-6 text-center">
         <span className="grid size-14 place-items-center rounded-full bg-accent text-accent-foreground">
           <Check size={22} />
         </span>
@@ -245,11 +245,11 @@ function Checkout() {
   };
 
   return (
-    <div className="mx-auto max-w-[1400px] px-6 pb-24 pt-32 lg:px-12 lg:pt-40">
+    <div className="mx-auto max-w-[1400px] px-6 pb-24 pt-32 md:px-8 md:pt-36 lg:px-12 lg:pt-40">
       <p className="eyebrow">{t("Checkout")}</p>
-      <h1 className="mt-4 font-display text-5xl">{t("Almost home")}</h1>
+      <h1 className="mt-4 font-display text-5xl md:text-[3.4rem]">{t("Almost home")}</h1>
 
-      <div className="mt-14 grid gap-16 lg:grid-cols-[1.3fr_1fr]">
+      <div className="mt-12 grid gap-12 md:mt-14 lg:grid-cols-[1.3fr_1fr] lg:gap-16">
         {/* Left */}
         <form className="space-y-12" onSubmit={handleSubmit}>
           <section>
@@ -306,7 +306,7 @@ function Checkout() {
                     interactive
                     onChange={handleMapChange}
                     title={t("Location on map")}
-                    className="mt-2 h-56 w-full border"
+                    className="mt-2 h-56 w-full border md:h-64 lg:h-56"
                   />
                   <span className="mt-1 block text-[11px] text-muted-foreground">
                     {t("Click on the map or drag the marker to set your exact location.")}
@@ -335,7 +335,7 @@ function Checkout() {
 
         {/* Right */}
         <aside className="h-fit lg:sticky lg:top-28">
-          <div className="rounded-xl p-6">
+          <div className="rounded-xl border border-border/70 bg-cream/50 p-6 md:p-7 lg:border-0 lg:bg-transparent lg:p-6">
             <h2 className="font-display text-xl mb-4">{t("Order summary")}</h2>
 
             {items.length === 0 ? (

@@ -109,8 +109,8 @@ function ProductPage() {
   const related = products.filter((p) => p.id !== product.id && p.category === product.category);
 
   return (
-    <div className="mx-auto max-w-[1400px] px-6 pb-24 pt-32 lg:px-12 lg:pt-36">
-      <nav className="mb-10 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+    <div className="mx-auto max-w-[1400px] px-6 pb-24 pt-32 md:px-8 md:pt-32 lg:px-12 lg:pt-36">
+      <nav className="mb-8 text-[11px] uppercase tracking-[0.18em] text-muted-foreground md:mb-10">
         <Link to="/" className="link-underline">
           {t("Home")}
         </Link>
@@ -122,9 +122,9 @@ function ProductPage() {
         <span className="text-foreground">{product.name}</span>
       </nav>
 
-      <div className="grid gap-14 lg:grid-cols-[0.85fr_1.15fr]">
+      <div className="grid gap-14 md:grid-cols-[0.92fr_1.08fr] md:items-start md:gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14">
         {/* Gallery */}
-        <div>
+        <div className="md:sticky md:top-24 lg:static">
           <div className="relative bg-cream">
             {is3D ? (
               <div className="flex aspect-square w-full flex-col items-center justify-center gap-3 text-muted-foreground">
@@ -173,7 +173,7 @@ function ProductPage() {
               <Box size={13} /> {is3D ? t("Photos") : t("3D view")}
             </button>
           </div>
-          <div className="mt-4 flex gap-4">
+          <div className="mt-4 flex gap-3 lg:gap-4">
             {gallery.map((g, i) => (
               <button
                 key={i}
@@ -183,7 +183,7 @@ function ProductPage() {
                   setColor(product.colors[i]);
                   setIs3D(false);
                 }}
-                className={`w-24 border transition-colors ${
+                className={`w-16 border transition-colors sm:w-20 lg:w-24 ${
                   active === i && !is3D ? "border-foreground" : "border-transparent"
                 }`}
                 aria-label={t("View image {index}", { index: i + 1 })}
@@ -236,7 +236,9 @@ function ProductPage() {
           <p className="eyebrow">
             {t(product.category)} · SKU {product.sku}
           </p>
-          <h1 className="mt-4 font-display text-4xl lg:text-5xl">{t(product.name)}</h1>
+          <h1 className="mt-4 font-display text-4xl leading-tight md:text-[2rem] lg:text-5xl">
+            {t(product.name)}
+          </h1>
           <div className="mt-4 flex items-center gap-3 text-xs text-muted-foreground">
             <Stars rating={product.rating} size={14} />
             <span>
@@ -244,9 +246,13 @@ function ProductPage() {
             </span>
           </div>
 
-          <p className="mt-7 font-semibold tabular-nums text-3xl">{formatUZS(unitPrice)}</p>
+          <p className="mt-6 font-semibold tabular-nums text-3xl md:mt-6 md:text-2xl lg:mt-7 lg:text-3xl">
+            {formatUZS(unitPrice)}
+          </p>
           <p className="mt-2 text-xs text-muted-foreground">
-            {product.inStock ? t("In stock · ships in 3–5 days") : t("Pre-order · ships in 4 weeks")}
+            {product.inStock
+              ? t("In stock · ships in 3–5 days")
+              : t("Pre-order · ships in 4 weeks")}
           </p>
 
           <p className="mt-7 max-w-lg text-sm leading-relaxed text-muted-foreground">
@@ -266,7 +272,7 @@ function ProductPage() {
                       setColor(product.colors[f.colorIndex]);
                       setActive(f.colorIndex);
                     }}
-                    className={`border px-5 py-2.5 text-xs transition-colors ${
+                    className={`border px-4 py-2.5 text-xs transition-colors lg:px-5 ${
                       finish.name === f.name
                         ? "border-foreground bg-primary text-primary-foreground"
                         : "border-border hover:border-foreground"
@@ -391,7 +397,7 @@ function ProductPage() {
       </div>
 
       {/* Reviews */}
-      <section className="mt-28 border-t pt-14">
+      <section className="mt-20 border-t pt-12 md:mt-24 md:pt-14 lg:mt-28">
         <Reveal className="flex flex-wrap items-end justify-between gap-6">
           <div>
             <p className="eyebrow">{t("Reviews")}</p>
@@ -403,7 +409,7 @@ function ProductPage() {
             </h2>
           </div>
         </Reveal>
-        <div className="mt-10 grid gap-8 md:grid-cols-3">
+        <div className="mt-10 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {reviews.map((r, i) => (
             <Reveal key={r.name} delay={i * 0.07} className="border-t pt-6">
               <Stars rating={r.rating} />

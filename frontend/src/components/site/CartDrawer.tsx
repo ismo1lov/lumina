@@ -39,7 +39,7 @@ export function CartDrawer() {
             onClick={() => setOpen(false)}
           />
           <motion.aside
-            className="absolute right-0 top-0 flex h-full w-full max-w-[440px] flex-col bg-background"
+            className="absolute right-0 top-0 flex h-full w-full max-w-[440px] flex-col bg-background md:max-w-[480px]"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
@@ -100,7 +100,7 @@ export function CartDrawer() {
                           <div className="flex items-center border">
                             <button
                               type="button"
-                              className="px-2.5 py-1.5"
+                              className="px-2.5 py-1.5 md:px-3 md:py-2"
                               onClick={() => setQty(item.key, item.qty - 1)}
                               aria-label={t("Decrease quantity")}
                             >
@@ -109,7 +109,7 @@ export function CartDrawer() {
                             <span className="w-7 text-center text-xs">{item.qty}</span>
                             <button
                               type="button"
-                              className="px-2.5 py-1.5"
+                              className="px-2.5 py-1.5 md:px-3 md:py-2"
                               onClick={() => setQty(item.key, item.qty + 1)}
                               aria-label={t("Increase quantity")}
                             >

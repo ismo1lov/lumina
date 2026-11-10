@@ -91,6 +91,7 @@ const translations: Record<string, Entry> = {
 
   // ── Cart / wishlist / auth dialog ──────────────────────────────────────
   "Your cart": { uz: "Savat", ru: "Корзина" },
+  Cart: { uz: "Savat", ru: "Корзина" },
   "Your cart is quietly empty.": {
     uz: "Savatingiz hozircha bo‘sh.",
     ru: "Ваша корзина пока пуста.",

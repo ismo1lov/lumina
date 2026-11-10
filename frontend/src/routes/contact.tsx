@@ -72,25 +72,27 @@ function Contact() {
 
   return (
     <>
-      <div className="mx-auto max-w-[1400px] px-6 pb-24 pt-12 lg:px-12 lg:pt-24 lg:pb-32">
-        <section className="grid gap-12 lg:grid-cols-2 lg:gap-24 lg:items-start lg:pt-24">
+      <div className="mx-auto max-w-[1400px] px-6 pb-24 pt-24 md:px-8 md:pb-28 md:pt-28 lg:px-12 lg:pt-24 lg:pb-32">
+        <section className="grid gap-10 md:gap-12 lg:grid-cols-2 lg:gap-24 lg:items-start lg:pt-24">
           {/* Left — image with small bottom-left overlay text */}
-          <div className="relative w-full h-[420px] lg:h-[520px] overflow-hidden bg-cream">
+          <div className="relative h-[380px] w-full overflow-hidden bg-cream md:h-[460px] lg:h-[520px]">
             <img
               src={contactImage}
               alt="Handcrafted furniture in the Lumina Home workshop"
               className="absolute inset-0 h-full w-full object-cover"
             />
-            <div className="absolute bottom-6 left-6 z-10 text-white">
-              <h2 className="font-display text-3xl lg:text-4xl">{t("Contact")}</h2>
+            <div className="absolute bottom-6 left-6 z-10 text-white md:bottom-8 md:left-8 lg:bottom-6 lg:left-6">
+              <h2 className="font-display text-3xl md:text-4xl lg:text-4xl">{t("Contact")}</h2>
               <p className="mt-1 text-sm font-medium">{t("Biz bilan bog‘laning")}</p>
             </div>
           </div>
 
           {/* Right — form */}
           <div className="h-full flex flex-col justify-between">
-            <h2 className="font-display text-4xl leading-tight lg:text-5xl">{t("Get in Touch")}</h2>
-            <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            <h2 className="font-display text-4xl leading-tight md:text-[2.6rem] lg:text-5xl">
+              {t("Get in Touch")}
+            </h2>
+            <form className="mt-8 space-y-6 md:mt-10 md:space-y-7" onSubmit={handleSubmit}>
               <div className="grid gap-6 sm:grid-cols-2">
                 <Field label="Full Name" name="name" value={name} onChange={setName} />
                 <Field

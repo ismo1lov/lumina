@@ -109,17 +109,17 @@ function About() {
   return (
     <div className="bg-background">
       {/* Hero — split screen with story intro */}
-      <section className="grid lg:min-h-screen lg:grid-cols-2">
-        <div className="h-[50vh] overflow-hidden lg:h-auto">
+      <section className="grid pt-20 md:min-h-[calc(100vh/var(--ui-scale)-5rem)] md:grid-cols-2 md:pt-0 lg:min-h-[calc(100vh/var(--ui-scale))]">
+        <div className="h-[calc(50vh/var(--ui-scale))] overflow-hidden md:h-auto">
           <img
             src={heroChair}
             alt="Handcrafted chair"
             className="h-full w-full object-cover"
           />
         </div>
-        <div className="flex items-center px-8 py-16 lg:px-16 lg:pb-0 lg:pt-20 xl:px-24">
+        <div className="flex items-center px-6 py-14 md:px-8 md:py-16 lg:px-16 lg:pb-0 lg:pt-20 xl:px-24">
           <Reveal>
-            <h1 className="font-display text-5xl leading-[1.05] italic lg:text-6xl xl:text-7xl">
+            <h1 className="font-display text-5xl leading-[1.05] italic md:text-5xl lg:text-6xl xl:text-7xl">
               {t("Our Story")}
             </h1>
             <span className="mt-6 block h-px w-14 bg-accent" />
@@ -152,12 +152,12 @@ function About() {
       </section>
 
       {/* Split section — stats left, desk image right */}
-      <section className="grid bg-cream lg:min-h-[calc(100vh-5rem)] lg:grid-cols-2">
-        <div className="flex items-center px-8 py-16 lg:px-16 xl:px-24">
+      <section className="grid bg-cream md:grid-cols-2 md:min-h-[calc(100vh/var(--ui-scale)-5rem)] lg:min-h-[calc(100vh/var(--ui-scale)-5rem)]">
+        <div className="flex items-center px-6 py-14 md:px-8 md:py-16 lg:px-16 xl:px-24">
           <div className="w-full">
             <Reveal>
               <p className="eyebrow">{t("Lumina in numbers")}</p>
-              <h2 className="mt-4 max-w-lg font-display text-4xl leading-tight italic xl:text-5xl">
+              <h2 className="mt-4 max-w-lg font-display text-4xl leading-tight italic md:text-3xl lg:text-4xl xl:text-5xl">
                 {t("Numbers that tell")}
                 <br />
                 {t("our story")}
@@ -183,7 +183,7 @@ function About() {
             </div>
           </div>
         </div>
-        <div className="relative h-[50vh] overflow-hidden lg:h-auto">
+        <div className="relative h-[calc(50vh/var(--ui-scale))] overflow-hidden md:h-auto">
           <img
             src={deskImg}
             alt="Atlas oak writing desk"
@@ -193,18 +193,20 @@ function About() {
       </section>
 
       {/* Timeline — full-bleed images with year overlays */}
-      <section className="py-28">
-        <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
+      <section className="py-20 md:py-24 lg:py-28">
+        <div className="mx-auto max-w-[1400px] px-6 md:px-8 lg:px-12">
           <Reveal>
             <p className="eyebrow">{t("Our journey")}</p>
-            <h2 className="mt-4 font-display text-4xl lg:text-5xl">{t("Milestones")}</h2>
+            <h2 className="mt-4 font-display text-4xl md:text-[2.6rem] lg:text-5xl">
+              {t("Milestones")}
+            </h2>
           </Reveal>
         </div>
 
-        <div className="mt-16 flex justify-center gap-0 overflow-x-auto px-6 pb-8 lg:px-12">
+        <div className="mt-12 flex justify-center gap-0 overflow-x-auto px-6 pb-8 md:mt-14 md:px-8 lg:px-12">
           {milestones.map((m, i) => (
             <Reveal key={m.year} delay={i * 0.06} className="flex-shrink-0 snap-start">
-              <div className="w-[260px] lg:w-[300px]">
+              <div className="w-[260px] md:w-[280px] lg:w-[300px]">
                 <p className="font-display text-2xl italic">{m.year}</p>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t(m.text)}</p>
               </div>
@@ -214,21 +216,21 @@ function About() {
       </section>
 
       {/* Full-bleed image team section */}
-      <section className="relative h-[75vh]">
+      <section className="relative h-[calc(75vh/var(--ui-scale))]">
         <img
           src={diningImg}
           alt="Lumina Home workshop interior"
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 z-10 px-6 pb-16 lg:px-12">
+        <div className="absolute bottom-0 left-0 right-0 z-10 px-6 pb-14 md:px-8 md:pb-16 lg:px-12">
           <Reveal>
             <p className="text-sm tracking-[0.15em] uppercase text-white/60">{t("Meet the makers")}</p>
-            <h2 className="mt-2 font-display text-4xl italic text-white lg:text-5xl">
+            <h2 className="mt-2 font-display text-4xl italic text-white md:text-[2.6rem] lg:text-5xl">
               {t("The hands behind the wood")}
             </h2>
           </Reveal>
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-8 grid gap-6 sm:grid-cols-2 md:mt-10 md:gap-x-8 lg:grid-cols-4">
             {team.map((member, i) => (
               <Reveal key={member.name} delay={i * 0.07}>
                 <p className="font-display text-lg text-white">{member.name}</p>
@@ -240,10 +242,10 @@ function About() {
       </section>
 
       {/* Final CTA section */}
-      <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden bg-cream">
+      <section className="relative flex min-h-[calc(60vh/var(--ui-scale))] items-center justify-center overflow-hidden bg-cream">
         <div className="relative z-10 px-6 text-center">
           <Reveal>
-            <p className="font-display text-4xl italic leading-tight text-foreground lg:text-6xl">
+            <p className="font-display text-4xl italic leading-tight text-foreground md:text-5xl lg:text-6xl">
               {t("Every piece, signed by the maker who built it.")}
             </p>
             <p className="mx-auto mt-6 max-w-md text-sm leading-relaxed text-muted-foreground">

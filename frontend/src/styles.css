@@ -60,6 +60,13 @@
 
 :root {
   --radius: 0.25rem;
+  /*
+   * Global design scale. The layout is authored against a ~1536px viewport
+   * (a 1920px display at 125% zoom). On larger/100%-scale displays the whole
+   * page is zoomed up so it keeps the same proportions. See the media query at
+   * the end of this file.
+   */
+  --ui-scale: 1;
 
   --background: oklch(0.977 0.008 85);
   --foreground: oklch(0.248 0.037 40.5);
@@ -175,13 +182,13 @@
   }
 
   img {
-    max-height: 100vh;
+    max-height: calc(100vh / var(--ui-scale));
   }
 
   section img,
   .banner img,
   [class*="gallery"] img {
-    max-height: 100vh;
+    max-height: calc(100vh / var(--ui-scale));
     object-fit: cover;
   }
 }
@@ -235,4 +242,54 @@
 .lumina-yandex-map [class*="copyright__agreement"],
 .lumina-yandex-map [class*="copyright__logo-cell"] {
   display: none !important;
+}
+
+/*
+ * ---------------------------------------------------------------------------
+ * Large-display scaling
+ * ---------------------------------------------------------------------------
+ * The design was tuned on a 1920px screen at 125% OS/browser zoom (~1536 CSS
+ * px). At 1920px with 100% zoom the viewport is much wider and the same layout
+ * looks small and stretched. To keep the authored proportions, real 125% zoom
+ * behaviour is emulated on wide viewports: `zoom` scales every length (px,
+ * rem, images, borders) exactly like browser zoom does.
+ *
+ * Note: element zoom does not shrink viewport units the way browser zoom does,
+ * so `*-screen` utilities and viewport-height values are divided by --ui-scale
+ * to avoid overflowing the viewport.
+ */
+@media (min-width: 1800px) {
+  @supports (zoom: 1.25) {
+    :root {
+      --ui-scale: 1.25;
+    }
+
+    html {
+      zoom: var(--ui-scale);
+    }
+
+    .h-screen {
+      height: calc(100vh / var(--ui-scale));
+    }
+
+    .max-h-screen {
+      max-height: calc(100vh / var(--ui-scale));
+    }
+
+    .min-h-screen {
+      min-height: calc(100vh / var(--ui-scale));
+    }
+
+    .w-screen {
+      width: calc(100vw / var(--ui-scale));
+    }
+
+    .lg\:h-screen {
+      height: calc(100vh / var(--ui-scale));
+    }
+
+    .lg\:min-h-screen {
+      min-height: calc(100vh / var(--ui-scale));
+    }
+  }
 }

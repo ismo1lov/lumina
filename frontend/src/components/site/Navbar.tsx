@@ -1,5 +1,17 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { Heart, LogOut, Menu, Search, ShoppingBag, User, X } from "lucide-react";
+import {
+  Heart,
+  House,
+  Info,
+  LayoutGrid,
+  Menu,
+  Phone,
+  Search,
+  ShoppingBag,
+  User,
+  UserPlus,
+  X,
+} from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { products } from "@/data/products";
@@ -11,17 +23,17 @@ import { AccountDrawer } from "@/components/site/AccountDrawer";
 import { useI18n } from "@/lib/i18n";
 
 const links = [
-  { to: "/", label: "Home" },
-  { to: "/catalog", label: "Catalog" },
-  { to: "/about", label: "About Us" },
-  { to: "/contact", label: "Contact" },
+  { to: "/", label: "Home", Icon: House },
+  { to: "/catalog", label: "Catalog", Icon: LayoutGrid },
+  { to: "/about", label: "About Us", Icon: Info },
+  { to: "/contact", label: "Contact", Icon: Phone },
 ] as const;
 
 export function Navbar() {
   const { t } = useI18n();
   const { count, setOpen } = useCart();
   const { count: wishCount, setOpen: setWishOpen } = useWishlist();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [search, setSearch] = useState(false);
   const [query, setQuery] = useState("");
@@ -75,12 +87,12 @@ export function Navbar() {
               : "bg-transparent"
         }`}
       >
-        <div className="mx-auto flex h-20 max-w-[1400px] items-center justify-between gap-6 px-6 lg:px-12">
-          <Link to="/" className="font-display text-2xl tracking-tight">
+        <div className="mx-auto flex h-20 max-w-[1400px] items-center justify-between gap-4 px-6 md:gap-5 md:px-8 lg:gap-6 lg:px-12">
+          <Link to="/" className="shrink-0 font-display text-2xl tracking-tight">
             Lumina<span className="text-accent">.</span>
           </Link>
 
-          <nav className="hidden items-center gap-9 lg:flex">
+          <nav className="hidden items-center gap-5 md:flex lg:gap-9">
             {links.map((l) => (
               <Link
                 key={l.to}
@@ -90,31 +102,33 @@ export function Navbar() {
                   className: "text-foreground font-semibold border-b border-foreground",
                 }}
                 inactiveProps={{ className: "text-muted-foreground" }}
-                className="text-[11px] uppercase tracking-[0.2em] transition-colors hover:text-foreground pb-0.5"
+                className="whitespace-nowrap pb-0.5 text-[10px] uppercase tracking-[0.14em] transition-colors hover:text-foreground lg:text-[11px] lg:tracking-[0.2em]"
               >
                 {t(l.label)}
               </Link>
             ))}
           </nav>
 
-          <div className="flex items-center gap-5">
+          <div className="flex shrink-0 items-center gap-4 md:gap-4 lg:gap-5">
             <button
               type="button"
               aria-label={t("Search")}
-              className="cursor-pointer"
+              className="cursor-pointer md:grid md:size-9 md:place-items-center lg:block"
               onClick={() => setSearch(true)}
             >
               <Search size={17} />
             </button>
+            {/* Wishlist, cart and account live in the navbar from 450px up. On
+                narrow screens they move into the menu to keep the bar clean. */}
             <button
               type="button"
               aria-label={t("Wishlist")}
-              className="relative hidden cursor-pointer sm:block"
+              className="relative hidden cursor-pointer min-[451px]:grid min-[451px]:size-9 min-[451px]:place-items-center md:size-9 md:place-items-center lg:block"
               onClick={() => setWishOpen(true)}
             >
               <Heart size={17} />
               {wishCount > 0 && (
-                <span className="absolute -right-2 -top-2 grid size-4 place-items-center rounded-full bg-accent text-[9px] text-accent-foreground">
+                <span className="absolute right-0 top-0 grid size-4 place-items-center rounded-full bg-accent text-[9px] text-accent-foreground md:-right-1 md:-top-1 lg:-right-2 lg:-top-2">
                   {wishCount}
                 </span>
               )}
@@ -122,18 +136,18 @@ export function Navbar() {
             <button
               type="button"
               aria-label={t("Open cart")}
-              className="relative cursor-pointer"
+              className="relative hidden cursor-pointer min-[451px]:grid min-[451px]:size-9 min-[451px]:place-items-center md:size-9 md:place-items-center lg:block"
               onClick={() => setOpen(true)}
             >
               <ShoppingBag size={17} />
               {count > 0 && (
-                <span className="absolute -right-2 -top-2 grid size-4 place-items-center rounded-full bg-accent text-[9px] text-accent-foreground">
+                <span className="absolute right-0 top-0 grid size-4 place-items-center rounded-full bg-accent text-[9px] text-accent-foreground md:-right-1 md:-top-1 lg:-right-2 lg:-top-2">
                   {count}
                 </span>
               )}
             </button>
-            <span className="hidden h-5 w-px bg-border sm:block" aria-hidden />
-            <div className="relative">
+            <span className="hidden h-5 w-px bg-border min-[451px]:block" aria-hidden />
+            <div className="relative hidden min-[451px]:block">
               <button
                 type="button"
                 aria-label={user ? t("Open account menu") : t("Account")}
@@ -175,7 +189,7 @@ export function Navbar() {
             <button
               type="button"
               aria-label={t("Open menu")}
-              className="cursor-pointer lg:hidden"
+              className="cursor-pointer md:hidden"
               onClick={() => setMenu(true)}
             >
               <Menu size={18} />
@@ -187,7 +201,7 @@ export function Navbar() {
       <AnimatePresence>
         {menu && (
           <motion.div
-            className="fixed inset-0 z-[70] bg-background px-6 py-6 lg:hidden"
+            className="fixed inset-0 z-[70] overflow-y-auto bg-background px-6 py-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -197,57 +211,92 @@ export function Navbar() {
                 <X size={20} />
               </button>
             </div>
-            <nav className="mt-12 flex flex-col gap-7">
-              {links.map((l) => (
-                <Link
-                  key={l.to}
-                  to={l.to}
-                  onClick={() => setMenu(false)}
-                  className="font-display text-3xl"
-                >
-                  {t(l.label)}
-                </Link>
-              ))}
-              <div className="mt-4 border-t pt-6">
-                {user ? (
-                  <>
+            <nav className="mt-10 flex flex-col gap-4 md:mt-12">
+              {/* Page links live in the navbar from 768px up, so the menu only
+                  repeats them on small screens. */}
+              <div className="flex flex-col gap-1 md:hidden">
+                {links.map((l) => (
+                  <Link
+                    key={l.to}
+                    to={l.to}
+                    onClick={() => setMenu(false)}
+                    className="flex items-center gap-4 py-2.5 font-sans text-xl transition-colors hover:text-accent"
+                  >
+                    <l.Icon size={19} strokeWidth={1.5} />
+                    {t(l.label)}
+                  </Link>
+                ))}
+              </div>
+
+              <div className="max-[450px]:block">
+                {/* Wishlist and cart — only on narrow screens, where they are
+                    not in the navbar. */}
+                <div className="hidden gap-1 border-t pt-6 max-[450px]:grid sm:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenu(false);
+                      setWishOpen(true);
+                    }}
+                    className="flex cursor-pointer items-center gap-4 py-2.5 text-left font-sans text-xl transition-colors hover:text-accent"
+                  >
+                    <Heart size={19} strokeWidth={1.5} />
+                    {t("Wishlist")}
+                    {wishCount > 0 && (
+                      <span className="grid size-6 place-items-center rounded-full bg-accent text-[10px] text-accent-foreground">
+                        {wishCount}
+                      </span>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenu(false);
+                      setOpen(true);
+                    }}
+                    className="flex cursor-pointer items-center gap-4 py-2.5 text-left font-sans text-xl transition-colors hover:text-accent"
+                  >
+                    <ShoppingBag size={19} strokeWidth={1.5} />
+                    {t("Cart")}
+                    {count > 0 && (
+                      <span className="grid size-6 place-items-center rounded-full bg-accent text-[10px] text-accent-foreground">
+                        {count}
+                      </span>
+                    )}
+                  </button>
+                </div>
+
+                <div className="mt-4 hidden border-t pt-6 max-[450px]:block">
+                  {user ? (
                     <button
                       type="button"
                       onClick={openAccount}
-                      className="block cursor-pointer text-left font-display text-xl"
+                      className="flex cursor-pointer items-center gap-4 text-left font-sans text-xl transition-colors hover:text-accent"
                     >
+                      <User size={19} strokeWidth={1.5} />
                       {user.role === "admin" ? t("Admin Panel") : t("My Account")}
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        logout();
-                        navigate({ to: "/" });
-                        setMenu(false);
-                      }}
-                      className="mt-4 flex cursor-pointer items-center gap-3 font-display text-xl text-muted-foreground"
-                    >
-                      <LogOut size={18} /> {t("Sign Out")}
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => goAuth("login")}
-                      className="block cursor-pointer text-left font-display text-xl"
-                    >
-                      {t("Sign In")}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => goAuth("register")}
-                      className="mt-4 block cursor-pointer text-left font-display text-xl"
-                    >
-                      {t("Create Account")}
-                    </button>
-                  </>
-                )}
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => goAuth("login")}
+                        className="flex cursor-pointer items-center gap-4 text-left font-sans text-xl transition-colors hover:text-accent"
+                      >
+                        <User size={19} strokeWidth={1.5} />
+                        {t("Sign In")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => goAuth("register")}
+                        className="mt-2 flex cursor-pointer items-center gap-4 text-left font-sans text-xl transition-colors hover:text-accent"
+                      >
+                        <UserPlus size={19} strokeWidth={1.5} />
+                        {t("Create Account")}
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             </nav>
           </motion.div>

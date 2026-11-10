@@ -35,15 +35,15 @@ function Categories() {
   const cats = Object.keys(categoryImages) as Category[];
 
   return (
-    <div className="mx-auto max-w-[1400px] px-6 pb-24 pt-32 lg:px-12 lg:pt-40">
+    <div className="mx-auto max-w-[1400px] px-6 pb-24 pt-32 md:px-8 md:pt-36 lg:px-12 lg:pt-40">
       <Reveal>
         <p className="eyebrow">{t("Categories")}</p>
-        <h1 className="mt-4 max-w-2xl font-display text-5xl lg:text-6xl">
+        <h1 className="mt-4 max-w-2xl font-display text-5xl md:text-[3.4rem] lg:text-6xl">
           {t("Four rooms, one quiet language")}
         </h1>
       </Reveal>
 
-      <div className="mt-16 space-y-6">
+      <div className="mt-12 space-y-5 md:mt-16 md:space-y-6">
         {cats.map((cat, i) => (
           <Reveal key={cat} delay={i * 0.06}>
             <Link
@@ -58,16 +58,16 @@ function Categories() {
                   loading="lazy"
                   width={900}
                   height={1100}
-                  className="h-full max-h-[380px] w-full object-cover transition-transform duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
+                  className="h-full max-h-[380px] w-full object-cover transition-transform duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105 md:max-h-[300px] lg:max-h-[380px]"
                 />
               </div>
-              <div className="px-6 py-8 md:px-10">
+              <div className="px-6 py-8 md:px-8 md:py-7 lg:px-10">
                 <p className="eyebrow">
                   {t("{count} pieces", {
                     count: products.filter((p) => p.category === cat).length,
                   })}
                 </p>
-                <h2 className="mt-3 font-display text-4xl">{t(cat)}</h2>
+                <h2 className="mt-3 font-display text-4xl md:text-[2rem] lg:text-4xl">{t(cat)}</h2>
                 <p className="mt-4 max-w-md text-sm text-muted-foreground">{t(blurbs[cat])}</p>
                 <span className="mt-7 inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.2em]">
                   {t("Shop {category}", { category: t(cat) })}

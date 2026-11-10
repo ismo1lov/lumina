@@ -813,7 +813,7 @@ function AdminPage() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.97 }}
               transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-              className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white p-6 shadow-[0_40px_90px_-30px_rgba(38,27,20,0.5)] sm:p-8"
+              className="max-h-[calc(85vh/var(--ui-scale))] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white p-6 shadow-[0_40px_90px_-30px_rgba(38,27,20,0.5)] sm:p-8"
             >
               {detailLoading && !detail ? (
                 <div className="flex items-center justify-center py-16">

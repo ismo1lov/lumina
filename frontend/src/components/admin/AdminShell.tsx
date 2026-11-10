@@ -34,7 +34,7 @@ export function AdminShell({
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-lg">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-10">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 md:px-8 lg:px-10">
           <div className="flex items-center gap-7">
             <Link to="/admin" className="font-display text-2xl">
               Lumina<span className="text-accent">.</span>
@@ -86,7 +86,7 @@ export function AdminShell({
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-7xl px-6 py-10 lg:px-10">{children}</main>
+      <main className="mx-auto max-w-7xl px-6 py-10 md:px-8 lg:px-10">{children}</main>
     </div>
   );
 }
