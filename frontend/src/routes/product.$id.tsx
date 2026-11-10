@@ -317,10 +317,16 @@ function ProductPage() {
             {t(product.name)}
           </h1>
           <div className="mt-4 flex items-center gap-3 text-xs text-muted-foreground">
-            <Stars rating={displayRating} size={14} />
-            <span>
-              {displayRating} · {t("{count} reviews", { count: displayReviews })}
-            </span>
+            {displayReviews > 0 ? (
+              <>
+                <Stars rating={displayRating} size={14} />
+                <span>
+                  {displayRating} · {t("{count} reviews", { count: displayReviews })}
+                </span>
+              </>
+            ) : (
+              <span>{t("No reviews yet")}</span>
+            )}
             <button
               type="button"
               onClick={() => setPromptOpen(true)}
@@ -486,10 +492,14 @@ function ProductPage() {
           <div>
             <p className="eyebrow">{t("Reviews")}</p>
             <h2 className="mt-3 font-display text-4xl">
-              {t("{rating} out of 5", { rating: displayRating })}
-              <span className="ml-3 align-middle text-sm text-muted-foreground">
-                {t("{count} verified buyers", { count: displayReviews })}
-              </span>
+              {displayReviews > 0
+                ? t("{rating} out of 5", { rating: displayRating })
+                : t("No reviews yet")}
+              {displayReviews > 0 && (
+                <span className="ml-3 align-middle text-sm text-muted-foreground">
+                  {t("{count} verified buyers", { count: displayReviews })}
+                </span>
+              )}
             </h2>
           </div>
           <button

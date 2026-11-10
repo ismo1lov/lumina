@@ -88,10 +88,16 @@ export function ProductCard({
           <span className="whitespace-nowrap pt-1 text-sm">{formatUZS(product.price)}</span>
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Stars rating={displayRating} />
-          <span>
-            {displayRating} · {t("{count} reviews", { count: displayReviews })}
-          </span>
+          {displayReviews > 0 ? (
+            <>
+              <Stars rating={displayRating} />
+              <span>
+                {displayRating} · {t("{count} reviews", { count: displayReviews })}
+              </span>
+            </>
+          ) : (
+            <span>{t("No reviews yet")}</span>
+          )}
         </div>
         <button
           type="button"
@@ -133,8 +139,16 @@ export function ProductCard({
               <p className="font-semibold tabular-nums text-xl">{formatUZS(product.price)}</p>
               <p className="text-xs text-muted-foreground">{t(product.material)}</p>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Stars rating={displayRating} />
-                <span>{displayRating} · {t("{count} reviews", { count: displayReviews })}</span>
+                {displayReviews > 0 ? (
+                  <>
+                    <Stars rating={displayRating} />
+                    <span>
+                      {displayRating} · {t("{count} reviews", { count: displayReviews })}
+                    </span>
+                  </>
+                ) : (
+                  <span>{t("No reviews yet")}</span>
+                )}
               </div>
               <p className="text-xs leading-relaxed text-muted-foreground">{t(product.description)}</p>
               <Link

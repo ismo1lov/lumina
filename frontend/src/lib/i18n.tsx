@@ -394,6 +394,7 @@ const translations: Record<string, Entry> = {
   Later: { uz: "Keyinroq", ru: "Позже" },
   Rate: { uz: "Baholash", ru: "Оценить" },
   "Lumina customer": { uz: "Lumina mijozi", ru: "Покупатель Lumina" },
+  "No reviews yet": { uz: "Hali sharhlar yo‘q", ru: "Пока нет отзывов" },
   "No written reviews for this piece yet. If it is part of your home, tell other people how it feels.":
     {
       uz: "Bu mebel uchun hozircha yozilgan sharhlar yo‘q. Agar u sizning uyingizda bo‘lsa, boshqalarga hisobingizni aytib bering.",
