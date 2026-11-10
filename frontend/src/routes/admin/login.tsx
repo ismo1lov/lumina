@@ -60,11 +60,13 @@ function AdminLoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-[#4b2f21] via-[#332015] to-[#1f130d] px-6 py-12 text-foreground">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-6 py-12 text-foreground">
+      {/* Brown glow on the light background */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_55%_at_16%_6%,rgba(58,36,24,0.26),transparent_62%),radial-gradient(55%_50%_at_84%_90%,rgba(201,90,42,0.20),transparent_60%)]" />
       <motion.div
         animate={{ x: [0, 36, 0], y: [0, 24, 0] }}
         transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
-        className="pointer-events-none absolute -left-40 -top-40 size-[460px] rounded-full bg-cream/10 blur-3xl"
+        className="pointer-events-none absolute -left-40 -top-40 size-[460px] rounded-full bg-walnut/10 blur-3xl"
       />
       <motion.div
         animate={{ x: [0, 30, 0], y: [0, 20, 0] }}
@@ -74,7 +76,7 @@ function AdminLoginPage() {
       <motion.div
         animate={{ x: [0, -24, 0], y: [0, 32, 0] }}
         transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}
-        className="pointer-events-none absolute left-[-8%] top-[45%] size-[340px] rounded-full bg-cream/5 blur-3xl"
+        className="pointer-events-none absolute left-[-8%] top-[45%] size-[340px] rounded-full bg-walnut/8 blur-3xl"
       />
       <motion.div
         animate={{ x: [0, -30, 0], y: [0, 36, 0] }}
@@ -86,7 +88,7 @@ function AdminLoginPage() {
         variants={stagger}
         initial="hidden"
         animate="show"
-        className="relative grid w-full max-w-4xl overflow-hidden rounded-3xl border border-border bg-white shadow-[0_40px_90px_-40px_rgba(38,27,20,0.4)] lg:min-h-[620px] lg:grid-cols-[1.05fr_1fr]"
+        className="relative grid w-full max-w-4xl overflow-hidden rounded-3xl border border-border bg-white shadow-[0_40px_90px_-40px_rgba(38,27,20,0.4)] lg:min-h-[540px] lg:grid-cols-[1.05fr_1fr]"
       >
         <motion.div
           variants={rise}
