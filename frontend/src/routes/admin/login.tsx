@@ -123,12 +123,14 @@ function AdminLoginPage() {
           </div>
         </motion.div>
 
-        <motion.div variants={rise} className="flex items-center p-8 sm:p-10">
+        <motion.div variants={rise} className="flex flex-col p-8 sm:p-10">
           <div className="mx-auto w-full max-w-md">
             <h1 className="font-display text-3xl">Welcome back</h1>
             <p className="mt-1.5 text-sm text-muted-foreground">Sign in to manage your store</p>
+          </div>
 
-            <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+          <div className="mx-auto flex w-full max-w-md flex-1 items-center py-8">
+            <form onSubmit={handleSubmit} className="w-full space-y-5">
               <div>
                 <label className="mb-2 block text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                   Login
@@ -214,8 +216,10 @@ function AdminLoginPage() {
                 )}
               </motion.button>
             </form>
+          </div>
 
-            <p className="mt-8 text-center">
+          <div className="mx-auto w-full max-w-md">
+            <p className="text-center">
               <Link
                 to="/"
                 className="text-xs text-muted-foreground transition-colors hover:text-walnut"
