@@ -3,7 +3,18 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
-import { ArrowRight, Eye, EyeOff, Lock, Mail, ShieldCheck } from "lucide-react";
+import {
+  ArrowRight,
+  Armchair,
+  BedDouble,
+  Eye,
+  EyeOff,
+  Lamp,
+  Lock,
+  Mail,
+  Sofa,
+  Table2,
+} from "lucide-react";
 import heroChair from "@/assets/hero-chair.jpg";
 
 interface LoginResponse {
@@ -82,30 +93,47 @@ function AdminLoginPage() {
         className="pointer-events-none absolute -bottom-44 -right-32 size-[520px] rounded-full bg-accent/10 blur-3xl"
       />
       <motion.div
-        animate={{ rotate: 360 }}
-        transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-        className="pointer-events-none absolute right-[12%] top-[14%] hidden size-24 rounded-full border border-walnut/10 lg:block"
-      />
+        animate={{ y: [0, -14, 0] }}
+        transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+        className="pointer-events-none absolute -right-10 -top-12 text-walnut/35 lg:block"
+      >
+        <Sofa size={210} strokeWidth={0.8} />
+      </motion.div>
       <motion.div
-        animate={{ y: [0, -16, 0], rotate: 360 }}
-        transition={{ duration: 24, repeat: Infinity, ease: "linear" }}
-        className="pointer-events-none absolute left-[8%] top-[18%] hidden size-10 rounded-full border border-walnut/20 lg:block"
-      />
+        animate={{ y: [0, -16, 0] }}
+        transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}
+        className="pointer-events-none absolute -left-12 top-[6%] text-walnut/35 lg:block"
+      >
+        <Lamp size={150} strokeWidth={0.8} />
+      </motion.div>
       <motion.div
-        animate={{ y: [0, 18, 0], rotate: -360 }}
-        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-        className="pointer-events-none absolute bottom-[16%] left-[14%] hidden size-16 rounded-full border border-walnut/10 lg:block"
-      />
+        animate={{ y: [0, 18, 0] }}
+        transition={{ duration: 28, repeat: Infinity, ease: "easeInOut" }}
+        className="pointer-events-none absolute -bottom-14 -left-10 text-walnut/35 lg:block"
+      >
+        <BedDouble size={200} strokeWidth={0.8} />
+      </motion.div>
       <motion.div
-        animate={{ x: [0, -20, 0], y: [0, 10, 0], rotate: 360 }}
-        transition={{ duration: 36, repeat: Infinity, ease: "linear" }}
-        className="pointer-events-none absolute right-[26%] bottom-[22%] hidden size-8 rounded-full border border-walnut/20 lg:block"
-      />
+        animate={{ y: [0, -20, 0] }}
+        transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }}
+        className="pointer-events-none absolute -bottom-10 -right-12 text-walnut/35 lg:block"
+      >
+        <Armchair size={170} strokeWidth={0.8} />
+      </motion.div>
       <motion.div
-        animate={{ y: [0, -12, 0], rotate: -360 }}
-        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-        className="pointer-events-none absolute right-[6%] top-[38%] hidden size-6 rounded-full border border-walnut/15 lg:block"
-      />
+        animate={{ y: [0, -12, 0] }}
+        transition={{ duration: 24, repeat: Infinity, ease: "easeInOut" }}
+        className="pointer-events-none absolute right-[16%] top-[44%] hidden text-walnut/30 lg:block"
+      >
+        <Table2 size={120} strokeWidth={0.8} />
+      </motion.div>
+      <motion.div
+        animate={{ y: [0, 14, 0] }}
+        transition={{ duration: 32, repeat: Infinity, ease: "easeInOut" }}
+        className="pointer-events-none absolute left-[15%] top-[54%] hidden text-walnut/30 lg:block"
+      >
+        <Lamp size={110} strokeWidth={0.8} />
+      </motion.div>
 
       <motion.div
         variants={stagger}
@@ -126,11 +154,12 @@ function AdminLoginPage() {
             className="absolute inset-0 h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-walnut/85 via-walnut/45 to-walnut/25" />
+          <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-walnut/55 to-transparent" />
           <div className="pointer-events-none absolute -right-24 -top-24 size-64 rounded-full bg-cream/10 blur-2xl" />
           <div className="pointer-events-none absolute -bottom-28 -left-20 size-72 rounded-full bg-accent/20 blur-3xl" />
 
           <div className="relative p-10">
-            <p className="font-display text-3xl text-walnut">
+            <p className="font-display text-3xl text-cream">
               Lumina<span className="text-accent">.</span>
             </p>
           </div>
@@ -147,12 +176,7 @@ function AdminLoginPage() {
 
         <motion.div variants={rise} className="p-8 sm:p-12">
           <div className="mx-auto max-w-sm">
-            <span className="inline-flex items-center gap-2 rounded-full bg-cream px-3 py-1.5 text-[10px] uppercase tracking-[0.25em] text-walnut">
-              <ShieldCheck size={12} />
-              Admin Access
-            </span>
-
-            <h1 className="mt-5 font-display text-3xl">Welcome back</h1>
+            <h1 className="font-display text-3xl">Welcome back</h1>
             <p className="mt-1.5 text-sm text-muted-foreground">Sign in to manage your store</p>
 
             <form onSubmit={handleSubmit} className="mt-8 space-y-5">
@@ -174,9 +198,6 @@ function AdminLoginPage() {
                     className="w-full rounded-xl border border-input bg-background/50 py-3.5 pl-11 pr-4 text-sm outline-none transition-all duration-300 focus:border-walnut focus:bg-white focus:ring-4 focus:ring-walnut/10"
                   />
                 </div>
-                <p className="mt-1.5 text-[11px] text-muted-foreground/70">
-                  Admin login name
-                </p>
               </div>
 
               <div>
