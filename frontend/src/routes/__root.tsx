@@ -149,8 +149,10 @@ function AuthGuard({ children }: { children: ReactNode }) {
     }
   }, [user, loading, location.pathname, isAdminPath, isProtected]);
 
-  if (loading) return null;
   if (isAdminPath) return <>{children}</>;
+  // Only gate auth pages while the session is being restored. Public pages must
+  // always render on the server, otherwise SSR returns an empty (white) page.
+  if (loading && authPaths.includes(location.pathname)) return null;
   if (user && user.role !== "admin" && authPaths.includes(location.pathname)) return null;
 
   return <>{children}</>;
