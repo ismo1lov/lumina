@@ -533,7 +533,7 @@ const translations: Record<string, Entry> = {
   },
   Login: { uz: "Login", ru: "Логин" },
   "Sign in to dashboard": {
-    uz: "Boshqaruv paneliga kiring",
+    uz: "Boshqaruvga kirish",
     ru: "Войти в панель управления",
   },
   "← Back to Lumina store": {
