@@ -2,5 +2,15 @@
   command = "npm run build"
   publish = "dist"
 
+[build.environment]
+  NODE_VERSION = "22"
+
 [functions]
   directory = ".netlify/functions-internal"
+
+# SSR app: send every non-static request to the Nitro server function.
+# Static files under /assets are served first because force is false.
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/server"
+  status = 200
