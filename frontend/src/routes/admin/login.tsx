@@ -62,7 +62,7 @@ function AdminLoginPage() {
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-6 py-12 text-foreground">
       {/* Brown glow on the light background */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_55%_at_16%_6%,rgba(58,36,24,0.26),transparent_62%),radial-gradient(55%_50%_at_84%_90%,rgba(201,90,42,0.20),transparent_60%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_55%_at_16%_6%,rgba(140,96,66,0.16),transparent_62%),radial-gradient(55%_50%_at_84%_90%,rgba(201,90,42,0.16),transparent_60%)]" />
       <motion.div
         animate={{ x: [0, 36, 0], y: [0, 24, 0] }}
         transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
@@ -123,8 +123,8 @@ function AdminLoginPage() {
           </div>
         </motion.div>
 
-        <motion.div variants={rise} className="flex items-center p-8 sm:p-12">
-          <div className="mx-auto max-w-sm">
+        <motion.div variants={rise} className="flex items-center p-8 sm:p-10">
+          <div className="mx-auto w-full max-w-md">
             <h1 className="font-display text-3xl">Welcome back</h1>
             <p className="mt-1.5 text-sm text-muted-foreground">Sign in to manage your store</p>
 
