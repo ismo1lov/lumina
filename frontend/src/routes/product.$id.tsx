@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { Box, Heart, Minus, Plus, Truck, Loader } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Box, Heart, Minus, Plus, Truck, Loader, PenLine } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Accordion,
@@ -15,9 +15,14 @@ import { useAuth } from "@/lib/auth-context";
 import { ProductCard } from "@/components/site/ProductCard";
 import { Reveal } from "@/components/site/Reveal";
 import { Stars } from "@/components/site/Stars";
+import { ReviewPrompt, type ReviewSummary } from "@/components/site/ReviewPrompt";
 import { resolveAsset } from "@/lib/assets";
 import { AuthRequiredDialog } from "@/components/site/AuthRequiredDialog";
+import { api } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
+
+const REVIEW_PROMPT_DELAY = 5000;
+const REVIEW_LATER_COOLDOWN = 7 * 24 * 60 * 60 * 1000;
 
 export const Route = createFileRoute("/product/$id")({
   loader: ({ params }) => {
@@ -47,24 +52,6 @@ export const Route = createFileRoute("/product/$id")({
   component: ProductPage,
 });
 
-const reviews = [
-  {
-    name: "Dilnoza R.",
-    rating: 5,
-    text: "The walnut grain is even richer in person. Assembly team was in and out in 20 minutes.",
-  },
-  {
-    name: "Timur A.",
-    rating: 5,
-    text: "Second piece from Lumina. The finish still looks new after a year of daily use.",
-  },
-  {
-    name: "Malika S.",
-    rating: 4,
-    text: "Beautiful and very solid. Delivery took a week longer than promised, but worth the wait.",
-  },
-];
-
 function ProductPage() {
   const { product } = Route.useLoaderData() as { product: Product };
   const { t } = useI18n();
@@ -81,6 +68,16 @@ function ProductPage() {
   const [is3D, setIs3D] = useState(false);
   const [changing, setChanging] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
+
+  // Real, customer written reviews.
+  const [reviewItems, setReviewItems] = useState<
+    { id: string; rating: number; comment: string; userName: string; createdAt: string }[]
+  >([]);
+  const [reviewSummary, setReviewSummary] = useState<ReviewSummary | null>(null);
+  const [myReview, setMyReview] = useState<{ rating: number; comment: string } | null>(null);
+  const [promptOpen, setPromptOpen] = useState(false);
+  const myReviewRef = useRef(myReview);
+  myReviewRef.current = myReview;
 
   const finishImages = finish.colorImages || product.colors.map((c) => c.image || product.image);
   const gallery = finishImages.map((g) => resolveAsset(g) || g);
@@ -106,7 +103,87 @@ function ProductPage() {
     return () => clearTimeout(timer);
   }, [gallery[active], finish]);
 
+  // Load the real reviews of this piece.
+  useEffect(() => {
+    let active = true;
+    api
+      .get<{ items: typeof reviewItems; average: number; count: number }>(`/reviews/${product.id}`)
+      .then((res) => {
+        if (!active) return;
+        setReviewItems(res.items ?? []);
+        setReviewSummary({ average: Number(res.average ?? 0), count: Number(res.count ?? 0) });
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [product.id]);
+
+  // Load the review of the signed-in user (if any) so we can offer editing.
+  useEffect(() => {
+    if (!user) {
+      setMyReview(null);
+      return;
+    }
+    let active = true;
+    api
+      .get<{ rating: number; comment: string } | null>(`/reviews/${product.id}/mine`)
+      .then((res) => {
+        if (!active || !res) return;
+        setMyReview({ rating: res.rating, comment: res.comment ?? "" });
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [user, product.id]);
+
+  // Ask for a review once the visitor has had a moment with the piece.
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if (myReviewRef.current) return;
+      const key = `lumina-review-prompt:${product.id}`;
+      const stored = localStorage.getItem(key);
+      if (stored === "rated") return;
+      if (stored) {
+        const laterAt = Number(stored);
+        // "Later" only postpones the question for a week.
+        if (!Number.isNaN(laterAt) && Date.now() - laterAt < REVIEW_LATER_COOLDOWN) return;
+      }
+      setPromptOpen(true);
+    }, REVIEW_PROMPT_DELAY);
+    return () => window.clearTimeout(timer);
+  }, [product.id]);
+
+  const markReviewed = () => {
+    try {
+      localStorage.setItem(`lumina-review-prompt:${product.id}`, "rated");
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const markLater = () => {
+    try {
+      localStorage.setItem(`lumina-review-prompt:${product.id}`, String(Date.now()));
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const handleSubmitted = (summary: ReviewSummary) => {
+    markReviewed();
+    setReviewSummary(summary);
+    api
+      .get<{ items: typeof reviewItems }>(`/reviews/${product.id}`)
+      .then((res) => setReviewItems(res.items ?? []))
+      .catch(() => {});
+  };
+
   const related = products.filter((p) => p.id !== product.id && p.category === product.category);
+
+  const displayRating = reviewSummary?.count ? reviewSummary.average : product.rating;
+  const displayReviews = reviewSummary?.count ? reviewSummary.count : product.reviews;
 
   return (
     <div className="mx-auto max-w-[1400px] px-6 pb-24 pt-32 md:px-8 md:pt-32 lg:px-12 lg:pt-36">
@@ -240,10 +317,17 @@ function ProductPage() {
             {t(product.name)}
           </h1>
           <div className="mt-4 flex items-center gap-3 text-xs text-muted-foreground">
-            <Stars rating={product.rating} size={14} />
+            <Stars rating={displayRating} size={14} />
             <span>
-              {product.rating} · {t("{count} reviews", { count: product.reviews })}
+              {displayRating} · {t("{count} reviews", { count: displayReviews })}
             </span>
+            <button
+              type="button"
+              onClick={() => setPromptOpen(true)}
+              className="cursor-pointer border-b border-transparent text-[11px] uppercase tracking-[0.18em] transition-colors hover:border-foreground"
+            >
+              {t("Write a review")}
+            </button>
           </div>
 
           <p className="mt-6 font-semibold tabular-nums text-3xl md:mt-6 md:text-2xl lg:mt-7 lg:text-3xl">
@@ -402,25 +486,66 @@ function ProductPage() {
           <div>
             <p className="eyebrow">{t("Reviews")}</p>
             <h2 className="mt-3 font-display text-4xl">
-              {t("{rating} out of 5", { rating: product.rating })}
+              {t("{rating} out of 5", { rating: displayRating })}
               <span className="ml-3 align-middle text-sm text-muted-foreground">
-                {t("{count} verified buyers", { count: product.reviews })}
+                {t("{count} verified buyers", { count: displayReviews })}
               </span>
             </h2>
           </div>
+          <button
+            type="button"
+            onClick={() => setPromptOpen(true)}
+            className="inline-flex cursor-pointer items-center gap-3 border border-foreground/25 px-6 py-3 text-[11px] uppercase tracking-[0.2em] transition-colors hover:border-foreground"
+          >
+            <PenLine size={14} />
+            {myReview ? t("Edit your review") : t("Write a review")}
+          </button>
         </Reveal>
-        <div className="mt-10 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {reviews.map((r, i) => (
-            <Reveal key={r.name} delay={i * 0.07} className="border-t pt-6">
-              <Stars rating={r.rating} />
-              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{t(r.text)}</p>
-              <p className="mt-4 text-[11px] uppercase tracking-[0.2em]">{r.name}</p>
-            </Reveal>
-          ))}
-        </div>
+
+        {reviewItems.length > 0 ? (
+          <div className="mt-10 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {reviewItems.map((r, i) => (
+              <Reveal key={r.id} delay={i * 0.07} className="border-t pt-6">
+                <Stars rating={r.rating} />
+                {r.comment && (
+                  <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{r.comment}</p>
+                )}
+                <p className="mt-4 text-[11px] uppercase tracking-[0.2em]">
+                  {r.userName || t("Lumina customer")}
+                </p>
+              </Reveal>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-10 border-t pt-8">
+            <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
+              {t(
+                "No written reviews for this piece yet. If it is part of your home, tell other people how it feels.",
+              )}
+            </p>
+            <button
+              type="button"
+              onClick={() => setPromptOpen(true)}
+              className="mt-6 inline-flex cursor-pointer items-center gap-3 border border-foreground/25 px-6 py-3 text-[11px] uppercase tracking-[0.2em] transition-colors hover:border-foreground"
+            >
+              <PenLine size={14} />
+              {t("Write the first review")}
+            </button>
+          </div>
+        )}
       </section>
 
       <AuthRequiredDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} />
+
+      <ReviewPrompt
+        open={promptOpen}
+        onOpenChange={setPromptOpen}
+        product={{ id: product.id, name: product.name, image: product.image }}
+        initialRating={myReview?.rating ?? null}
+        initialComment={myReview?.comment ?? ""}
+        onSubmitted={handleSubmitted}
+        onDismiss={markLater}
+      />
     </div>
   );
 }

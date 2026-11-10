@@ -207,3 +207,20 @@ export const newsletterSubscribers = mysqlTable("newsletter_subscribers", {
   email: varchar("email", { length: 255 }).primaryKey(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const reviews = mysqlTable(
+  "reviews",
+  {
+    id: varchar("id", { length: 36 }).primaryKey(),
+    productId: varchar("product_id", { length: 100 }).notNull(),
+    userId: varchar("user_id", { length: 36 }).notNull(),
+    userName: varchar("user_name", { length: 255 }).notNull().default(""),
+    rating: int("rating").notNull(),
+    comment: text("comment").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    userProductIdx: uniqueIndex("review_user_product_idx").on(table.userId, table.productId),
+    productIdx: index("review_product_idx").on(table.productId),
+  }),
+);

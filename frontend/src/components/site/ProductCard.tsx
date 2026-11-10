@@ -15,13 +15,24 @@ import { useState } from "react";
 import { resolveAsset } from "@/lib/assets";
 import { useI18n } from "@/lib/i18n";
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({
+  product,
+  rating,
+  reviewCount,
+}: {
+  product: Product;
+  /** Real customer rating, when the product already has reviews. */
+  rating?: number;
+  reviewCount?: number;
+}) {
   const { t } = useI18n();
   const { add } = useCart();
   const { toggle, has } = useWishlist();
   const wished = has(product.id);
   const [open, setOpen] = useState(false);
   const productImage = resolveAsset(product.image);
+  const displayRating = rating ?? product.rating;
+  const displayReviews = reviewCount ?? product.reviews;
 
   return (
     <>
@@ -77,9 +88,9 @@ export function ProductCard({ product }: { product: Product }) {
           <span className="whitespace-nowrap pt-1 text-sm">{formatUZS(product.price)}</span>
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Stars rating={product.rating} />
+          <Stars rating={displayRating} />
           <span>
-            {product.rating} · {t("{count} reviews", { count: product.reviews })}
+            {displayRating} · {t("{count} reviews", { count: displayReviews })}
           </span>
         </div>
         <button
@@ -122,8 +133,8 @@ export function ProductCard({ product }: { product: Product }) {
               <p className="font-semibold tabular-nums text-xl">{formatUZS(product.price)}</p>
               <p className="text-xs text-muted-foreground">{t(product.material)}</p>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Stars rating={product.rating} />
-                <span>{product.rating} · {t("{count} reviews", { count: product.reviews })}</span>
+                <Stars rating={displayRating} />
+                <span>{displayRating} · {t("{count} reviews", { count: displayReviews })}</span>
               </div>
               <p className="text-xs leading-relaxed text-muted-foreground">{t(product.description)}</p>
               <Link

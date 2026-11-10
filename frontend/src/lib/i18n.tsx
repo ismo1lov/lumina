@@ -349,6 +349,57 @@ const translations: Record<string, Entry> = {
   "Remove from wishlist": { uz: "Sevimlilardan olib tashlash", ru: "Удалить из избранного" },
   "{count} reviews": { uz: "{count} ta sharh", ru: "{count} отзывов" },
 
+  // ── Reviews ─────────────────────────────────────────────────────────────
+  "Write a review": { uz: "Sharh yozish", ru: "Написать отзыв" },
+  "Write the first review": { uz: "Birinchi sharhni yozish", ru: "Написать первый отзыв" },
+  "Edit your review": { uz: "Sharhni tahrirlash", ru: "Редактировать отзыв" },
+  "How do you like {name}?": {
+    uz: "{name} qanday yoqdi?",
+    ru: "Как вам {name}?",
+  },
+  "Your rating helps other people choose the right piece.": {
+    uz: "Sizning bahoyingiz boshqalarga to‘g‘ri mebelni tanlashda yordam beradi.",
+    ru: "Ваша оценка поможет другим выбрать нужную вещь.",
+  },
+  "Sign in to rate this piece and share your experience.": {
+    uz: "Bu mebelni baholash va tajribangizni ulashish uchun tizimga kiring.",
+    ru: "Войдите, чтобы оценить вещь и поделиться опытом.",
+  },
+  "Only signed-in customers can leave a rating.": {
+    uz: "Faqat tizimga kiringan mijozlar baho qo‘ya oladi.",
+    ru: "Оценку могут оставить только авторизованные покупатели.",
+  },
+  "Tell us about the piece — what did you like?": {
+    uz: "Mebel haqida yozing — nima yoqdi?",
+    ru: "Расскажите о вещи — что понравилось?",
+  },
+  "Your review will be published with your name.": {
+    uz: "Sharhingiz ismingiz bilan e’lon qilinadi.",
+    ru: "Ваш отзыв будет опубликован с вашим именем.",
+  },
+  "Please choose a rating": {
+    uz: "Iltimos, bahoni tanlang",
+    ru: "Пожалуйста, выберите оценку",
+  },
+  "Rate {count} out of 5": { uz: "5 dan {count}", ru: "{count} из 5" },
+  "{count} out of 5": { uz: "5 dan {count}", ru: "{count} из 5" },
+  "Thank you! Your review has been published.": {
+    uz: "E’tiboringiz uchun rahmat! Sharhingiz e’lon qilindi.",
+    ru: "Спасибо! Ваш отзыв опубликован.",
+  },
+  "Failed to send review": {
+    uz: "Sharhni yuborishda xatolik yuz berdi",
+    ru: "Не удалось отправить отзыв",
+  },
+  Later: { uz: "Keyinroq", ru: "Позже" },
+  Rate: { uz: "Baholash", ru: "Оценить" },
+  "Lumina customer": { uz: "Lumina mijozi", ru: "Покупатель Lumina" },
+  "No written reviews for this piece yet. If it is part of your home, tell other people how it feels.":
+    {
+      uz: "Bu mebel uchun hozircha yozilgan sharhlar yo‘q. Agar u sizning uyingizda bo‘lsa, boshqalarga hisobingizni aytib bering.",
+      ru: "Для этой вещи пока нет отзывов. Если она живёт в вашем доме — расскажите другим о впечатлениях.",
+    },
+
   // ── Checkout ───────────────────────────────────────────────────────────
   Checkout: { uz: "To‘lov", ru: "Оформление" },
   "Almost home": { uz: "Uyingizga bir qadam", ru: "Почти дома" },

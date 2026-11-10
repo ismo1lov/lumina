@@ -18,6 +18,7 @@ import addressRoutes from "./routes/addresses.js";
 import adminRoutes from "./routes/admin.js";
 import paymentRoutes from "./routes/payments.js";
 import newsletterRoutes from "./routes/newsletter.js";
+import reviewRoutes from "./routes/reviews.js";
 
 const DB_USER = process.env.DB_USER || process.env.MYSQLUSER || "root";
 const DB_PASSWORD = process.env.DB_PASSWORD || process.env.MYSQLPASSWORD || "";
@@ -127,6 +128,15 @@ async function initDatabase() {
     `CREATE TABLE IF NOT EXISTS newsletter_subscribers (
       email VARCHAR(255) PRIMARY KEY,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS reviews (
+      id VARCHAR(36) PRIMARY KEY, product_id VARCHAR(100) NOT NULL,
+      user_id VARCHAR(36) NOT NULL,
+      user_name VARCHAR(255) NOT NULL DEFAULT '',
+      rating INT NOT NULL, comment TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE KEY review_unique (user_id, product_id),
+      KEY review_product_idx (product_id)
     )`,
   ];
 
@@ -316,6 +326,7 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/addresses", addressRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/newsletter", newsletterRoutes);
+app.use("/api/reviews", reviewRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.get("/api/health", (_req, res) => {
