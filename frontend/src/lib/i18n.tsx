@@ -524,6 +524,34 @@ const translations: Record<string, Entry> = {
     ru: "Админ-аккаунты нельзя создать здесь",
   },
   "Login failed": { uz: "Kirish amalga oshmadi", ru: "Не удалось войти" },
+
+  // ── Admin panel ─────────────────────────────────────────────────────────
+  "Welcome back": { uz: "Xush kelibsiz", ru: "С возвращением" },
+  "Sign in to manage your store": {
+    uz: "Do‘koningizni boshqarish uchun tizimga kiring",
+    ru: "Войдите, чтобы управлять магазином",
+  },
+  Login: { uz: "Login", ru: "Логин" },
+  "Sign in to dashboard": {
+    uz: "Boshqaruv paneliga kiring",
+    ru: "Войти в панель управления",
+  },
+  "← Back to Lumina store": {
+    uz: "← Lumina do‘koniga qaytish",
+    ru: "← Назад в магазин Lumina",
+  },
+  "This account does not have admin access": {
+    uz: "Bu akkauntga admin huquqi yo‘q",
+    ru: "У этой учётной записи нет прав администратора",
+  },
+  "Crafting warmth for modern homes.": {
+    uz: "Zamonaviy uylar uchun iliq mebel yasash.",
+    ru: "Создаём тёплые вещи для современных домов.",
+  },
+  "Orders, customers and messages — all in one place.": {
+    uz: "Buyurtmalar, mijozlar va xabarlar — bitta joyda.",
+    ru: "Заказы, клиенты и сообщения — в одном месте.",
+  },
   "Sign in with Google": { uz: "Google orqali kirish", ru: "Войти через Google" },
   "Sign up with Google": {
     uz: "Google orqali hisob yarating",

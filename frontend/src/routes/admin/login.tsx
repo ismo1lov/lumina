@@ -3,6 +3,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import { useI18n } from "@/lib/i18n";
 import { ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import heroChair from "@/assets/hero-chair.jpg";
 
@@ -29,6 +30,7 @@ const rise = {
 };
 
 function AdminLoginPage() {
+  const { t } = useI18n();
   const { user, loading, setAuth } = useAuth();
   const navigate = useNavigate();
   const [loginName, setLoginName] = useState("");
@@ -47,13 +49,13 @@ function AdminLoginPage() {
     try {
       const result = await api.post<LoginResponse>("/auth/admin-login", { login: loginName, password });
       if (result.user.role !== "admin") {
-        setError("This account does not have admin access");
+        setError(t("This account does not have admin access"));
         return;
       }
       setAuth(result.user, result.token);
       navigate({ to: "/admin" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(err instanceof Error ? err.message : t("Login failed"));
     } finally {
       setBusy(false);
     }
@@ -115,25 +117,25 @@ function AdminLoginPage() {
 
           <div className="relative p-10">
             <p className="font-display text-lg leading-snug text-cream">
-              Crafting warmth for modern homes.
+              {t("Crafting warmth for modern homes.")}
             </p>
             <p className="mt-2 text-xs leading-relaxed text-cream/60">
-              Orders, customers and messages — all in one place.
+              {t("Orders, customers and messages — all in one place.")}
             </p>
           </div>
         </motion.div>
 
         <motion.div variants={rise} className="flex flex-col p-8 sm:p-10">
           <div className="mx-auto w-full max-w-md">
-            <h1 className="font-display text-3xl">Welcome back</h1>
-            <p className="mt-1.5 text-sm text-muted-foreground">Sign in to manage your store</p>
+            <h1 className="font-display text-3xl">{t("Welcome back")}</h1>
+            <p className="mt-1.5 text-sm text-muted-foreground">{t("Sign in to manage your store")}</p>
           </div>
 
           <div className="mx-auto flex w-full max-w-md flex-1 items-center py-8">
             <form onSubmit={handleSubmit} className="w-full space-y-5">
               <div>
                 <label className="mb-2 block text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                  Login
+                  {t("Login")}
                 </label>
                 <div className="group relative">
                   <Mail
@@ -153,7 +155,7 @@ function AdminLoginPage() {
 
               <div>
                 <label className="mb-2 block text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                  Password
+                  {t("Password")}
                 </label>
                 <div className="group relative">
                   <Lock
@@ -203,11 +205,11 @@ function AdminLoginPage() {
                 {busy ? (
                   <>
                     <span className="size-3.5 animate-spin rounded-full border-2 border-cream/30 border-t-cream" />
-                    Signing in…
+                    {t("Signing in...")}
                   </>
                 ) : (
                   <>
-                    Sign in to dashboard
+                    {t("Sign in to dashboard")}
                     <ArrowRight
                       size={15}
                       className="transition-transform duration-300 group-hover:translate-x-1"
@@ -224,7 +226,7 @@ function AdminLoginPage() {
                 to="/"
                 className="text-xs text-muted-foreground transition-colors hover:text-walnut"
               >
-                ← Back to Lumina store
+                {t("← Back to Lumina store")}
               </Link>
             </p>
           </div>
