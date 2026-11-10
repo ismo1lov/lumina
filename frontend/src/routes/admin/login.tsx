@@ -3,18 +3,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
-import {
-  ArrowRight,
-  Armchair,
-  BedDouble,
-  Eye,
-  EyeOff,
-  Lamp,
-  Lock,
-  Mail,
-  Sofa,
-  Table2,
-} from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import heroChair from "@/assets/hero-chair.jpg";
 
 interface LoginResponse {
@@ -71,11 +60,11 @@ function AdminLoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-6 py-12 text-foreground">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-[#4b2f21] via-[#332015] to-[#1f130d] px-6 py-12 text-foreground">
       <motion.div
         animate={{ x: [0, 36, 0], y: [0, 24, 0] }}
         transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
-        className="pointer-events-none absolute -left-40 -top-40 size-[460px] rounded-full bg-sand/70 blur-3xl"
+        className="pointer-events-none absolute -left-40 -top-40 size-[460px] rounded-full bg-cream/10 blur-3xl"
       />
       <motion.div
         animate={{ x: [0, 30, 0], y: [0, 20, 0] }}
@@ -85,61 +74,19 @@ function AdminLoginPage() {
       <motion.div
         animate={{ x: [0, -24, 0], y: [0, 32, 0] }}
         transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}
-        className="pointer-events-none absolute left-[-8%] top-[45%] size-[340px] rounded-full bg-sand/50 blur-3xl"
+        className="pointer-events-none absolute left-[-8%] top-[45%] size-[340px] rounded-full bg-cream/5 blur-3xl"
       />
       <motion.div
         animate={{ x: [0, -30, 0], y: [0, 36, 0] }}
         transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
         className="pointer-events-none absolute -bottom-44 -right-32 size-[520px] rounded-full bg-accent/10 blur-3xl"
       />
-      <motion.div
-        animate={{ y: [0, -14, 0] }}
-        transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-        className="pointer-events-none absolute -right-10 -top-12 text-walnut/35 lg:block"
-      >
-        <Sofa size={210} strokeWidth={0.8} />
-      </motion.div>
-      <motion.div
-        animate={{ y: [0, -16, 0] }}
-        transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}
-        className="pointer-events-none absolute -left-12 top-[6%] text-walnut/35 lg:block"
-      >
-        <Lamp size={150} strokeWidth={0.8} />
-      </motion.div>
-      <motion.div
-        animate={{ y: [0, 18, 0] }}
-        transition={{ duration: 28, repeat: Infinity, ease: "easeInOut" }}
-        className="pointer-events-none absolute -bottom-14 -left-10 text-walnut/35 lg:block"
-      >
-        <BedDouble size={200} strokeWidth={0.8} />
-      </motion.div>
-      <motion.div
-        animate={{ y: [0, -20, 0] }}
-        transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }}
-        className="pointer-events-none absolute -bottom-10 -right-12 text-walnut/35 lg:block"
-      >
-        <Armchair size={170} strokeWidth={0.8} />
-      </motion.div>
-      <motion.div
-        animate={{ y: [0, -12, 0] }}
-        transition={{ duration: 24, repeat: Infinity, ease: "easeInOut" }}
-        className="pointer-events-none absolute right-[16%] top-[44%] hidden text-walnut/30 lg:block"
-      >
-        <Table2 size={120} strokeWidth={0.8} />
-      </motion.div>
-      <motion.div
-        animate={{ y: [0, 14, 0] }}
-        transition={{ duration: 32, repeat: Infinity, ease: "easeInOut" }}
-        className="pointer-events-none absolute left-[15%] top-[54%] hidden text-walnut/30 lg:block"
-      >
-        <Lamp size={110} strokeWidth={0.8} />
-      </motion.div>
 
       <motion.div
         variants={stagger}
         initial="hidden"
         animate="show"
-        className="relative grid w-full max-w-4xl overflow-hidden rounded-3xl border border-border bg-white shadow-[0_40px_90px_-40px_rgba(38,27,20,0.4)] lg:grid-cols-[1.05fr_1fr]"
+        className="relative grid w-full max-w-4xl overflow-hidden rounded-3xl border border-border bg-white shadow-[0_40px_90px_-40px_rgba(38,27,20,0.4)] lg:min-h-[620px] lg:grid-cols-[1.05fr_1fr]"
       >
         <motion.div
           variants={rise}
@@ -174,7 +121,7 @@ function AdminLoginPage() {
           </div>
         </motion.div>
 
-        <motion.div variants={rise} className="p-8 sm:p-12">
+        <motion.div variants={rise} className="flex items-center p-8 sm:p-12">
           <div className="mx-auto max-w-sm">
             <h1 className="font-display text-3xl">Welcome back</h1>
             <p className="mt-1.5 text-sm text-muted-foreground">Sign in to manage your store</p>
