@@ -110,9 +110,12 @@ function AdminLoginPage() {
           <div className="pointer-events-none absolute -bottom-28 -left-20 size-72 rounded-full bg-accent/20 blur-3xl" />
 
           <div className="relative p-10">
-            <p className="font-display text-3xl text-cream">
-              Lumina<span className="text-accent">.</span>
-            </p>
+            <div className="flex items-center gap-3">
+              <img src="/favicon.svg" alt="" className="size-9" />
+              <p className="font-display text-3xl text-cream">
+                Lumina<span className="text-accent">Admin</span>
+              </p>
+            </div>
           </div>
 
           <div className="relative p-10">

@@ -34,7 +34,6 @@ export const adminNav = [
   { id: "messages", label: "Messages", tab: "messages", Icon: Mail },
   { id: "analytics", label: "Analytics", tab: "analytics", Icon: BarChart3 },
   { id: "discount", label: "Discount", tab: "discount", Icon: BadgePercent },
-  { id: "settings", label: "Settings", tab: null, Icon: Settings },
 ] as const;
 
 export function AdminShell({
@@ -58,15 +57,15 @@ export function AdminShell({
   };
 
   const navItems = (
-    <nav className="space-y-1">
+    <nav className="space-y-1.5">
       {adminNav.map((n) => {
         const isActive = active === n.id;
         const count = counts[n.id];
         return (
           <Link
             key={n.id}
-            to={n.tab ? "/admin" : "/admin/settings"}
-            search={n.tab ? { tab: n.tab } : undefined}
+            to="/admin"
+            search={{ tab: n.tab }}
             onClick={() => setMenuOpen(false)}
             className={`flex items-center gap-3 rounded-xl px-4 py-3 text-[12px] uppercase tracking-[0.14em] transition-colors ${
               isActive
@@ -91,37 +90,30 @@ export function AdminShell({
     </nav>
   );
 
-  const userBlock = (
-    <div className="space-y-4">
-      <LanguageSwitcher />
-      <div className="flex items-center gap-3">
-        {avatarUrl(user?.avatar) ? (
-          <img
-            src={avatarUrl(user?.avatar)!}
-            alt={user?.name}
-            className="size-9 rounded-full object-cover ring-2 ring-cream"
-          />
-        ) : (
-          <span className="grid size-9 place-items-center rounded-full bg-walnut font-display text-xs text-cream">
-            {user?.name.slice(0, 1).toUpperCase()}
-          </span>
-        )}
-        <div className="min-w-0 leading-tight">
-          <p className="truncate text-sm font-medium">{user?.name}</p>
-          <p className="truncate text-[11px] text-muted-foreground">
-            {user?.username || user?.email}
-          </p>
-        </div>
-      </div>
-      <button
-        type="button"
-        onClick={handleLogout}
-        className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-border bg-white/70 px-4 py-2.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:border-walnut/30 hover:text-walnut"
-      >
-        <LogOut size={13} />
-        {t("Sign Out")}
-      </button>
-    </div>
+  const settingsItem = (
+    <Link
+      to="/admin/settings"
+      onClick={() => setMenuOpen(false)}
+      className={`flex items-center gap-3 rounded-xl px-4 py-3 text-[12px] uppercase tracking-[0.14em] transition-colors ${
+        active === "settings"
+          ? "bg-walnut text-cream shadow-[0_12px_28px_-14px_rgba(38,27,20,0.6)]"
+          : "text-muted-foreground hover:bg-cream hover:text-walnut"
+      }`}
+    >
+      <Settings size={16} strokeWidth={1.6} />
+      {t("Settings")}
+    </Link>
+  );
+
+  const signOutButton = (
+    <button
+      type="button"
+      onClick={handleLogout}
+      className="flex w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-[11px] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:bg-cream hover:text-walnut"
+    >
+      <LogOut size={15} strokeWidth={1.6} />
+      {t("Sign Out")}
+    </button>
   );
 
   return (
@@ -132,14 +124,14 @@ export function AdminShell({
           <Link to="/admin" className="font-display text-2xl tracking-tight">
             Lumina<span className="text-accent">.</span>
           </Link>
-          <span className="ml-3 rounded-full bg-cream px-2.5 py-1 text-[9px] uppercase tracking-[0.2em] text-walnut">
-            {t("Admin")}
-          </span>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-3 pb-4">{navItems}</div>
+        <div className="mt-8 flex-1 overflow-y-auto px-3 pb-4">{navItems}</div>
 
-        <div className="border-t border-border p-4">{userBlock}</div>
+        <div className="border-t border-border p-3">
+          {settingsItem}
+          {signOutButton}
+        </div>
       </aside>
 
       {/* Mobile bar */}
@@ -191,8 +183,11 @@ export function AdminShell({
                   <X size={18} />
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto px-3 pb-4">{navItems}</div>
-              <div className="border-t border-border p-4">{userBlock}</div>
+              <div className="mt-6 flex-1 overflow-y-auto px-3 pb-4">{navItems}</div>
+              <div className="border-t border-border p-3">
+                {settingsItem}
+                {signOutButton}
+              </div>
             </motion.aside>
           </motion.div>
         )}
