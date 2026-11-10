@@ -12,6 +12,8 @@ import { api } from "./api";
 
 export type ReviewSummary = { average: number; count: number };
 
+type SummaryRow = { productId: string; average: number; count: number };
+
 type ReviewsContextValue = {
   /** Real rating summary per product (only products that have reviews). */
   summary: Record<string, ReviewSummary>;
@@ -36,9 +38,7 @@ export function ReviewsProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(async () => {
     try {
-      const rows = await api.get<{ productId: string; average: number; count: number }[]>(
-        "/reviews/summary/all",
-      );
+      const rows = await api.get<SummaryRow[]>("/reviews/summary/all");
       const next: Record<string, ReviewSummary> = {};
       for (const row of rows ?? []) {
         next[row.productId] = { average: Number(row.average ?? 0), count: Number(row.count ?? 0) };
