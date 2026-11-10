@@ -111,41 +111,31 @@ function AdminLoginPage() {
         variants={stagger}
         initial="hidden"
         animate="show"
-        className="relative grid w-full max-w-4xl overflow-hidden rounded-3xl border border-border bg-white shadow-[0_40px_90px_-40px_rgba(38,27,20,0.4)] lg:grid-cols-[1fr_1.15fr]"
+        className="relative grid w-full max-w-4xl overflow-hidden rounded-3xl border border-border bg-white shadow-[0_40px_90px_-40px_rgba(38,27,20,0.4)] lg:grid-cols-[1.05fr_1fr]"
       >
         <motion.div
           variants={rise}
-          className="relative hidden flex-col justify-between overflow-hidden bg-walnut p-10 lg:flex"
+          className="relative hidden flex-col justify-between overflow-hidden bg-walnut lg:flex"
         >
+          {/* Full-bleed image fills the whole panel */}
+          <motion.img
+            src={heroChair}
+            alt="Lumina lounge chair"
+            animate={{ scale: [1, 1.07, 1] }}
+            transition={{ duration: 24, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-walnut/85 via-walnut/45 to-walnut/25" />
           <div className="pointer-events-none absolute -right-24 -top-24 size-64 rounded-full bg-cream/10 blur-2xl" />
-          <div className="pointer-events-none absolute -bottom-28 -left-20 size-72 rounded-full bg-accent/25 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-28 -left-20 size-72 rounded-full bg-accent/20 blur-3xl" />
 
-          <div className="relative">
-            <p className="font-display text-3xl text-cream">
+          <div className="relative p-10">
+            <p className="font-display text-3xl text-walnut">
               Lumina<span className="text-accent">.</span>
             </p>
-            <span className="mt-4 inline-flex items-center gap-2 rounded-full bg-cream/10 px-3 py-1.5 text-[10px] uppercase tracking-[0.25em] text-cream/90 ring-1 ring-cream/20">
-              <ShieldCheck size={12} />
-              Admin Panel
-            </span>
           </div>
 
-          <motion.div
-            animate={{ y: [0, -10, 0], rotate: [0, -1.5, 0] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            className="relative mx-auto w-56"
-          >
-            <div className="absolute inset-4 rounded-full bg-cream/10 blur-xl" />
-            <div className="relative overflow-hidden rounded-2xl bg-cream p-3 shadow-[0_24px_50px_-20px_rgba(0,0,0,0.5)]">
-              <img
-                src={heroChair}
-                alt="Lumina chair"
-                className="aspect-square w-full object-cover"
-              />
-            </div>
-          </motion.div>
-
-          <div className="relative">
+          <div className="relative p-10">
             <p className="font-display text-lg leading-snug text-cream">
               Crafting warmth for modern homes.
             </p>
