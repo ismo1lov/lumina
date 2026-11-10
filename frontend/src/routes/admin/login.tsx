@@ -62,7 +62,7 @@ function AdminLoginPage() {
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-6 py-12 text-foreground">
       {/* Brown glow on the light background */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_55%_at_16%_6%,rgba(140,96,66,0.16),transparent_62%),radial-gradient(55%_50%_at_84%_90%,rgba(201,90,42,0.16),transparent_60%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_55%_at_16%_6%,rgba(150,102,70,0.16),transparent_62%),radial-gradient(55%_50%_at_84%_90%,rgba(150,102,70,0.16),transparent_60%)]" />
       <motion.div
         animate={{ x: [0, 36, 0], y: [0, 24, 0] }}
         transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
