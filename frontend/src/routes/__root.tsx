@@ -17,6 +17,7 @@ import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { CartProvider } from "@/lib/cart";
 import { WishlistProvider } from "@/lib/wishlist";
 import { I18nProvider, useI18n } from "@/lib/i18n";
+import { ReviewsProvider } from "@/lib/reviews";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { CartDrawer } from "@/components/site/CartDrawer";
@@ -206,11 +207,13 @@ function RootComponent() {
       <AuthProvider>
         <CartProvider>
           <WishlistProvider>
-            <AuthGuard>
-              <LayoutSwitch>
-                <Outlet />
-              </LayoutSwitch>
-            </AuthGuard>
+            <ReviewsProvider>
+              <AuthGuard>
+                <LayoutSwitch>
+                  <Outlet />
+                </LayoutSwitch>
+              </AuthGuard>
+            </ReviewsProvider>
           </WishlistProvider>
         </CartProvider>
       </AuthProvider>

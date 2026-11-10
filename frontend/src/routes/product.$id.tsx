@@ -17,6 +17,7 @@ import { Reveal } from "@/components/site/Reveal";
 import { Stars } from "@/components/site/Stars";
 import { ReviewPrompt, type ReviewSummary } from "@/components/site/ReviewPrompt";
 import { resolveAsset } from "@/lib/assets";
+import { useReviews } from "@/lib/reviews";
 import { AuthRequiredDialog } from "@/components/site/AuthRequiredDialog";
 import { api } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
@@ -73,11 +74,11 @@ function ProductPage() {
   const [reviewItems, setReviewItems] = useState<
     { id: string; rating: number; comment: string; userName: string; createdAt: string }[]
   >([]);
-  const [reviewSummary, setReviewSummary] = useState<ReviewSummary | null>(null);
   const [myReview, setMyReview] = useState<{ rating: number; comment: string } | null>(null);
   const [promptOpen, setPromptOpen] = useState(false);
   const myReviewRef = useRef(myReview);
   myReviewRef.current = myReview;
+  const { summary, applySummary } = useReviews();
 
   const finishImages = finish.colorImages || product.colors.map((c) => c.image || product.image);
   const gallery = finishImages.map((g) => resolveAsset(g) || g);
@@ -111,13 +112,14 @@ function ProductPage() {
       .then((res) => {
         if (!active) return;
         setReviewItems(res.items ?? []);
-        setReviewSummary({ average: Number(res.average ?? 0), count: Number(res.count ?? 0) });
+        const value = { average: Number(res.average ?? 0), count: Number(res.count ?? 0) };
+        if (value.count > 0) applySummary(product.id, value);
       })
       .catch(() => {});
     return () => {
       active = false;
     };
-  }, [product.id]);
+  }, [product.id, applySummary]);
 
   // Load the review of the signed-in user (if any) so we can offer editing.
   useEffect(() => {
@@ -171,9 +173,9 @@ function ProductPage() {
     }
   };
 
-  const handleSubmitted = (summary: ReviewSummary) => {
+  const handleSubmitted = (value: ReviewSummary) => {
     markReviewed();
-    setReviewSummary(summary);
+    applySummary(product.id, value);
     api
       .get<{ items: typeof reviewItems }>(`/reviews/${product.id}`)
       .then((res) => setReviewItems(res.items ?? []))
@@ -182,8 +184,9 @@ function ProductPage() {
 
   const related = products.filter((p) => p.id !== product.id && p.category === product.category);
 
-  const displayRating = reviewSummary?.count ? reviewSummary.average : product.rating;
-  const displayReviews = reviewSummary?.count ? reviewSummary.count : product.reviews;
+  const real = summary[product.id];
+  const displayRating = real?.average ?? product.rating;
+  const displayReviews = real?.count ?? product.reviews;
 
   return (
     <div className="mx-auto max-w-[1400px] px-6 pb-24 pt-32 md:px-8 md:pt-32 lg:px-12 lg:pt-36">

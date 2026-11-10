@@ -6,7 +6,6 @@ import { ProductCard } from "@/components/site/ProductCard";
 import { Reveal } from "@/components/site/Reveal";
 import { Stars } from "@/components/site/Stars";
 import { resolveAsset } from "@/lib/assets";
-import { api } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/catalog")({
@@ -49,28 +48,6 @@ function Catalog() {
   const [preOrder, setPreOrder] = useState(false);
   const [sort, setSort] = useState<Sort>("popularity");
   const [quickView, setQuickView] = useState<string | null>(null);
-  // Real ratings of products that already have customer reviews.
-  const [ratingMap, setRatingMap] = useState<Record<string, { average: number; count: number }>>(
-    {},
-  );
-
-  useEffect(() => {
-    let active = true;
-    api
-      .get<{ productId: string; average: number; count: number }[]>("/reviews/summary/all")
-      .then((rows) => {
-        if (!active) return;
-        setRatingMap(
-          Object.fromEntries(
-            rows.map((r) => [r.productId, { average: r.average, count: r.count }]),
-          ),
-        );
-      })
-      .catch(() => {});
-    return () => {
-      active = false;
-    };
-  }, []);
 
   useEffect(() => {
     if (category && !cats.includes(category)) {
@@ -180,11 +157,7 @@ function Catalog() {
             {filtered.map((p, i) => (
               <Reveal key={p.id} delay={(i % 3) * 0.06}>
                 <div className="relative">
-                  <ProductCard
-                    product={p}
-                    rating={ratingMap[p.id]?.average}
-                    reviewCount={ratingMap[p.id]?.count}
-                  />
+                  <ProductCard product={p} />
                   <button
                     type="button"
                     onClick={() => setQuickView(p.id)}

@@ -13,26 +13,21 @@ import {
 } from "@/components/ui/dialog";
 import { useState } from "react";
 import { resolveAsset } from "@/lib/assets";
+import { useReviews } from "@/lib/reviews";
 import { useI18n } from "@/lib/i18n";
 
-export function ProductCard({
-  product,
-  rating,
-  reviewCount,
-}: {
-  product: Product;
-  /** Real customer rating, when the product already has reviews. */
-  rating?: number;
-  reviewCount?: number;
-}) {
+export function ProductCard({ product }: { product: Product }) {
   const { t } = useI18n();
   const { add } = useCart();
   const { toggle, has } = useWishlist();
   const wished = has(product.id);
   const [open, setOpen] = useState(false);
   const productImage = resolveAsset(product.image);
-  const displayRating = rating ?? product.rating;
-  const displayReviews = reviewCount ?? product.reviews;
+  // Real customer ratings (the product only has them once someone reviewed).
+  const { summary } = useReviews();
+  const real = summary[product.id];
+  const displayRating = real?.average ?? product.rating;
+  const displayReviews = real?.count ?? product.reviews;
 
   return (
     <>
