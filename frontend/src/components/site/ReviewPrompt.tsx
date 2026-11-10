@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -100,22 +99,20 @@ export function ReviewPrompt({
         onOpenChange(next);
       }}
     >
-      <DialogContent className="sm:max-w-[440px]">
+      <DialogContent className="sm:max-w-[420px]">
         <DialogHeader>
-          <p className="eyebrow">{t("Write a review")}</p>
           <DialogTitle className="font-display text-2xl leading-snug">
-            {t("How do you like {name}?", { name: product.name })}
+            {t("Rate this product")}
           </DialogTitle>
-          <DialogDescription className="text-sm">
-            {user
-              ? t("Your rating helps other people choose the right piece.")
-              : t("Sign in to rate this piece and share your experience.")}
-          </DialogDescription>
         </DialogHeader>
 
         {user ? (
           <>
-            <div className="mt-2 flex items-center gap-1" onMouseLeave={() => setHover(0)}>
+            <div
+              className="mt-6 flex items-center gap-1"
+              onMouseLeave={() => setHover(0)}
+              aria-label={t("Your rating")}
+            >
               {[1, 2, 3, 4, 5].map((i) => (
                 <button
                   key={i}
@@ -131,16 +128,11 @@ export function ReviewPrompt({
                   className="cursor-pointer p-1 transition-transform hover:scale-110"
                 >
                   <Star
-                    size={30}
+                    size={32}
                     className={i <= active ? "fill-accent text-accent" : "text-border"}
                   />
                 </button>
               ))}
-              {rating > 0 && (
-                <span className="ml-2 text-sm text-muted-foreground">
-                  {t("{count} out of 5", { count: rating })}
-                </span>
-              )}
             </div>
 
             <textarea
@@ -148,23 +140,17 @@ export function ReviewPrompt({
               onChange={(e) => setComment(e.target.value)}
               maxLength={600}
               rows={3}
-              placeholder={t("Tell us about the piece — what did you like?")}
-              className="w-full resize-none border border-input bg-transparent px-3 py-2 text-sm outline-none transition-colors focus:border-accent"
+              placeholder={t("Write your review")}
+              className="mt-6 w-full resize-none border-b bg-transparent py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-accent"
             />
-            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-              <span>{t("Your review will be published with your name.")}</span>
-              <span className="tabular-nums">{comment.length}/600</span>
-            </div>
           </>
         ) : (
-          <div className="mt-2 border border-border/70 bg-cream/60 p-4 text-sm text-muted-foreground">
-            {t("Only signed-in customers can leave a rating.")}
-          </div>
+          <p className="mt-4 text-sm text-muted-foreground">{t("Sign in to rate this product")}</p>
         )}
 
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        {error && <p className="mt-3 text-sm text-red-500">{error}</p>}
 
-        <div className="mt-2 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
           <button
             type="button"
             onClick={() => {

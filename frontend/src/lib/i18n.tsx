@@ -351,6 +351,13 @@ const translations: Record<string, Entry> = {
 
   // ── Reviews ─────────────────────────────────────────────────────────────
   "Write a review": { uz: "Sharh yozish", ru: "Написать отзыв" },
+  "Rate this product": { uz: "Shu maxsulotni sharhlang", ru: "Оцените этот товар" },
+  "Write your review": { uz: "Izohingizni yozing", ru: "Напишите ваш отзыв" },
+  "Sign in to rate this product": {
+    uz: "Bu mahsulotni baholash uchun tizimga kiring.",
+    ru: "Войдите, чтобы оценить этот товар.",
+  },
+  "Your rating": { uz: "Sizning bahoyingiz", ru: "Ваша оценка" },
   "Write the first review": { uz: "Birinchi sharhni yozish", ru: "Написать первый отзыв" },
   "Edit your review": { uz: "Sharhni tahrirlash", ru: "Редактировать отзыв" },
   "How do you like {name}?": {
